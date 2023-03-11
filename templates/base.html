@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+    <head>
+        {% block head %}
+        <title>Lista</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <style>
+            h1 {
+                font-size: 50px;
+                font-family: "Comic Sans MS", cursive, sans-serif;
+                font-weight: normal;
+                color: red;
+                text-align: left;
+            }
+
+            h3 {
+                font-size: 30px;
+                font-family: "Comic Sans MS", cursive, sans-serif;
+                font-weight: normal;
+                color: black;
+                text-align: left;
+                margin-bottom: 2%;
+            }
+
+            h4 {
+                font-size: 25px;
+                font-family: "Comic Sans MS", cursive, sans-serif;
+                font-weight: normal;
+                color: black;
+                text-align: left;
+                margin-bottom: 2%;
+                margin-left: 1%;
+            }
+
+            #banner {
+                width: 15%;
+                height: 15%;
+                object-fit: cover;
+                float: right;
+                margin-right: 10%;
+            }
+
+            p {
+                margin-top: 2%;
+                font-size: 20px;
+                font-family: "Comic Sans MS", cursive, sans-serif;
+                font-weight: normal;
+                color: black;
+                text-align: left;
+                margin-left: 3%;
+            }
+
+        </style>
+        {% endblock %}
+    </head>
+    <body>
+        <div>
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="/">Home</a></li>
+                <li><a href="lista">Lista</a></li>
+                <li><a href="aggiungi.html">Aggiungi</a></li>
+            </ul>
+        </div>
+        {% block content %}
+        {% endblock %}
+    </body>
+</html>

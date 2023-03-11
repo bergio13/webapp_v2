@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista{% endblock %}
+
+{% block content %}
+<div class="border-bottom row" style="margin-bottom">
+    <div class="col-9">
+        <div class="col-md-12">
+            <h1>Lista film</h1>
+                {% for mese in months %}
+                <h4>{{mese}}</h4>
+                    {% for movie in movies%}
+                        <p>{{movie}}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,54 +1,12 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Lista</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <style>
-            h1 {
-                font-size: 50px;
-                font-family: "Comic Sans MS", cursive, sans-serif;
-                font-weight: normal;
-                color: red;
-                text-align: left;
-            }
-            #banner {
-                width: 15%;
-                height: 15%;
-                object-fit: cover;
-                float: right;
-            }
-            p {
-                font-size: 20px;
-                font-family: "Comic Sans MS", cursive, sans-serif;
-                font-weight: normal;
-                color: black;
-                text-align: left;
-            }
+{% extends "base.html" %}
 
-            #container {
-                width: 100%;
-                height: 100%;
-                margin: 0 auto;
-            }
+{% block title %}Home{% endblock %}
 
-        </style>
-    </head>
-    <body>
-        <div>
-            <ul class="nav nav-tabs">
-                <li class="active"><a href="index.html">Home</a></li>
-                <li><a href="lista.html">Lista</a></li>
-                <li><a href="aggiungi.html">Aggiungi</a></li>
-            </ul>
-        </div>
+{% block content %}
         <div id="container">
             <h1>Meglio di un file Word</h1>
             <img id="banner" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Simple_Stick_Figure.svg/640px-Simple_Stick_Figure.svg.png">
-            <p>Aggiungi sti film</p>
+            <h3>Aggiungi sti film</h3>
         </div>
-    </body>
-</html>
+{% endblock %}
+
