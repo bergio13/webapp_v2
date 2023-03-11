@@ -11,18 +11,20 @@
         <style>
             h1 {
                 font-size: 50px;
-                font-family: "Comic Sans MS", cursive, sans-serif;
+                font-family: "Comic Sans MS", sans-serif;
                 font-weight: normal;
-                color: red;
+                color: purple;
                 text-align: left;
+                margin-left: 1%;
             }
 
             h3 {
                 font-size: 30px;
-                font-family: "Comic Sans MS", cursive, sans-serif;
+                font-family: "Comic Sans MS", cursive, sans-serif";
                 font-weight: normal;
                 color: black;
                 text-align: left;
+                margin-left: 1%;
                 margin-bottom: 2%;
             }
 
@@ -54,15 +56,61 @@
                 margin-left: 3%;
             }
 
+            .navbar {
+                margin-bottom: 0;
+                border-radius: 0;
+                box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+                background-color: blue;
+                z-index: 9999;
+            }
+
+            .nav-tabs {
+                  position: fixed;
+                  background-color: purple;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  width: 100%;
+                  border-radius: 5px;
+                  display: flex;
+                  justify-content: left;
+                  padding: 10px;
+                }
+                
+            .nav-tabs li {
+                  margin: 0 10px;
+                }
+                
+            .nav-tabs li a {
+                color: #333;
+                font-weight: bold;
+                font-family: "Comic Sans MS", cursive, sans-serif;
+                text-transform: uppercase;
+                font-size: 18px;
+                padding: 5px 10px;
+                }
+                
+            .nav-tabs li.active a {
+                  color: #fff;
+                  background-color: #007bff;
+                  border-radius: 5px;
+                }
+                
+            .nav-tabs li:hover a {
+                  color: #007bff;
+                  text-decoration: none;
+                }
         </style>
+
         {% endblock %}
+
     </head>
     <body>
-        <div>
-            <ul class="nav nav-tabs">
-                <li class="active"><a href="/">Home</a></li>
+        <div class="navbar">
+            <ul class="nav nav-tabs" >
+                <li><a href="/">Home</a></li>
                 <li><a href="lista">Lista</a></li>
-                <li><a href="aggiungi.html">Aggiungi</a></li>
+                <li><a href="aggiungi.html">Amici</a></li>
             </ul>
         </div>
         {% block content %}
