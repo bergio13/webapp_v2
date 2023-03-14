@@ -100,6 +100,31 @@
                   color: #007bff;
                   text-decoration: none;
                 }
+            
+
+            .rotate {
+                transform: translate(-50%, -50%) rotate(0deg);
+                animation: moveRotate 13s linear infinite;
+                  }
+
+                  @keyframes moveRotate {
+                    0% {
+                      transform: translate(-50%, -50%) rotate(0deg);
+                    }
+                    25% {
+                      transform: translate(-200%, 100%) rotate(360deg);
+                    }
+                    50% {
+                      transform: translate(-50%, -50%) rotate(720deg);
+                    }
+                    75% {
+                      transform: translate(100%, 50%) rotate(1080deg);
+                    }
+                    100% {
+                      transform: translate(-50%, -50%) rotate(1440deg);
+                    }
+                  }
+                  
         </style>
 
         {% endblock %}

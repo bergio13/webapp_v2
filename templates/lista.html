@@ -7,10 +7,10 @@
     <div class="col-9">
         <div class="col-md-12">
             <h1>Lista film</h1>
-                {% for mese in months %}
-                <h4>{{mese}}</h4>
-                    {% for movie in movies%}
-                        <p>{{movie}}</p>
+                {% for month in months %}
+                <h4>{{month}}</h4>
+                    {% for user in users%}
+                        <p>{{user}}</p>
                     {% endfor %}
                 {% endfor %}
             </div>
