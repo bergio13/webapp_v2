@@ -1,0 +1,35 @@
+{% extends 'base.html' %} {% block title %}Register{% endblock %} {% block
+content %}
+<main>
+  <h1>Register</h1>
+  <form>
+    <div class="field">
+      <input type="text" name="username" class="input" placeholder="" />
+      <label for="username" class="label">Username</label>
+    </div>
+    <div class="field">
+      <input type="email" name="email" class="input" placeholder="" />
+      <label for="email" class="label">Email</label>
+    </div>
+    <div class="field">
+      <input type="password" name="password" class="input" placeholder="" />
+      <label for="password" class="label">Password</label>
+    </div>
+
+    <ul>
+      <li>Must be at least 8 characters</li>
+      <li>Must contain at least one uppercase letter</li>
+      <li>Must contain at least one lowercase letter</li>
+      <li>Must contain at least one number</li>
+      <li>Must contain at least one special character</li>
+    </ul>
+
+    <div class="buttons">
+      <button type="submit" class="button">Register</button>
+      <p>or</p>
+      <p>Already have an account?</p>
+      <a href="/login" class="button button-Login">Login</a>
+    </div>
+  </form>
+</main>
+{% endblock %}
