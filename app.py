@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify
-from database import load_users_from_db
+from database import load_users_from_db, load_users_from_username
 
 app = Flask(__name__)
    
@@ -14,6 +14,11 @@ def hello():
 def lista():
     users = load_users_from_db()
     return render_template('lista.html', users=users, months=months)
+
+@app.route("/users/<name>")
+def show_user_profile(name):
+    user = load_users_from_username(name)
+    return jsonify(user)
 
 #@app.route('/api/about')
 #def list_about():

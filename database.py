@@ -19,6 +19,23 @@ def load_users_from_db():
             user_dict["id"] = row[0]
             user_dict["username"] = row[1]
             user_dict["email"] = row[2]
-            user_dict["password"] = row[3]
             user_dicts.append(user_dict)
         return user_dicts
+
+def load_users_from_username(name):
+    with engine.connect() as conn:
+        # define a SQL query with a parameter
+        query = text('SELECT * FROM users WHERE username = :username').bindparams(username=name)
+
+        # execute the query with a parameter value
+        result = conn.execute(query)
+        
+        user_dicts = []
+        for row in result:
+            user_dict = {}
+            user_dict["id"] = row[0]
+            user_dict["username"] = row[1]
+            user_dict["email"] = row[2]
+            user_dicts.append(user_dict)
+        return user_dicts
+        

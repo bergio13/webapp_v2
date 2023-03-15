@@ -1,19 +1,13 @@
-{% extends 'base.html' %}
-
-{% block title %}Lista{% endblock %}
-
-{% block content %}
-<div class="border-bottom row" style="margin-bottom">
-    <div class="col-9">
-        <div class="col-md-12">
-            <h1>Lista film</h1>
-                {% for month in months %}
-                <h4>{{month}}</h4>
-                    {% for user in users%}
-                        <p>{{user}}</p>
-                    {% endfor %}
-                {% endfor %}
-            </div>
-    </div>
-</div>
+{% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block content
+%}
+<main>
+  <div>
+    <h1>Lista film</h1>
+  </div>
+  {% for month in months %}
+  <h4>{{month}}</h4>
+  {% for user in users%}
+  <p>{{user}}</p>
+  {% endfor %} {% endfor %}
+</main>
 {% endblock %}
