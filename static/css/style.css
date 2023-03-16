@@ -283,6 +283,12 @@ a {
   text-decoration: none;
 }
 
+.alert {
+  color: var(--bg-primary);
+  padding: 1rem;
+  margin-left: 25%;
+}
+
 /* Small screens */
 @media only screen and (max-width: 600px) {
   .navbar {
