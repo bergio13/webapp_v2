@@ -33,7 +33,11 @@ def hello():
 
 @app.route('/lista')
 def lista():
-    users = load_users_from_db()
+    try:
+        users = load_users_from_db()
+    except:
+        users = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('lista.html', users=users, months=months)
 
 @app.route("/users/<name>")
@@ -127,6 +131,20 @@ def logout():
     session.pop('email', None)
    # Redirect to login page
     return redirect('/')
+
+@app.route('/add_movie', methods=['GET', 'POST'])
+def add_movie():
+    if request.method == "POST":
+        title = request.form.get("title")
+        director = request.form.get("director")
+        year = request.form.get("year")
+        date = request.form.get("date")
+        genre = request.form.get("genre")
+        rating = request.form.get("rating")
+        rewatch = request.form.get("rewatch")
+        tv = request.form.get("tv")
+    return render_template('add_movie.html')
+        
 
 if __name__ == '__main__':
     app.run(debug=True)

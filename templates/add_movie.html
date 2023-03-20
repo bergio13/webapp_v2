@@ -1,0 +1,90 @@
+{% extends 'base.html' %} {% block title %}Add Movies{% endblock %} {% block
+content %}
+<main>
+  <h1>Add Movies</h1>
+  <form method="post">
+    <div class="field field-add">
+      <label for="title">Title</label>
+      <input
+        type="text"
+        class="input"
+        id="title"
+        placeholder=""
+      />
+    </div>
+    <div class="field field-add">
+      <label for="year">Year</label>
+      <input
+        type="text"
+        class="input"
+        id="year"
+        placeholder=""
+      />
+    </div>
+    <div class="field field-add">
+      <label for="director">Director</label>
+      <input
+        type="text"
+        class="input"
+        id="director"
+        placeholder=""
+      />
+    </div>
+    <div class="field-add select">
+      <label for="genre">Genre</label>
+      <select id="genre">
+        <option value="Action">Action</option>
+        <option value="Adventure">Adventure</option>
+        <option value="Animation">Animation</option>
+        <option value="Biography">Biography</option>
+        <option value="Comedy">Comedy</option>
+        <option value="Crime">Crime</option>
+        <option value="Documentary">Documentary</option>
+        <option value="Drama">Drama</option>
+        <option value="Fantasy">Fantasy</option>
+        <option value="Film-Noir">Noir</option>
+        <option value="History">History</option>
+        <option value="Horror">Horror</option>
+        <option value="Musical">Musical</option>
+        <option value="Romance">Romance</option>
+        <option value="Sci-Fi">Sci-Fi</option>
+        <option value="Sport">Sport</option>
+        <option value="Thriller">Thriller</option>
+        <option value="War">War</option>
+        <option value="Western">Western</option>
+      </select>
+    </div>
+    <div class="field-add">
+      <label for="date">When did you watch it?</label>
+      <input
+        type="month"
+        class="month"
+        id="date"
+        placeholder=""
+      />
+    </div>
+    <div class="field-add">
+      <label for="Rating">Rating</label>
+      <input
+        type="number"
+        class="number"
+        id="actors"
+        placeholder=""
+        max="10"
+        min="0"
+      />
+    </div>
+    <div class="field-add">
+      <label for="rewatch">Rewatch</label>
+      <input type="radio" class="radio" name="rewatch" id="rewatch_yes">Yes</input>
+      <input type="radio" class="radio" name="rewatch" id="rewatch_no" checked>No</input>
+    </div>
+    <div class="field-add">
+      <label for="tv">Tv show</label>
+      <input type="radio" class="radio" name="tv" id="tv_yes">Yes</input>
+      <input type="radio" class="radio" name="tv"  id="tv_no" checked>No</input>
+    </div>
+    <button type="submit" class="button">Submit</button>
+  </form>
+</main>
+{% endblock %}

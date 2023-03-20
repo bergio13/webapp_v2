@@ -4,18 +4,31 @@
   <h1>Login</h1>
   <form method="post">
     <div class="field">
-      <input type="email" name="email" class="input" placeholder="" />
+      <input type="email" name="email" class="input" placeholder="" required />
       <label for="email" class="label">Email</label>
     </div>
     <div class="field">
-      <input type="password" name="password" class="input" placeholder="" />
+      <input
+        type="password"
+        name="password"
+        class="input"
+        placeholder=""
+        required
+      />
       <label for="password" class="label">Password</label>
     </div>
     <div class="buttons">
-      <button type="submit" class="button">Login</button>
-      <p>or</p>
-      <p>Already have an account?</p>
-      <a href="/register" class="button button-Login">Register</a>
+      <button
+        type="submit"
+        class="button button-Login"
+        style="display: inline-block"
+      >
+        Login
+      </button>
+      <p style="display: inline-block; margin-left: 70px">
+        Don't have an account?
+      </p>
+      <a href="/register">Register</a>
     </div>
   </form>
 </main>

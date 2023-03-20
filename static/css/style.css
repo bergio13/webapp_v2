@@ -34,6 +34,7 @@ main {
 }
 
 h1 {
+  margin-top: 0;
   font-size: 50px;
   font-family: "Rubik Iso", cursive;
   font-weight: bold;
@@ -156,6 +157,15 @@ h4 {
   transform: rotate(-180deg);
 }
 
+.navbar:hover {
+  width: 13rem;
+}
+
+.navbar:hover .link-text {
+  display: inline;
+  transition: opacity var(--transition-speed);
+}
+
 @keyframes moveRotate {
   0% {
     transform: translate(-50%, -50%) rotate(0deg);
@@ -167,7 +177,7 @@ h4 {
     transform: translate(-50%, -50%) rotate(720deg);
   }
   75% {
-    transform: translate(75%, 50%) rotate(1080deg);
+    transform: translate(50%, 75%) rotate(1080deg);
   }
 
   100% {
@@ -185,6 +195,13 @@ form {
   position: relative;
   border-bottom: 2px dashed var(--text-primary);
   margin: 4rem auto 1rem;
+}
+
+.field-add {
+  width: 100%;
+  position: relative;
+  border-bottom: 2px dashed var(--text-primary);
+  margin: 1rem auto 1rem;
 }
 
 .label {
@@ -279,14 +296,67 @@ form {
   background: var(--text-tertiary);
 }
 
+.button-Login:hover {
+  background: rgb(255, 0, 204);
+  color: var(--bg-primary);
+}
+
+select {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 1rem 1rem;
+  font-family: inherit;
+  font-size: inherit;
+  color: yellowgreen;
+  outline: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.month {
+  position: relative;
+  margin: 1rem 1rem;
+  color: yellowgreen;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.number {
+  position: relative;
+  margin: 1rem 1rem;
+  color: yellowgreen;
+  border-color: var(--text-tertiary);
+  background: transparent;
+  font-weight: bold;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.radio {
+  position: relative;
+  margin: 1rem 1rem;
+}
+
 a {
   text-decoration: none;
+  transition: var(--transition-speed);
+}
+
+a:hover {
+  color: rgb(255, 0, 204);
 }
 
 .alert {
   color: var(--bg-primary);
   padding: 1rem;
   margin-left: 25%;
+}
+
+ul.add li {
+  display: inline;
 }
 
 /* Small screens */
@@ -320,14 +390,5 @@ a {
     width: 5rem;
     height: 100vh;
     top: 0;
-  }
-
-  .navbar:hover {
-    width: 15rem;
-  }
-
-  .navbar:hover .link-text {
-    display: inline;
-    transition: opacity var(--transition-speed);
   }
 }
