@@ -117,12 +117,12 @@ h4 {
   margin: 0 1.5rem;
 }
 
-.fa-primary {
-  color: yellow;
+.fa-secondary {
+  color: rgb(0, 255, 255);
 }
 
-.fa-secondary {
-  color: #b026ff;
+.fa-primary {
+  color: rgb(255, 0, 204);
 }
 
 .fa-primary,

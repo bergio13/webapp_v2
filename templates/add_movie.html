@@ -9,16 +9,22 @@ content %}
         type="text"
         class="input"
         id="title"
+        name="title"
         placeholder=""
+        required
       />
     </div>
-    <div class="field field-add">
+    <div class="field-add">
       <label for="year">Year</label>
       <input
-        type="text"
-        class="input"
+        type="number"
+        class="number"
         id="year"
+        name="year"
         placeholder=""
+        max="2023"
+        min="1890"
+        required
       />
     </div>
     <div class="field field-add">
@@ -27,12 +33,14 @@ content %}
         type="text"
         class="input"
         id="director"
+        name="director"
         placeholder=""
+        required
       />
     </div>
     <div class="field-add select">
       <label for="genre">Genre</label>
-      <select id="genre">
+      <select id="genre" name="genre">
         <option value="Action">Action</option>
         <option value="Adventure">Adventure</option>
         <option value="Animation">Animation</option>
@@ -57,10 +65,12 @@ content %}
     <div class="field-add">
       <label for="date">When did you watch it?</label>
       <input
-        type="month"
+        type="date"
         class="month"
         id="date"
+        name="date"
         placeholder=""
+        required
       />
     </div>
     <div class="field-add">
@@ -68,21 +78,23 @@ content %}
       <input
         type="number"
         class="number"
-        id="actors"
+        id="rating"
+        name="rating"
         placeholder=""
         max="10"
         min="0"
+        required
       />
     </div>
     <div class="field-add">
       <label for="rewatch">Rewatch</label>
-      <input type="radio" class="radio" name="rewatch" id="rewatch_yes">Yes</input>
-      <input type="radio" class="radio" name="rewatch" id="rewatch_no" checked>No</input>
+      <input type="radio" class="radio" name="rewatch" id="rewatch_yes" value=1>Yes</input>
+      <input type="radio" class="radio" name="rewatch" id="rewatch_no" value=0 checked>No</input>
     </div>
     <div class="field-add">
       <label for="tv">Tv show</label>
-      <input type="radio" class="radio" name="tv" id="tv_yes">Yes</input>
-      <input type="radio" class="radio" name="tv"  id="tv_no" checked>No</input>
+      <input type="radio" class="radio" name="tv" id="tv_yes" value=1>Yes</input>
+      <input type="radio" class="radio" name="tv"  id="tv_no" value=0 checked>No</input>
     </div>
     <button type="submit" class="button">Submit</button>
   </form>

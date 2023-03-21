@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_id
+from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_id, insert_movies, get_movies
 import os
 
 app = Flask(__name__)
@@ -33,12 +33,17 @@ def hello():
 
 @app.route('/lista')
 def lista():
-    try:
-        users = load_users_from_db()
-    except:
-        users = []
-        flash('Something went wrong, please refresh the page', category='error')
-    return render_template('lista.html', users=users, months=months)
+    if 'loggedin' in session:
+        try:
+            movies = get_movies(session['id'])
+            print(movies)
+        except:
+            movies = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        flash('You must be logged in to view this page', category='error')
+        return render_template('lista.html', movies=[], months=months)
+    return render_template('lista.html', movies=movies, months=months)
 
 @app.route("/users/<name>")
 def show_user_profile(name):
@@ -135,14 +140,26 @@ def logout():
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
     if request.method == "POST":
-        title = request.form.get("title")
-        director = request.form.get("director")
-        year = request.form.get("year")
-        date = request.form.get("date")
-        genre = request.form.get("genre")
-        rating = request.form.get("rating")
-        rewatch = request.form.get("rewatch")
-        tv = request.form.get("tv")
+        try:
+            if 'loggedin' in session:
+                parent_id = get_user_id(session['id'])
+                title = request.form["title"]
+                director = request.form["director"]
+                year = request.form["year"]
+                date = request.form["date"]
+                genre = request.form["genre"]
+                rating = request.form["rating"]
+                rewatch = request.form["rewatch"] # 0 false, 1 true
+                tv = request.form["tv"]
+                print(title, director, year, date, genre, rating, rewatch, tv, session['id'])
+                insert_movies(title, director, genre, year, date, rating, rewatch, tv, session['id'])
+                flash('Movie added', category='success')
+            else:
+                flash('You need to be logged in to add a movie', category='error')
+        except:
+            redirect('/add_movie')
+            flash('Something went wrong, please try again', category='error')
+            
     return render_template('add_movie.html')
         
 
