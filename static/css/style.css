@@ -12,7 +12,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: white;
+  background: linear-gradient(90deg, #6649b8, #29292e);
   color: black;
 }
 
@@ -36,9 +36,9 @@ main {
 h1 {
   margin-top: 0;
   font-size: 50px;
-  font-family: "Rubik Iso", cursive;
+  font-family: "Russo One", cursive; /* font-family: "Rubik Iso", cursive; */
   font-weight: bold;
-  color: #6649b8;
+  color: yellow;
   text-align: left;
   margin-left: 1%;
 }
@@ -59,6 +59,26 @@ h4 {
   margin-left: 1%;
 }
 
+a {
+  color: rgb(255, 0, 204);
+  text-decoration: none;
+  transition: var(--transition-speed);
+}
+
+a:hover {
+  color: rgb(0, 255, 255);
+}
+
+.alert {
+  color: var(--bg-primary);
+  padding: 1rem;
+  margin-left: 25%;
+}
+
+ul.add li {
+  display: inline;
+}
+
 #banner {
   width: 15%;
   height: 15%;
@@ -67,6 +87,7 @@ h4 {
   margin-right: 10%;
 }
 
+/* -----------------------------------Navbar styling----------------------------------------------------------------- */
 .navbar {
   position: fixed;
   background-color: var(--bg-primary);
@@ -166,6 +187,7 @@ h4 {
   transition: opacity var(--transition-speed);
 }
 
+/* -----------------------------------Animation styling----------------------------------------------------------------- */
 @keyframes moveRotate {
   0% {
     transform: translate(-50%, -50%) rotate(0deg);
@@ -185,6 +207,13 @@ h4 {
   }
 }
 
+canvas {
+  background: linear-gradient(45deg, #6649b8, #141418);
+  position: absolute;
+  z-index: -1;
+}
+
+/* -----------------------------------Form styling----------------------------------------------------------------- */
 form {
   max-width: 500px;
   margin-left: 25%;
@@ -293,11 +322,11 @@ form {
 
 .button-Login {
   margin-top: 2rem;
-  background: var(--text-tertiary);
+  background: var(--text-primary);
 }
 
 .button-Login:hover {
-  background: rgb(255, 0, 204);
+  background: rgb(0, 255, 255);
   color: var(--bg-primary);
 }
 
@@ -338,25 +367,6 @@ select {
 .radio {
   position: relative;
   margin: 1rem 1rem;
-}
-
-a {
-  text-decoration: none;
-  transition: var(--transition-speed);
-}
-
-a:hover {
-  color: rgb(255, 0, 204);
-}
-
-.alert {
-  color: var(--bg-primary);
-  padding: 1rem;
-  margin-left: 25%;
-}
-
-ul.add li {
-  display: inline;
 }
 
 /* Small screens */

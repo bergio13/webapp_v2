@@ -31,6 +31,10 @@ months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'Augus
 def hello():
     return render_template('home.html', session=session)
 
+@app.route('/animation')
+def animation():
+    return render_template('animation.html')
+
 @app.route('/lista')
 def lista():
     if 'loggedin' in session:
