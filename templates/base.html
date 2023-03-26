@@ -22,13 +22,15 @@
   </head>
 
   <body>
-    {% if get_flashed_messages(with_categories=true) %}
-    <header>
-      <div class="alert alert-primary mb-0 text-center" role="alert">
-        {{ get_flashed_messages() | join(" ") }}
-      </div>
-    </header>
-    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
     <nav class="navbar">
       <ul class="navbar-nav">

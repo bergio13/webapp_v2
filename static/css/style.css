@@ -12,7 +12,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(90deg, #6649b8, #29292e);
+  background: linear-gradient(45deg, #6649b8, #141418);
   color: black;
 }
 
@@ -59,6 +59,14 @@ h4 {
   margin-left: 1%;
 }
 
+.lista {
+  font-size: 23px;
+  font-weight: normal;
+  text-align: justify;
+  margin-left: 10%;
+  margin-bottom: 0.75%;
+}
+
 a {
   color: rgb(255, 0, 204);
   text-decoration: none;
@@ -85,6 +93,60 @@ ul.add li {
   object-fit: cover;
   float: right;
   margin-right: 10%;
+}
+
+.flashes {
+  text-align: center;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
+}
+
+/* -----------------------------------Grid styling----------------------------------------------------------------- */
+.column {
+  float: left;
+  width: 24%;
+  padding: 45.5px 60px;
+  text-align: center;
+  cursor: pointer;
+  color: #ececec;
+  background-color: #2a2a37;
+  transition: 200ms ease;
+  border: #6649b8 1px solid;
+}
+
+.column:hover {
+  background-color: #6649b8;
+}
+
+.containerTab {
+  position: relative;
+  width: 96%;
+  padding: 0 16px;
+  color: #ececec;
+  display: none;
+  overflow: hidden;
+  background-color: #2a2a37;
+  border: #6649b8 1px solid;
+}
+
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.closebtn {
+  float: right;
+  color: yellow;
+  font-size: 35px;
+  cursor: pointer;
+  top: 0;
 }
 
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
@@ -139,11 +201,11 @@ ul.add li {
 }
 
 .fa-secondary {
-  color: rgb(0, 255, 255);
+  color: yellow;
 }
 
 .fa-primary {
-  color: rgb(255, 0, 204);
+  color: var(--text-tertiary);
 }
 
 .fa-primary,
@@ -267,7 +329,7 @@ form {
   display: block;
   width: 100%;
   height: 4px;
-  background: var(--text-tertiary);
+  background: yellow;
   transform: scaleX(0);
   transform-origin: 0%;
   transition: transform 500ms ease;
@@ -357,7 +419,7 @@ select {
   position: relative;
   margin: 1rem 1rem;
   color: yellowgreen;
-  border-color: var(--text-tertiary);
+  border-color: yellow;
   background: transparent;
   font-weight: bold;
   font-size: 1rem;
@@ -369,7 +431,7 @@ select {
   margin: 1rem 1rem;
 }
 
-/* Small screens */
+/*----------------------------------------------------- Small screens--------------------------------------------------------- */
 @media only screen and (max-width: 600px) {
   .navbar {
     bottom: 0;

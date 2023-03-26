@@ -2,30 +2,14 @@ from flask import Flask, render_template, jsonify, request, flash, redirect, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_id, insert_movies, get_movies
 import os
+import datetime
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-
-#class User(db.Model, UserMixin):
-#    __tablename__ = 'users'
-#
-#    id = Column(Integer, primary_key=True, autoincrement=True)
-#    username = Column(String(50), unique=True, nullable=False)
-#    email = Column(String(120), unique=True, nullable=False)
-#    password = Column(String(120), nullable=False)
-#    
-#    def __init__(self, username, email, password):
-#        self.username = username
-#        self.email = email
-#        self.password = password
-#
-##    def __repr__(self):
-##        return f"<User(username='{self.username}', email='{self.email}')>"
-##
-   
+year_now = datetime.date.today().year
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
+dict_months = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
 
 @app.route('/')
 def hello():
@@ -47,7 +31,7 @@ def lista():
     else:
         flash('You must be logged in to view this page', category='error')
         return render_template('lista.html', movies=[], months=months)
-    return render_template('lista.html', movies=movies, months=months)
+    return render_template('lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months)
 
 @app.route("/users/<name>")
 def show_user_profile(name):
@@ -105,11 +89,13 @@ def login():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        
         email = request.form['email']
         password = request.form['password']
-        
-        users = load_users_from_email(email)
+        try:
+            users = load_users_from_email(email)
+        except:
+            users = []
+            flash('Something went wrong, please try again', category='error')
         if users != []:
             if users[0]['email'] == email and users[0]['password'] == password:
                 session['loggedin'] = True
@@ -120,8 +106,9 @@ def login():
          # If account exists in accounts table in out database
             else:
             # Account doesnt exist or username/password incorrect
-                flash ('Incorrect username/password!')
-
+                flash ('Incorrect username/password!', category='error')
+        else:
+            flash ('Something went wrong, please try again', category='error')
     # User reached route via GET (as by clicking a link or via redirect)
     return render_template("login.html", session=session)
 
