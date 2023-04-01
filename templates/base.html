@@ -16,7 +16,7 @@
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined">
     <link rel="stylesheet" href="static/css/style.css" />
     {% endblock %}
   </head>
@@ -36,7 +36,7 @@
       <ul class="navbar-nav">
         <li class="logo">
           <a href="/animation" class="nav-link">
-            <span class="link-text logo-text">Lista</span>
+            <span class="link-text logo-text">Cineto</span>
             <svg
               aria-hidden="true"
               focusable="false"
@@ -185,9 +185,8 @@
         </li>
       </ul>
     </nav>
-
-    {% block content %}
-    <main></main>
+    {% block body %}
+    {% block content %}{% endblock %}
     {% endblock %}
   </body>
 </html>

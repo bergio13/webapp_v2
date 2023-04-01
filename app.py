@@ -8,16 +8,36 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 year_now = datetime.date.today().year
+month_now = datetime.date.today().month
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 dict_months = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
+months_dict = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11, 12: 12}
 
 @app.route('/')
 def hello():
-    return render_template('home.html', session=session)
+    if 'loggedin' in session:
+        try:
+            movies = get_movies(session['id'])
+            print(movies)
+        except:
+            movies = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return render_template('home.html', movies=[], months=months)
+    return render_template('home.html', session=session, movies=movies, month=month_now, now=year_now, dict_months=months_dict)
 
 @app.route('/animation')
 def animation():
-    return render_template('animation.html')
+    if 'loggedin' in session:
+        try:
+            movies = get_movies(session['id'])
+            print(movies)
+        except:
+            movies = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return render_template('animation.html', movies=[], months=months)
+    return render_template('animation.html', session=session, movies=movies, month=month_now, now=year_now, dict_months=months_dict)
 
 @app.route('/lista')
 def lista():

@@ -1,13 +1,48 @@
-{% extends 'base.html' %} {% block title %}Profile{% endblock %} {% block
-content %}
-<main>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <h1>Profile</h1>
-        <p>{{ user }}</p>
+{% extends 'base.html' %} {% block title %}Profile{% endblock %} {%block body%}
+{% block content%}
+<div class="grid-container">
+  <header class="header">
+    <div class="header-left">
+      <span class="material-icons-outlined"> search </span>
+      <span class="material-icons-outlined"> filter_list </span>
+    </div>
+    <div class="header-right">
+      <span class="material-icons-outlined"> logout </span>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="main-cards">
+      <div class="card">
+        <div class="card-inner">
+          <h2>Personal</h2>
+        </div>
+        <h1>{{user.username}}</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Personal</h2>
+        </div>
+        <h1>{{user.username}}</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Personal</h2>
+        </div>
+        <h1>{{user.username}}</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Personal</h2>
+        </div>
+        <h1>{{user.username}}</h1>
       </div>
     </div>
-  </div>
-</main>
+  </main>
+</div>
+{% endblock %}
+<script src="static/js/profile.js"></script>
 {% endblock %}

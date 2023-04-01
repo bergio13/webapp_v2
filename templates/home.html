@@ -1,5 +1,5 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
-%}
+{% extends "base.html" %} {% block title %}Home{% endblock %} {%block body
+%}{%block content %}
 <main>
   <h1>Meglio di un file Word</h1>
   <img
@@ -7,7 +7,24 @@
     id="banner"
     src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Simple_Stick_Figure.svg/640px-Simple_Stick_Figure.svg.png"
   />
-  <h3>Film visti questo mese</h3>
-  <a href="/add_movie">Aggiungi un film</a>
+  <h3 style="display: inline-block">Film visti questo mese</h3>
+  <a href="/add_movie" style="margin-left: 2%; color: yellow"
+    >Aggiungi un film</a
+  >
+  <ol class="ol-home">
+    {% for movie in movies%} {% if dict_months[movie['v_date'].month] == month
+    %} {% if movie['rewatch']== 1 %}
+    <li class="lista-home" style="color: brown">
+      {% elif movie['p_year'] == now %}
+    </li>
+
+    <li class="lista-home" style="color: lightgreen">{% else %}</li>
+
+    <li class="lista-home">
+      {% endif %} {{movie['movie'].upper()}} ({{movie['p_year']}}) -
+      {{movie['director'].upper()}}, {{movie['genre']}}, {{movie['rating']}}
+    </li>
+    {% endif %} {% endfor %}
+  </ol>
 </main>
-{% endblock %}
+{% endblock %} {% endblock %}
