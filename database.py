@@ -101,3 +101,22 @@ def get_movies(parent_id):
             lista_dict["tv_show"] = row[8]     
             lista_dicts.append(lista_dict)      
         return lista_dicts
+
+def get_monthly_movies(parent_id, month):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM lista WHERE parent_id = :parent_id and MONTH(v_date) = :month').bindparams(parent_id=parent_id, month=month)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["id"] = row[0]
+            lista_dict["movie"] = row[1]
+            lista_dict["director"] = row[2]
+            lista_dict["genre"] = row[3]
+            lista_dict["p_year"] = row[4]
+            lista_dict["v_date"] = row[5]
+            lista_dict["rating"] = row[6]
+            lista_dict["rewatch"] = row[7]
+            lista_dict["tv_show"] = row[8]     
+            lista_dicts.append(lista_dict)      
+        return lista_dicts

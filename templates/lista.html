@@ -1,14 +1,26 @@
-{% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block content
-%}
+{% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block body%}
+{% block content %}
 <script src="static/js/grid.js"></script>
+
 <main style="background-color: #2a2a37">
   <div>
-    <h1 style="margin-bottom: 2px">Movie List</h1>
+    <h1 style="margin-bottom: 2px; display: inline-block">My List</h1>
+    <brown
+      ="rewatch,"
+      style="
+        margin-left: 10px;
+        font-size: 15px;
+        color: #b3b3b3;
+        display: inline-block;
+      "
+    >
+      (Color legend: brown=rewatch, green=2023/watched in the cinema)
+    </brown>
   </div>
   <div class="row">
     {% for month in months %}
     <div class="column" onclick="openTab('{{month}}');">
-      <h4>{{month}}</h4>
+      <h4 class="title">{{month}}</h4>
     </div>
     <div id="{{month}}" class="containerTab">
       <span onclick="this.parentElement.style.display='none';" class="closebtn"
@@ -34,4 +46,4 @@
     {% endfor %}
   </div>
 </main>
-{% endblock %}
+{% endblock %} {% endblock %}

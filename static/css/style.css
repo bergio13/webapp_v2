@@ -81,13 +81,13 @@ h4 {
 }
 
 a {
-  color: rgb(255, 0, 204);
+  color: yellow;
   text-decoration: none;
   transition: var(--transition-speed);
 }
 
 a:hover {
-  color: rgb(0, 255, 255);
+  color: rgb(255, 0, 204) /*rgb(0, 255, 255)*/;
 }
 
 .alert {
@@ -110,10 +110,14 @@ ul.add li {
 
 .flashes {
   text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
 .error {
   color: red;
+  padding: 0;
+  margin: 0;
 }
 
 .success {
@@ -135,6 +139,14 @@ ul.add li {
   background-color: #2a2a37;
   transition: 200ms ease;
   border: #6649b8 1px solid;
+}
+
+.title {
+  font-size: 25px;
+  font-weight: normal;
+  text-align: center;
+  margin-bottom: 2%;
+  margin-left: 1%;
 }
 
 .column:hover {
@@ -458,6 +470,7 @@ select {
     "main main main";
   height: 100%;
 }
+
 .material-icons-outlined {
   margin-top: 0.5rem;
   font-size: 35px;
@@ -472,7 +485,7 @@ select {
   justify-content: space-between;
   padding: 0 30px 0 30px;
   box-shadow: 0 6px 7px -3px rgba(0, 0, 0, 0.35);
-  background-color: yellow;
+  background-color: rgba(0, 0, 0, 0.35);
 }
 
 .main-container {
@@ -481,6 +494,18 @@ select {
   overflow-y: auto;
   padding: 20px 20px;
   color: rgb(255, 255, 255, 0.95);
+}
+
+.main-container::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+.main-container::-webkit-scrollbar-track {
+  background: indigo;
+}
+
+.main-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .main-title {
@@ -523,6 +548,30 @@ select {
   justify-content: space-between;
   align-items: center;
 }
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 60px;
+}
+
+.charts-card {
+  background-color: #263043;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  -webkit-column-break-inside: avoid;
+  border-radius: 5px;
+  z-index: -1;
+}
+
+.chart-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 /*----------------------------------------------------- Small screens--------------------------------------------------------- */
 @media only screen and (max-width: 600px) {
   .navbar {
@@ -545,6 +594,17 @@ select {
 
   main {
     margin: 0;
+  }
+
+  .main-cards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+
+  .charts {
+    grid-template-columns: 1fr;
+    margin-top: 30px;
   }
 }
 

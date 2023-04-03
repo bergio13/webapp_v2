@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_id, insert_movies, get_movies
+from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_id, insert_movies, get_movies, get_monthly_movies
 import os
 import datetime
 
@@ -11,45 +11,33 @@ year_now = datetime.date.today().year
 month_now = datetime.date.today().month
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 dict_months = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
-months_dict = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11, 12: 12}
 
 @app.route('/')
 def hello():
     if 'loggedin' in session:
         try:
-            movies = get_movies(session['id'])
+            movies = get_monthly_movies(session['id'], month_now)
             print(movies)
         except:
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
     else:
-        return render_template('home.html', movies=[], months=months)
-    return render_template('home.html', session=session, movies=movies, month=month_now, now=year_now, dict_months=months_dict)
+        return render_template('home.html', movies=[])
+    return render_template('home.html', session=session, movies=movies, now=year_now)
 
 @app.route('/animation')
 def animation():
-    if 'loggedin' in session:
-        try:
-            movies = get_movies(session['id'])
-            print(movies)
-        except:
-            movies = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return render_template('animation.html', movies=[], months=months)
-    return render_template('animation.html', session=session, movies=movies, month=month_now, now=year_now, dict_months=months_dict)
+    return render_template('animation.html', session=session)
 
 @app.route('/lista')
 def lista():
     if 'loggedin' in session:
         try:
             movies = get_movies(session['id'])
-            print(movies)
         except:
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
     else:
-        flash('You must be logged in to view this page', category='error')
         return render_template('lista.html', movies=[], months=months)
     return render_template('lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months)
 
@@ -58,12 +46,13 @@ def show_user_profile(name):
     user = load_users_from_username(name)
     return jsonify(user)
 
-#@app.route('/api/about')
-#def list_about():
-#    data = get_user_id(1)
-#    user = User(id=data[0]['id'], username=data[0]['username'], email=data[0]['email'], password=data[0]['password'])
-#    return jsonify(data[0])
-##
+@app.route('/data')
+def list_about():
+    if 'loggedin' in session:
+        users = get_user_id(session['id'])
+        movies = get_movies(session['id'])
+    return jsonify(movies)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -123,7 +112,7 @@ def login():
                 session['email'] = users[0]['email']
                 flash ('Logged in successfully!', category='success')
                 return redirect('/')
-         # If account exists in accounts table in out database
+            # If account exists in accounts table in out database
             else:
             # Account doesnt exist or username/password incorrect
                 flash ('Incorrect username/password!', category='error')
@@ -136,7 +125,14 @@ def login():
 def profile():
     if 'loggedin' in session:
         users = get_user_id(session['id'])
-        return render_template('profile.html', user=users[0])
+        try:
+            movies = get_movies(session['id'])
+            length = len(movies)
+            lenght_month = len(get_monthly_movies(session['id'], month_now))
+        except:
+            movies = []
+            flash('Something went wrong, please refresh the page', category='error')
+        return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month)
     return redirect('/login')
 
 @app.route('/logout')
@@ -145,7 +141,7 @@ def logout():
     session.pop('loggedin', None)
     session.pop('id', None)
     session.pop('email', None)
-   # Redirect to login page
+    # Redirect to login page
     return redirect('/')
 
 @app.route('/add_movie', methods=['GET', 'POST'])

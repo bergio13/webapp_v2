@@ -7,7 +7,7 @@
       <span class="material-icons-outlined"> filter_list </span>
     </div>
     <div class="header-right">
-      <span class="material-icons-outlined"> logout </span>
+      <span class="material-icons-outlined"><a href="/logout">logout</a> </span>
     </div>
   </header>
 
@@ -15,34 +15,52 @@
     <div class="main-cards">
       <div class="card">
         <div class="card-inner">
-          <h2>Personal</h2>
+          <h2>Total</h2>
+        </div>
+        <h1>{{length}}</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>This month</h2>
+        </div>
+        <h1>{{lmonth}}</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Favourite genre</h2>
         </div>
         <h1>{{user.username}}</h1>
       </div>
 
       <div class="card">
         <div class="card-inner">
-          <h2>Personal</h2>
+          <h2>Average rating</h2>
         </div>
         <h1>{{user.username}}</h1>
       </div>
+    </div>
 
-      <div class="card">
-        <div class="card-inner">
-          <h2>Personal</h2>
-        </div>
-        <h1>{{user.username}}</h1>
+    <div class="charts">
+      <div class="charts-card">
+        <h2 class="chart-title">Chart</h2>
+        <div id="bar-chart"></div>
       </div>
 
-      <div class="card">
-        <div class="card-inner">
-          <h2>Personal</h2>
-        </div>
-        <h1>{{user.username}}</h1>
+      <div class="charts-card">
+        <h2 class="chart-title">Chart 2</h2>
+        <div id="line-chart"></div>
       </div>
     </div>
   </main>
 </div>
 {% endblock %}
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.37.2/apexcharts.min.js"
+  integrity="sha512-yWglrpRYz/pD0pp1cSpWmSVvcFwuuc739X4WHy7hRKB11BGijnz7fuqKRQB7Ksot42IN365OGvuOhSgUejKbmA=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
 <script src="static/js/profile.js"></script>
 {% endblock %}
