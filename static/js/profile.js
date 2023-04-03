@@ -31,6 +31,7 @@ async function main() {
   jsondata = await getJson("/data");
 
   jsondata.forEach((item) => {
+    console.log(item);
     if (genres[item.genre]) {
       genres[item.genre] += 1;
     } else {

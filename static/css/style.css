@@ -128,24 +128,28 @@ ul.add li {
   color: #0b0808;
 }
 
-/* -----------------------------------Grid styling----------------------------------------------------------------- */
+/* -----------------------------------List styling----------------------------------------------------------------- */
 .column {
   float: left;
   width: 24%;
-  padding: 45.5px 60px;
+  padding: 46.5px 60px;
   text-align: center;
   cursor: pointer;
   color: #ececec;
   background-color: #2a2a37;
   transition: 200ms ease;
-  border: #6649b8 1px solid;
+  border-width: 1px;
+  margin: 0px;
+  border-style: solid;
+  border-image: linear-gradient(to right, yellow, rgb(106, 235, 252)) 1 100%;
+  border-image-slice: 1;
 }
 
 .title {
-  font-size: 25px;
+  font-size: 24px;
   font-weight: normal;
   text-align: center;
-  margin-bottom: 2%;
+  margin-bottom: 2.3%;
   margin-left: 1%;
 }
 
@@ -161,7 +165,10 @@ ul.add li {
   display: none;
   overflow: hidden;
   background-color: #1d2634;
-  border: #6649b8 1px solid;
+  border-width: 1px;
+  border-style: solid;
+  border-image: linear-gradient(to right, yellow, rgb(106, 235, 252)) 1 100%;
+  border-image-slice: 1;
 }
 
 .row::after {
@@ -176,6 +183,43 @@ ul.add li {
   font-size: 35px;
   cursor: pointer;
   top: 0;
+}
+
+table {
+  width: 98%;
+  font-size: 20px;
+  text-align: left;
+  margin-top: 1%;
+  margin-bottom: 1%;
+  border-collapse: collapse;
+  border-width: 1px;
+}
+
+thead tr {
+  color: black;
+  text-align: left;
+  background: linear-gradient(to right, yellow, rgb(106, 235, 252));
+}
+
+th,
+td {
+  padding: 12px 15px;
+}
+
+tbody tr {
+  border-bottom: 1px solid #6649b8;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #242e3e;
+}
+
+tbody tr:last-child {
+  border-bottom: 2px solid #6649b8;
+}
+
+tbody tr:hover {
+  background-color: #6649b8;
 }
 
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
@@ -529,19 +573,19 @@ select {
 }
 
 .card:first-child {
-  background-color: #2962ff;
+  background: linear-gradient(30deg, #ff00cc, #21eef5eb);
 }
 
 .card:nth-child(2) {
-  background-color: #00bfa5;
+  background: linear-gradient(30deg, #9feee1, #04927f);
 }
 
 .card:nth-child(3) {
-  background-color: #d50000;
+  background: linear-gradient(210deg, yellow, #08e43f);
 }
 
 .card:nth-child(4) {
-  background-color: #ff6d00;
+  background: linear-gradient(30deg, #c0b6bf, #c852da);
 }
 .card-inner {
   display: flex;

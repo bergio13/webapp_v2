@@ -129,10 +129,16 @@ def profile():
             movies = get_movies(session['id'])
             length = len(movies)
             lenght_month = len(get_monthly_movies(session['id'], month_now))
+            rating = 0
+            genres = {}
+            for movie in movies:
+                rating += movie['rating']
+                genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
+                favorite_genre = max(genres, key=genres.get)
         except:
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
-        return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month)
+        return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=round(rating/length, 2), favorite_genre=favorite_genre)
     return redirect('/login')
 
 @app.route('/logout')
