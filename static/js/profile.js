@@ -30,19 +30,106 @@ async function getJson(url) {
 async function main() {
   jsondata = await getJson("/data");
 
-  jsondata.forEach((item) => {
-    console.log(item);
-    if (genres[item.genre]) {
-      genres[item.genre] += 1;
-    } else {
-      genres[item.genre] = genres[item.genre];
-    }
-  });
+  for (var i = 0; i < jsondata.length; ++i) {
+    genres[jsondata[i].genre] += 1;
+  }
+
   console.log(jsondata);
   console.log(genres);
-  const sortedDict = Object.entries(genres).sort((a, b) => a[1] - b[1]);
-  const top4Values = sortedDict.slice(0, 4).map((item) => item[1]);
-  console.log(top4Values);
+  const top6 = Object.entries(genres)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 6);
+  const top6Keys = top6.map(([n]) => n);
+  const top6Values = top6.map(([, v]) => v);
+  console.log(top6Keys);
+  console.log(top6Values);
+
+  //BAR CHART
+  var barChartOptions = {
+    series: [
+      {
+        name: "Genres",
+        data: top6Values,
+      },
+    ],
+    chart: {
+      height: 350,
+      type: "bar",
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 10,
+        dataLabels: {
+          position: "top", // top, center, bottom
+        },
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      offsetY: -20,
+      style: {
+        fontSize: "12px",
+        colors: ["#fff"],
+      },
+    },
+
+    xaxis: {
+      categories: top6Keys,
+      position: "top",
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+      crosshairs: {
+        fill: {
+          type: "gradient",
+          gradient: {
+            colorFrom: "#D8E3C6",
+            colorTo: "#CED1E6",
+            stops: [0, 100],
+            opacityFrom: 0.4,
+            opacityTo: 0.9,
+          },
+        },
+      },
+      tooltip: {
+        enabled: true,
+      },
+    },
+    yaxis: {
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+      labels: {
+        show: false,
+      },
+    },
+    title: {
+      text: "Your 6 Most Watched Genres",
+      floating: true,
+      offsetY: 330,
+      align: "center",
+      style: {
+        color: "#fff",
+      },
+    },
+  };
+
+  var barChart = new ApexCharts(
+    document.querySelector("#bar-chart"),
+    barChartOptions
+  );
+  barChart.render();
 }
 
 main();
@@ -131,7 +218,7 @@ var lineChart = new ApexCharts(
 lineChart.render();
 
 //BAR CHART
-var barchartoptions = {
+/*var barchartoptions = {
   series: [
     {
       name: "PRODUCT A",
@@ -228,4 +315,4 @@ var barchart = new ApexCharts(
   document.querySelector("#bar-chart"),
   barchartoptions
 );
-barchart.render();
+barchart.render(); */

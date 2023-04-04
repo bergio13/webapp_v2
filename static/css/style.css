@@ -286,11 +286,6 @@ tbody tr:hover {
   transition: var(--transition-speed);
 }
 
-.rotate {
-  transform: translate(-50%, -50%) rotate(0deg);
-  animation: moveRotate 13s linear infinite;
-}
-
 .logo {
   font-weight: bold;
   text-transform: uppercase;
@@ -323,6 +318,10 @@ tbody tr:hover {
 }
 
 /* -----------------------------------Animation styling----------------------------------------------------------------- */
+.rotate {
+  transform: translate(-50%, -50%) rotate(0deg);
+  animation: moveRotate 13s linear infinite;
+}
 @keyframes moveRotate {
   0% {
     transform: translate(-50%, -50%) rotate(0deg);
@@ -343,9 +342,15 @@ tbody tr:hover {
 }
 
 canvas {
-  background: linear-gradient(45deg, #6649b8, #141418);
+  background: linear-gradient(
+    45deg,
+    #141418,
+    #6649b8,
+    gold
+  ); /* rgb(125, 232, 246) */
   position: absolute;
   z-index: -1;
+  animation: canvasAnimation 20s ease-in-out infinite;
 }
 
 /* -----------------------------------Form styling----------------------------------------------------------------- */

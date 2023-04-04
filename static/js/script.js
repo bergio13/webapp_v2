@@ -25,6 +25,7 @@ class Particle {
       "rgb(255, 0, 204)",
       "indigo",
       "rgb(153,50,204)",
+      "#7d05f5",
     ];
     this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
   }
@@ -74,7 +75,7 @@ class Effect {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
     this.particles = [];
-    this.numberOfParticles = 2000;
+    this.numberOfParticles = 1500;
     this.cellSize = 6;
     this.cols;
     this.rows;
@@ -160,3 +161,29 @@ function animate() {
 }
 
 animate();
+
+//Text animation
+window.addEventListener("load", () => {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  document.querySelector("h1").onmouseover = (event) => {
+    let iterations = 0;
+
+    const interval = setInterval(() => {
+      event.target.innerText = event.target.innerText
+        .split("")
+        .map((letter, index) => {
+          if (index < iterations) {
+            return event.target.dataset.value[index];
+          }
+
+          return letters[Math.floor(Math.random() * 26)];
+        })
+        .join("");
+
+      if (iterations >= event.target.dataset.value.length) {
+        clearInterval(interval);
+      }
+      iterations += 1 / 4;
+    }, 100);
+  };
+});
