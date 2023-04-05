@@ -19,6 +19,21 @@ const genres = {
   Western: 0,
 };
 
+const months = {
+  0: 0,
+  1: 0,
+  2: 0,
+  3: 0,
+  4: 0,
+  5: 0,
+  6: 0,
+  7: 0,
+  8: 0,
+  9: 0,
+  10: 0,
+  11: 0,
+};
+
 let jsondata;
 
 async function getJson(url) {
@@ -34,6 +49,17 @@ async function main() {
     genres[jsondata[i].genre] += 1;
   }
 
+  for (var i = 0; i < jsondata.length; ++i) {
+    const date = new Date(jsondata[i].v_date);
+    const month = date.getMonth();
+    console.log(month);
+    months[month] += 1;
+    month_keys = Object.keys(months);
+    month_values = Object.values(months);
+    console.log(month_keys);
+  }
+
+  console.log(months);
   console.log(jsondata);
   console.log(genres);
   const top6 = Object.entries(genres)
@@ -67,22 +93,22 @@ async function main() {
             {
               from: 0,
               to: 5,
-              color: "#00bfa5",
+              color: "#CA3BE0",
             },
             {
               from: 5,
               to: 10,
-              color: "rgb(255, 0, 0)",
+              color: "#E8DB11",
             },
             {
               from: 10,
               to: 20,
-              color: "rgb(0, 255,0)",
+              color: "#992D2D",
             },
             {
               from: 20,
               to: 40,
-              color: "rgb(0, 0, 255)",
+              color: "#7217D6",
             },
           ],
           backgroundBarColors: [],
@@ -118,8 +144,8 @@ async function main() {
         fill: {
           type: "gradient",
           gradient: {
-            colorFrom: "indigo",
-            colorTo: "yellow",
+            colorFrom: "#D8E3F0",
+            colorTo: "#BED1E6",
             stops: [0, 100],
             opacityFrom: 0.2,
             opacityTo: 0.4,
@@ -157,189 +183,103 @@ async function main() {
     barChartOptions
   );
   barChart.render();
+
+  //LINE CHART
+  var lineChartOptions = {
+    series: [
+      {
+        name: "Monthly Watched Movies",
+        data: month_values,
+      },
+      /*{
+        name: "Low - 2013",
+        data: [12, 11, 14, 18, 17, 13, 13],
+      },*/
+    ],
+    chart: {
+      height: 350,
+      type: "line",
+      dropShadow: {
+        enabled: true,
+        color: "#000",
+        top: 18,
+        left: 7,
+        blur: 10,
+        opacity: 0.2,
+      },
+      toolbar: {
+        show: false,
+      },
+    },
+    colors: ["#DAD137", "#1846D6"],
+    dataLabels: {
+      enabled: true,
+    },
+    stroke: {
+      curve: "smooth",
+    },
+    markers: {
+      size: 1,
+    },
+    xaxis: {
+      categories: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+      title: {
+        text: "Month",
+        style: {
+          color: "#9aa0ac",
+        },
+      },
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Number of Movies",
+        style: {
+          color: "#9aa0ac",
+        },
+      },
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+      min: 0,
+      max: Math.max(...month_values) + 5,
+    },
+    legend: {
+      position: "top",
+      horizontalAlign: "right",
+      floating: true,
+      offsetY: -25,
+      offsetX: -5,
+      labels: {
+        useSeriesColors: true,
+      },
+    },
+  };
+
+  var lineChart = new ApexCharts(
+    document.querySelector("#line-chart"),
+    lineChartOptions
+  );
+  lineChart.render();
 }
 
 main();
-//LINE CHART
-var lineChartOptions = {
-  series: [
-    {
-      name: "High - 2013",
-      data: [28, 29, 33, 36, 32, 32, 33],
-    },
-    {
-      name: "Low - 2013",
-      data: [12, 11, 14, 18, 17, 13, 13],
-    },
-  ],
-  chart: {
-    height: 350,
-    type: "line",
-    dropShadow: {
-      enabled: true,
-      color: "#000",
-      top: 18,
-      left: 7,
-      blur: 10,
-      opacity: 0.2,
-    },
-    toolbar: {
-      show: false,
-    },
-  },
-  colors: ["#77B6EA", "#00bfa5"],
-  dataLabels: {
-    enabled: true,
-  },
-  stroke: {
-    curve: "smooth",
-  },
-  markers: {
-    size: 1,
-  },
-  xaxis: {
-    categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-    title: {
-      text: "Month",
-      style: {
-        color: "#9aa0ac",
-      },
-    },
-    labels: {
-      style: {
-        colors: "#9aa0ac",
-      },
-    },
-  },
-  yaxis: {
-    title: {
-      text: "Temperature",
-      style: {
-        color: "#9aa0ac",
-      },
-    },
-    labels: {
-      style: {
-        colors: "#9aa0ac",
-      },
-    },
-    min: 5,
-    max: 40,
-  },
-  legend: {
-    position: "top",
-    horizontalAlign: "right",
-    floating: true,
-    offsetY: -25,
-    offsetX: -5,
-    labels: {
-      useSeriesColors: true,
-    },
-  },
-};
-
-var lineChart = new ApexCharts(
-  document.querySelector("#line-chart"),
-  lineChartOptions
-);
-lineChart.render();
-
-//BAR CHART
-/*var barchartoptions = {
-  series: [
-    {
-      name: "PRODUCT A",
-      data: top4Values,
-    },
-    {
-      name: "PRODUCT B",
-      data: [13, 23, 20, 8, 13, 27],
-    },
-    {
-      name: "PRODUCT C",
-      data: [11, 17, 15, 15, 21, 14],
-    },
-    {
-      name: "PRODUCT D",
-      data: [21, 7, 25, 13, 22, 8],
-    },
-  ],
-  chart: {
-    type: "bar",
-    height: 350,
-    stacked: true,
-    toolbar: {
-      show: true,
-    },
-    zoom: {
-      enabled: true,
-    },
-  },
-  responsive: [
-    {
-      breakpoint: 480,
-      options: {
-        legend: {
-          position: "bottom",
-          offsetX: -10,
-          offsetY: 0,
-        },
-      },
-    },
-  ],
-  plotOptions: {
-    bar: {
-      horizontal: false,
-      borderRadius: 10,
-      dataLabels: {
-        total: {
-          enabled: true,
-          style: {
-            fontSize: "13px",
-            fontWeight: 900,
-            color: "#fff",
-          },
-        },
-      },
-    },
-  },
-  xaxis: {
-    type: "datetime",
-    categories: [
-      "01/01/2011 GMT",
-      "01/02/2011 GMT",
-      "01/03/2011 GMT",
-      "01/04/2011 GMT",
-      "01/05/2011 GMT",
-      "01/06/2011 GMT",
-    ],
-    labels: {
-      style: {
-        colors: "#9aa0ac",
-      },
-    },
-  },
-  yaxis: {
-    labels: {
-      style: {
-        colors: "#9aa0ac",
-      },
-    },
-  },
-  legend: {
-    position: "right",
-    offsetY: 40,
-    labels: {
-      useSeriesColors: true,
-    },
-  },
-  fill: {
-    opacity: 1,
-  },
-};
-
-var barchart = new ApexCharts(
-  document.querySelector("#bar-chart"),
-  barchartoptions
-);
-barchart.render(); */
