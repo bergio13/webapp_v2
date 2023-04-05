@@ -2,28 +2,54 @@
 %}{%block content %}
 <main>
   <h1>Meglio di un file Word</h1>
-  <img
+  <!--<img
     class="rotate"
     id="banner"
     src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Simple_Stick_Figure.svg/640px-Simple_Stick_Figure.svg.png"
-  />
-  <h3 style="display: inline-block">Film visti questo mese</h3>
-  <a href="/add_movie" style="margin-left: 2%; color: yellow"
-    >Aggiungi un film</a
-  >
-  <ol class="ol-home">
-    {% for movie in movies%} {% if movie['rewatch']== 1 %}
-    <li class="lista-home" style="color: brown">
+  />-->
+  <h3 style="display: inline-block; margin-bottom: 0; margin-top: 1%">
+    Film visti questo mese
+  </h3>
+  <a href="/add_movie" style="margin-left: 2%">Aggiungi un film</a>
+  <table class="table-home">
+    <thead>
+      <tr>
+        <th>Movie</th>
+        <th>Year</th>
+        <th>Director</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for movie in movies%} {% if movie['rewatch']== 1 %}
+      <tr style="color: brown">
+        <td>{{movie['movie'].upper()}}</td>
+
+        <td>{{movie['p_year']}}</td>
+
+        <td>{{movie['director'].upper()}}</td>
+        <td>{{movie['rating']}}</td>
+      </tr>
       {% elif movie['p_year'] == now %}
-    </li>
+      <tr style="color: green">
+        <td>{{movie['movie'].upper()}}</td>
 
-    <li class="lista-home" style="color: lightgreen">{% else %}</li>
+        <td>{{movie['p_year']}}</td>
 
-    <li class="lista-home">
-      {% endif %} {{movie['movie'].upper()}} ({{movie['p_year']}}) -
-      {{movie['director'].upper()}}, {{movie['genre']}}, {{movie['rating']}}
-    </li>
-    {% endfor %}
-  </ol>
+        <td>{{movie['director'].upper()}}</td>
+        <td>{{movie['rating']}}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td>{{movie['movie'].upper()}}</td>
+
+        <td>{{movie['p_year']}}</td>
+
+        <td>{{movie['director'].upper()}}</td>
+        <td>{{movie['rating']}}</td>
+      </tr>
+      {% endif %} {% endfor %}
+    </tbody>
+  </table>
 </main>
 {% endblock %} {% endblock %}

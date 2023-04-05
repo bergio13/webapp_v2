@@ -12,9 +12,20 @@
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(45deg, #6649b8, indigo);
+  background: linear-gradient(to bottom, #40c057 5%, #9775fa 95%);
   color: black;
   height: 100vh;
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+body:before {
+  content: "";
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: -1;
+  background: linear-gradient(to bottom, #40c057 5%, #9775fa 95%);
 }
 
 body::-webkit-scrollbar {
@@ -87,7 +98,7 @@ a {
 }
 
 a:hover {
-  color: rgb(255, 0, 204) /*rgb(0, 255, 255)*/;
+  color: rgb(0, 255, 255);
 }
 
 .alert {
@@ -100,13 +111,13 @@ ul.add li {
   display: inline;
 }
 
-#banner {
+/*#banner {
   width: 15%;
   height: 15%;
   object-fit: cover;
   float: right;
   margin-right: 10%;
-}
+}*/
 
 .flashes {
   text-align: center;
@@ -122,10 +133,6 @@ ul.add li {
 
 .success {
   color: green;
-}
-
-.ol-home {
-  color: #0b0808;
 }
 
 /* -----------------------------------List styling----------------------------------------------------------------- */
@@ -222,11 +229,26 @@ tbody tr:hover {
   background-color: #6649b8;
 }
 
+.table-home {
+  width: 93%;
+  font-size: 20px;
+  position: absolute;
+  z-index: 0;
+}
+.table-home tbody tr:nth-child(even) {
+  background-color: transparent;
+}
+
+.table-home tbody tr:hover {
+  background-color: #9feee1;
+}
+
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
 .navbar {
   position: fixed;
   background-color: var(--bg-primary);
   transition: 200ms ease;
+  z-index: 1;
 }
 
 .navbar-nav {
@@ -318,7 +340,7 @@ tbody tr:hover {
 }
 
 /* -----------------------------------Animation styling----------------------------------------------------------------- */
-.rotate {
+/*.rotate {
   transform: translate(-50%, -50%) rotate(0deg);
   animation: moveRotate 13s linear infinite;
 }
@@ -339,7 +361,7 @@ tbody tr:hover {
   100% {
     transform: translate(-50%, -50%) rotate(1440deg);
   }
-}
+}*/
 
 canvas {
   background: linear-gradient(
@@ -392,7 +414,7 @@ form {
 }
 
 .input:valid {
-  color: yellowgreen;
+  color: gold;
 }
 
 .input:invalid {
@@ -451,7 +473,7 @@ form {
 }
 
 .button:hover {
-  background: var(--text-secondary);
+  background: rgb(255, 0, 204);
   color: var(--bg-secondary);
 }
 
@@ -466,7 +488,7 @@ form {
 }
 
 .button-Login:hover {
-  background: rgb(0, 255, 255);
+  background: rgb(255, 0, 204);
   color: var(--bg-primary);
 }
 
@@ -477,16 +499,21 @@ select {
   padding: 1rem 1rem;
   font-family: inherit;
   font-size: inherit;
-  color: yellowgreen;
+  color: gold;
   outline: none;
   cursor: pointer;
+  font-weight: bold;
+}
+
+select option {
+  background: var(--bg-primary);
   font-weight: bold;
 }
 
 .month {
   position: relative;
   margin: 1rem 1rem;
-  color: yellowgreen;
+  color: gold;
   border: none;
   background: transparent;
   font-size: 1rem;
@@ -496,7 +523,7 @@ select {
 .number {
   position: relative;
   margin: 1rem 1rem;
-  color: yellowgreen;
+  color: gold;
   border-color: yellow;
   background: transparent;
   font-weight: bold;
@@ -518,8 +545,8 @@ select {
     "header header header"
     "main main main";
   height: 100%;
+  background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
 }
-
 .material-icons-outlined {
   margin-top: 0.5rem;
   font-size: 35px;
@@ -533,8 +560,7 @@ select {
   display: flex;
   justify-content: space-between;
   padding: 0 30px 0 30px;
-  box-shadow: 0 6px 7px -3px rgba(0, 0, 0, 0.35);
-  background-color: rgba(0, 0, 0, 0.35);
+  background-image: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
 }
 
 .main-container {
@@ -578,19 +604,19 @@ select {
 }
 
 .card:first-child {
-  background: linear-gradient(30deg, #ff00cc, #21eef5eb);
+  background: linear-gradient(to right, #7950f2 5%, #748ffc 95%);
 }
 
 .card:nth-child(2) {
-  background: linear-gradient(30deg, #9feee1, #04927f);
+  background: linear-gradient(to left, #fbda61 10%, #ff5acd 90%);
 }
 
 .card:nth-child(3) {
-  background: linear-gradient(210deg, yellow, #08e43f);
+  background: linear-gradient(to right, #82c91e 5%, #3bc9db 95%);
 }
 
 .card:nth-child(4) {
-  background: linear-gradient(30deg, #c0b6bf, #c852da);
+  background: linear-gradient(to right, #be4bdb 5%, #f783ac 95%);
 }
 .card-inner {
   display: flex;
@@ -602,7 +628,7 @@ select {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-  margin-top: 60px;
+  margin-top: 30px;
 }
 
 .charts-card {
@@ -612,7 +638,7 @@ select {
   box-sizing: border-box;
   -webkit-column-break-inside: avoid;
   border-radius: 5px;
-  z-index: -1;
+  color: #7950f2;
 }
 
 .chart-title {

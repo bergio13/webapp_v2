@@ -62,6 +62,33 @@ async function main() {
         dataLabels: {
           position: "top", // top, center, bottom
         },
+        colors: {
+          ranges: [
+            {
+              from: 0,
+              to: 5,
+              color: "#00bfa5",
+            },
+            {
+              from: 5,
+              to: 10,
+              color: "rgb(255, 0, 0)",
+            },
+            {
+              from: 10,
+              to: 20,
+              color: "rgb(0, 255,0)",
+            },
+            {
+              from: 20,
+              to: 40,
+              color: "rgb(0, 0, 255)",
+            },
+          ],
+          backgroundBarColors: [],
+          backgroundBarOpacity: 1,
+          backgroundBarRadius: 0,
+        },
       },
     },
     dataLabels: {
@@ -78,7 +105,7 @@ async function main() {
       position: "top",
       labels: {
         style: {
-          colors: "#9aa0ac",
+          colors: "#fff",
         },
       },
       axisBorder: {
@@ -91,11 +118,11 @@ async function main() {
         fill: {
           type: "gradient",
           gradient: {
-            colorFrom: "#D8E3C6",
-            colorTo: "#CED1E6",
+            colorFrom: "indigo",
+            colorTo: "yellow",
             stops: [0, 100],
-            opacityFrom: 0.4,
-            opacityTo: 0.9,
+            opacityFrom: 0.2,
+            opacityTo: 0.4,
           },
         },
       },

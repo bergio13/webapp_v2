@@ -23,7 +23,7 @@ def hello():
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return render_template('home.html', movies=[])
-    return render_template('home.html', session=session, movies=movies, now=year_now)
+    return render_template('home.html', session=session, movies=movies)
 
 @app.route('/animation')
 def animation():
