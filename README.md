@@ -1,2 +1,9 @@
-# Webapp
-Website that allows you to store a list of the movies you watched and share it with your friends
+# Kineto
+This repository contains code for a web application that allows users to keep track of movies they have watched. It has a database connection and templates for displaying the movies. The files in the repository include:
+
+app.py: contains code for the web application
+database.py: contains code for connecting to the database
+requirements.txt: contains a list of required Python packages
+.gitignore: contains a list of files that should be ignored by Git
+LICENSE: contains the license for the code
+README.md: contains information about the repository
