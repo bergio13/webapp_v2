@@ -60,7 +60,7 @@ def insert_user(username, email, password):
         query = text('INSERT INTO users (username, email, password) VALUES (:username, :email, :password)').bindparams(username=username, email=email, password=password)
         conn.execute(query)
         
-def get_user_id(id):
+def get_user_by_id(id):
     with engine.connect() as conn:
         # define a SQL query with a parameter
         query = text('SELECT * FROM users WHERE id = :id').bindparams(id=id)
@@ -120,3 +120,44 @@ def get_monthly_movies(parent_id, month):
             lista_dict["tv_show"] = row[8]     
             lista_dicts.append(lista_dict)      
         return lista_dicts
+    
+def get_user_name(name):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM users WHERE username = :username').bindparams(username=name)
+        result = conn.execute(query)
+        user_dicts = []
+        for row in result:
+            user_dict = {}
+            user_dict["id"] = row[0]
+            user_dict["username"] = row[1]
+            user_dicts.append(user_dict)
+        return user_dicts
+    
+def get_user_id(name):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM users WHERE username = :username').bindparams(username=name)
+        result = conn.execute(query)
+        user_dicts = []
+        for row in result:
+            user_dict = {}
+            user_dict["id"] = row[0]
+            user_dicts.append(user_dict)
+        return user_dicts
+
+def insert_friends(user_id, f_username, parent_id):
+    with engine.connect() as conn:
+        query = text('INSERT INTO friends (user_id, f_username, parent_id) VALUES (:user_id,:f_username, :parent_id)').bindparams(user_id=user_id, f_username=f_username ,parent_id=parent_id)
+        conn.execute(query)
+        
+def get_friends(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM friends WHERE parent_id = :parent_id').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        friends_dicts = []
+        for row in result:
+            friends_dict = {}
+            friends_dict["id"] = row[0]
+            friends_dict["user_id"] = row[1]
+            friends_dict["f_username"] = row[2]
+            friends_dicts.append(friends_dict)
+        return friends_dicts

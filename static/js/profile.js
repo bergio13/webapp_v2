@@ -52,23 +52,17 @@ async function main() {
   for (var i = 0; i < jsondata.length; ++i) {
     const date = new Date(jsondata[i].v_date);
     const month = date.getMonth();
-    console.log(month);
     months[month] += 1;
     month_keys = Object.keys(months);
     month_values = Object.values(months);
-    console.log(month_keys);
   }
 
-  console.log(months);
-  console.log(jsondata);
-  console.log(genres);
+  //TOP 6 GENRES
   const top6 = Object.entries(genres)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 6);
   const top6Keys = top6.map(([n]) => n);
   const top6Values = top6.map(([, v]) => v);
-  console.log(top6Keys);
-  console.log(top6Values);
 
   //BAR CHART
   var barChartOptions = {
@@ -211,7 +205,7 @@ async function main() {
         show: false,
       },
     },
-    colors: ["#DAD137", "#1846D6"],
+    colors: ["#C47B16", "#1846D6"],
     dataLabels: {
       enabled: true,
     },

@@ -638,7 +638,7 @@ select option {
   box-sizing: border-box;
   -webkit-column-break-inside: avoid;
   border-radius: 5px;
-  color: #7950f2;
+  color: var(--text-primary);
 }
 
 .chart-title {

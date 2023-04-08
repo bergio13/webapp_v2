@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_id, insert_movies, get_movies, get_monthly_movies
+from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_by_id, insert_movies, get_movies, get_monthly_movies, get_user_name, insert_friends, get_friends, get_user_id
 import os
 import datetime
 
@@ -32,14 +32,16 @@ def animation():
 @app.route('/lista')
 def lista():
     if 'loggedin' in session:
+        us = get_user_by_id(session['id'])
+        username = us[0]['username']
         try:
             movies = get_movies(session['id'])
         except:
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
     else:
-        return render_template('lista.html', movies=[], months=months)
-    return render_template('lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months)
+        return render_template('lista.html', movies=[], months=months, username='')
+    return render_template('lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months, username=username)
 
 @app.route("/users/<name>")
 def show_user_profile(name):
@@ -49,7 +51,7 @@ def show_user_profile(name):
 @app.route('/data')
 def list_about():
     if 'loggedin' in session:
-        users = get_user_id(session['id'])
+        users = get_user_by_id(session['id'])
         movies = get_movies(session['id'])
     return jsonify(movies)
 
@@ -124,7 +126,7 @@ def login():
 @app.route('/profile')
 def profile():
     if 'loggedin' in session:
-        users = get_user_id(session['id'])
+        users = get_user_by_id(session['id'])
         try:
             movies = get_movies(session['id'])
             length = len(movies)
@@ -155,7 +157,7 @@ def add_movie():
     if request.method == "POST":
         try:
             if 'loggedin' in session:
-                parent_id = get_user_id(session['id'])
+                parent_id = get_user_by_id(session['id'])
                 title = request.form["title"]
                 director = request.form["director"]
                 year = request.form["year"]
@@ -174,7 +176,72 @@ def add_movie():
             flash('Something went wrong, please try again', category='error')
             
     return render_template('add_movie.html')
-        
+
+#@app.route('/edit_movie/<id>', methods=['GET', 'POST'])
+#def edit_movie(id):
+#    if request.method == "POST":
+#        try:
+#            if 'loggedin' in session:
+#                parent_id = get_user_id(session['id'])
+#                title = request.form["title"]
+#                director = request.form["director"]
+#                year = request.form["year"]
+#                date = request.form["date"]
+#                genre = request.form["genre"]
+#                rating = request.form["rating"]
+#                rewatch = request.form["rewatch"] # 0 false, 1 true
+#                tv = request.form["tv"]
+#                print(title, director, year, date, genre, rating, rewatch, tv, session['id'])
+#                update_movies(id, title, director, genre, year, date, rating, rewatch, tv, session['id'])
+#                flash('Movie updated', category='success')
+#            else:
+#                flash('You need to be logged in to add a movie', category='error')
+#        except:
+#            redirect('/edit_movie')
+#            flash('Something went wrong, please try again', category='error')
+#    return render_template('edit_movie.html', id=id)
+
+@app.route('/friends', methods=['GET', 'POST'])
+def search_friends():
+    if 'loggedin' in session:
+        friends = get_friends(session['id'])
+        if request.method == "POST":
+            name = request.form['name']
+            users = get_user_name(name)
+            print(users)
+            if users == []:
+                flash('No user found', category='error')
+            else:
+                return render_template('friends.html', users=users, friends=friends)          
+        return render_template('friends.html', friends=friends)
+    return redirect('/login')
+
+@app.route('/follow', methods=['GET', 'POST'])
+def follow():
+    if request.method == "POST":
+        if 'loggedin' in session:
+            friend_id = request.form['user_id']
+            friend_username = request.form['username']
+            insert_friends(friend_id, friend_username, session['id'])
+            return redirect('/friends')
+        else:
+            return redirect('/login')
+    return redirect('/friends')
+
+@app.route('/<username>')
+def lista_user(username):
+    user = get_user_id(username)
+    print(user)
+    id = user[0]['id']
+    print(id)
+    try:
+        movies = get_movies(id)
+    except:
+        movies = []
+        flash('Something went wrong, please refresh the page', category='error')
+    return render_template('lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months, username=username)
+    
+    
 
 if __name__ == '__main__':
     app.run(debug=True)

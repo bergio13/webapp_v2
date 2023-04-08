@@ -1,0 +1,34 @@
+{% extends 'base.html' %} {% block title %}Profile{% endblock %} {%block body%}
+{% block content%}
+<div class="grid-container">
+  <header class="header">
+    <div class="header-left">
+      <span class="material-icons-outlined"> search </span>
+      <span class="material-icons-outlined"> filter_list </span>
+    </div>
+  </header>
+  <form method="post">
+    <input type="text" placeholder="name" name="name" />
+    <input type="submit" value="Search" />
+  </form>
+  {% for user in users %}
+  <p>{{ user.username }}</p>
+  {% if user.id not in friends|map(attribute="user_id")|list %}
+  <form method="post" action="/follow">
+    <input type="submit" value="Follow" />
+    <input type="hidden" name="username" value="{{ user.username }}" />
+    <input type="hidden" name="user_id" value="{{ user.id }}" />
+  </form>
+  {% endif %} {% endfor %}
+  <div>
+    <h2>Friends</h2>
+    <ol>
+      {% for friend in friends %}
+      <li>
+        <a href="/{{ friend.f_username}}"> {{ friend.f_username }} </a>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>
+{% endblock %} {% endblock %}
