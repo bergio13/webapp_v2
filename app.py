@@ -12,7 +12,7 @@ month_now = datetime.date.today().month
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 dict_months = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
 
-@app.route('/')
+@app.route('/home')
 def hello():
     if 'loggedin' in session:
         try:
@@ -25,7 +25,7 @@ def hello():
         return render_template('home.html', movies=[])
     return render_template('home.html', session=session, movies=movies)
 
-@app.route('/animation')
+@app.route('/')
 def animation():
     return render_template('animation.html', session=session)
 
@@ -40,7 +40,7 @@ def lista():
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
     else:
-        return render_template('lista.html', movies=[], months=months, username='')
+        return redirect('/login')
     return render_template('lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months, username=username)
 
 @app.route("/users/<name>")
@@ -88,7 +88,7 @@ def register():
                 insert_user(name, email, password=password)
                 flash('Account created', category='success')
                 
-                return redirect("/")
+                return redirect("/home")
 
         return render_template('register.html')
 
@@ -113,7 +113,7 @@ def login():
                 session['id'] = users[0]['id']
                 session['email'] = users[0]['email']
                 flash ('Logged in successfully!', category='success')
-                return redirect('/')
+                return redirect('/home')
             # If account exists in accounts table in out database
             else:
             # Account doesnt exist or username/password incorrect
@@ -150,7 +150,7 @@ def logout():
     session.pop('id', None)
     session.pop('email', None)
     # Redirect to login page
-    return redirect('/')
+    return redirect('/login')
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
