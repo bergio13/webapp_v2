@@ -83,11 +83,11 @@ def register():
                 flash("Password must be greater than 3 characters", category='error')
             else:
             # Create hash of password to insert into the database
-                hash = generate_password_hash(request.form.get("password"), method='sha256')
+                #hash = generate_password_hash(request.form.get("password"), method='sha256')
 
-                insert_user(name, email, password=hash)
+                insert_user(name, email, password=password)
                 flash('Account created', category='success')
-
+                
                 return redirect("/")
 
         return render_template('register.html')
