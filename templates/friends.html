@@ -1,20 +1,20 @@
 {% extends 'base.html' %} {% block title %}Profile{% endblock %} {%block body%}
 {% block content%}
-<div class="grid-container">
+<div class="friends">
   <header class="header">
-    <div class="header-left">
-      <span class="material-icons-outlined"> search </span>
-      <span class="material-icons-outlined"> filter_list </span>
-    </div>
+      <div class="search-container">
+      <form method="post" class="f-form">
+        <input type="text" placeholder="Search user..." name="name" class="search" />
+        <button type="submit"><i class="fa fa-search"></i></button>
+      </form>
+      </div>
   </header>
-  <form method="post">
-    <input type="text" placeholder="name" name="name" />
-    <input type="submit" value="Search" />
-  </form>
+
+  <main class="main-container main-friends">
   {% for user in users %}
-  <p>{{ user.username }}</p>
-  {% if user.id not in friends|map(attribute="user_id")|list %}
-  <form method="post" action="/follow">
+  <p style="display: inline-block">{{ user.username }}</p>
+  {% if user.id not in friends|map(attribute="user_id")|list and user.id != session.id %}
+  <form method="post" action="/follow" class="follow-form">
     <input type="submit" value="Follow" />
     <input type="hidden" name="username" value="{{ user.username }}" />
     <input type="hidden" name="user_id" value="{{ user.id }}" />
@@ -30,5 +30,6 @@
       {% endfor %}
     </ol>
   </div>
+  <main>
 </div>
 {% endblock %} {% endblock %}

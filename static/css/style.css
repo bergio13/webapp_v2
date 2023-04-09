@@ -243,6 +243,11 @@ tbody tr:hover {
   background-color: #9feee1;
 }
 
+.column-friend {
+  border-image: linear-gradient(to right, rgb(255, 0, 234), rgb(106, 235, 252))
+    1 100%;
+}
+
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
 .navbar {
   position: fixed;
@@ -647,6 +652,59 @@ select option {
   align-items: center;
 }
 
+/*---------------------------------------------------Friends styling--------------------------------------------------------- */
+.friends {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 0.2fr 3fr;
+  grid-template-areas:
+    "header"
+    "main";
+  height: 100%;
+  background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
+}
+
+.main-friends {
+  margin-left: 8rem;
+}
+
+ol {
+  font-size: 20px;
+  margin-top: 0;
+  margin-left: 0;
+}
+
+.f-form {
+  display: flex;
+  margin-left: 0rem;
+}
+
+.header .search-container {
+  float: left;
+}
+
+.header input[type="text"] {
+  padding: 6px;
+  margin-top: 8px;
+  font-size: 17px;
+  border: none;
+}
+
+.header .search-container button {
+  float: right;
+  padding: 6px 10px;
+  margin-top: 8px;
+  margin-left: 16px;
+  background: #ddd;
+  font-size: 17px;
+  border: none;
+  cursor: pointer;
+}
+
+.follow-form {
+  display: inline-block;
+  margin-left: 2rem;
+}
 /*----------------------------------------------------- Small screens--------------------------------------------------------- */
 @media only screen and (max-width: 600px) {
   .navbar {

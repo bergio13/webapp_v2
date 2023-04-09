@@ -212,7 +212,7 @@ def search_friends():
             if users == []:
                 flash('No user found', category='error')
             else:
-                return render_template('friends.html', users=users, friends=friends)          
+                return render_template('friends.html', users=users, friends=friends, session=session)          
         return render_template('friends.html', friends=friends)
     return redirect('/login')
 
@@ -239,7 +239,7 @@ def lista_user(username):
     except:
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months, username=username)
+    return render_template('_lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months, username=username)
     
     
 
