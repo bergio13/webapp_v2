@@ -12,7 +12,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(to bottom right, #5614b0, #dbd65c);
+  background: linear-gradient(to right, #2980b9, #2c3e50);
   color: black;
   height: 100vh;
   background-size: 100%;
@@ -26,9 +26,9 @@ body:before {
   width: 100%;
   z-index: -1;
   background: linear-gradient(
-    to bottom right,
-    #5614b0,
-    #dbd65c
+    to right,
+    #2980b9,
+    #2c3e50
   ); /*linear-gradient(to bottom, #40c057 5%, #9775fa 95%);*/
 }
 
@@ -238,13 +238,18 @@ tbody tr:hover {
   font-size: 20px;
   position: absolute;
   z-index: 0;
+  color: white;
 }
 .table-home tbody tr:nth-child(even) {
   background-color: transparent;
 }
 
 .table-home tbody tr:hover {
-  background-color: #9feee1;
+  background-color: #3b9a8a;
+}
+
+.table-home tbody tr {
+  border-bottom: 1px solid #4999b8;
 }
 
 .column-friend {
