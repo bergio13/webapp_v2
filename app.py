@@ -162,27 +162,30 @@ def logout():
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
-    if request.method == "POST":
-        try:
-            if 'loggedin' in session:
-                parent_id = get_user_by_id(session['id'])
-                title = request.form["title"]
-                director = request.form["director"]
-                year = request.form["year"]
-                date = request.form["date"]
-                genre = request.form["genre"]
-                rating = request.form["rating"]
-                rewatch = request.form["rewatch"] # 0 false, 1 true
-                tv = request.form["tv"]
-                print(title, director, year, date, genre, rating, rewatch, tv, session['id'])
-                insert_movies(title, director, genre, year, date, rating, rewatch, tv, session['id'])
-                flash('Movie added', category='success')
-            else:
-                flash('You need to be logged in to add a movie', category='error')
-        except:
-            redirect('/add_movie')
-            flash('Something went wrong, please try again', category='error')
-            
+    if 'loggedin' not in session:
+        return redirect('/login')
+    else:
+        if request.method == "POST":
+            try:
+                if 'loggedin' in session:
+                    parent_id = get_user_by_id(session['id'])
+                    title = request.form["title"]
+                    director = request.form["director"]
+                    year = request.form["year"]
+                    date = request.form["date"]
+                    genre = request.form["genre"]
+                    rating = request.form["rating"]
+                    rewatch = request.form["rewatch"] # 0 false, 1 true
+                    tv = request.form["tv"]
+                    print(title, director, year, date, genre, rating, rewatch, tv, session['id'])
+                    insert_movies(title, director, genre, year, date, rating, rewatch, tv, session['id'])
+                    flash('Movie added', category='success')
+                else:
+                    flash('You need to be logged in to add a movie', category='error')
+            except:
+                redirect('/add_movie')
+                flash('Something went wrong, please try again', category='error')
+                
     return render_template('add_movie.html')
 
 #@app.route('/edit_movie/<id>', methods=['GET', 'POST'])
