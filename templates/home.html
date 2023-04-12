@@ -18,6 +18,7 @@
         <th>Year</th>
         <th>Director</th>
         <th>Rating</th>
+        <th style="width: 5%"></th>
       </tr>
     </thead>
     <tbody>
@@ -29,6 +30,7 @@
 
         <td>{{movie['director'].upper()}}</td>
         <td>{{movie['rating']}}</td>
+        <td><button action="/remove_movie">X</button></td>
       </tr>
       {% elif movie['p_year'] == now %}
       <tr style="color: green">
@@ -38,6 +40,7 @@
 
         <td>{{movie['director'].upper()}}</td>
         <td>{{movie['rating']}}</td>
+        <td><button action="/remove_movie">X</button></td>
       </tr>
       {% else %}
       <tr>
@@ -47,6 +50,12 @@
 
         <td>{{movie['director'].upper()}}</td>
         <td>{{movie['rating']}}</td>
+        <td>
+          <form action="/remove_movie" method="post">
+            <button type="submit" class="table-button">X</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+          </form>
+        </td>
       </tr>
       {% endif %} {% endfor %}
     </tbody>

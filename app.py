@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_by_id, insert_movies, get_movies, get_monthly_movies, get_user_name, insert_friends, get_friends, get_user_id
+from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_by_id, insert_movies, get_movies, get_monthly_movies, get_user_name, insert_friends, get_friends, get_user_id, remove_movie_by_id
 import os
 import datetime
 
@@ -188,29 +188,15 @@ def add_movie():
                 
     return render_template('add_movie.html')
 
-#@app.route('/edit_movie/<id>', methods=['GET', 'POST'])
-#def edit_movie(id):
-#    if request.method == "POST":
-#        try:
-#            if 'loggedin' in session:
-#                parent_id = get_user_id(session['id'])
-#                title = request.form["title"]
-#                director = request.form["director"]
-#                year = request.form["year"]
-#                date = request.form["date"]
-#                genre = request.form["genre"]
-#                rating = request.form["rating"]
-#                rewatch = request.form["rewatch"] # 0 false, 1 true
-#                tv = request.form["tv"]
-#                print(title, director, year, date, genre, rating, rewatch, tv, session['id'])
-#                update_movies(id, title, director, genre, year, date, rating, rewatch, tv, session['id'])
-#                flash('Movie updated', category='success')
-#            else:
-#                flash('You need to be logged in to add a movie', category='error')
-#        except:
-#            redirect('/edit_movie')
-#            flash('Something went wrong, please try again', category='error')
-#    return render_template('edit_movie.html', id=id)
+@app.route('/remove_movie', methods=['GET', 'POST'])
+def remove_movie():
+    if 'loggedin' in session:
+        if request.method == "POST":
+            movie_id = request.form['movie_id']
+            remove_movie_by_id(movie_id)
+            flash('Movie removed', category='success')
+            return redirect('/home')
+    return redirect('/login')
 
 @app.route('/friends', methods=['GET', 'POST'])
 def search_friends():

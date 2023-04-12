@@ -136,7 +136,7 @@ ul.add li {
 }
 
 .success {
-  color: green;
+  color: rgb(20, 224, 109);
 }
 
 /* -----------------------------------List styling----------------------------------------------------------------- */
@@ -257,6 +257,17 @@ tbody tr:hover {
     1 100%;
 }
 
+.table-button {
+  width: 80%;
+  height: 100%;
+  text-align: center;
+  background-color: rgb(119, 8, 198);
+  border: solid 1px black;
+  color: black;
+  font-size: 10px;
+  cursor: pointer;
+  transition: 200ms ease;
+}
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
 .navbar {
   position: fixed;

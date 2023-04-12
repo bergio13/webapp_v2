@@ -161,3 +161,8 @@ def get_friends(parent_id):
             friends_dict["f_username"] = row[2]
             friends_dicts.append(friends_dict)
         return friends_dicts
+    
+def remove_movie_by_id(lista_id):
+    with engine.connect() as conn:
+        query = text('DELETE FROM lista WHERE lista_id = :lista_id').bindparams(lista_id=lista_id)
+        conn.execute(query)
