@@ -64,6 +64,7 @@ def register():
             email = request.form.get("email")
             name = request.form.get("username")
             password = request.form.get("password")
+            confirm_password = request.form.get("confirm_password")
 
             # Check if email already exists
             users = load_users_from_email(email)
@@ -81,11 +82,13 @@ def register():
                 flash("Must provide password", category='error')
             elif len(password) < 3:
                 flash("Password must be greater than 3 characters", category='error')
+            elif password != confirm_password:
+                flash("Passwords must match", category='error')
             else:
             # Create hash of password to insert into the database
-                #hash = generate_password_hash(request.form.get("password"), method='sha256')
+                hash = generate_password_hash(request.form.get("password"), method='sha256')
 
-                insert_user(name, email, password=password)
+                insert_user(name, email, password=hash)
                 flash('Account created', category='success')
                 
                 return redirect("/home")
@@ -108,7 +111,7 @@ def login():
             users = []
             flash('Something went wrong, please try again', category='error')
         if users != []:
-            if users[0]['email'] == email and users[0]['password'] == password:
+            if users[0]['email'] == email and check_password_hash(users[0]['password'], password) == True:
                 session['loggedin'] = True
                 session['id'] = users[0]['id']
                 session['email'] = users[0]['email']
@@ -137,10 +140,15 @@ def profile():
                 rating += movie['rating']
                 genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
                 favorite_genre = max(genres, key=genres.get)
+            if length == 0:
+                avg_rating = 0
+                favorite_genre = 'No movies added'
+            else:
+                avg_rating = round(rating/length, 2)
         except:
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
-        return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=round(rating/length, 2), favorite_genre=favorite_genre)
+        return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
     return redirect('/login')
 
 @app.route('/logout')

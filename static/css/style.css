@@ -12,7 +12,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(to bottom, #40c057 5%, #9775fa 95%);
+  background: linear-gradient(to bottom right, #5614b0, #dbd65c);
   color: black;
   height: 100vh;
   background-size: 100%;
@@ -25,7 +25,11 @@ body:before {
   bottom: 0;
   width: 100%;
   z-index: -1;
-  background: linear-gradient(to bottom, #40c057 5%, #9775fa 95%);
+  background: linear-gradient(
+    to bottom right,
+    #5614b0,
+    #dbd65c
+  ); /*linear-gradient(to bottom, #40c057 5%, #9775fa 95%);*/
 }
 
 body::-webkit-scrollbar {
@@ -373,7 +377,7 @@ canvas {
     45deg,
     #141418,
     #6649b8,
-    gold
+    #141418
   ); /* rgb(125, 232, 246) */
   position: absolute;
   z-index: -1;
@@ -550,7 +554,11 @@ select option {
     "header header header"
     "main main main";
   height: 100%;
-  background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
+  background: linear-gradient(
+    to right,
+    #41295a,
+    #2f0743
+  ); /*linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
 }
 .material-icons-outlined {
   margin-top: 0.5rem;
@@ -565,7 +573,7 @@ select option {
   display: flex;
   justify-content: space-between;
   padding: 0 30px 0 30px;
-  background-image: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
+  background-image: linear-gradient(to right, #41295a, #2f0743);
 }
 
 .main-container {
@@ -613,7 +621,7 @@ select option {
 }
 
 .card:nth-child(2) {
-  background: linear-gradient(to left, #fbda61 10%, #ff5acd 90%);
+  background: linear-gradient(to right, #4ecdc4, #556270);
 }
 
 .card:nth-child(3) {
@@ -662,6 +670,17 @@ select option {
     "main";
   height: 100%;
   background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
+}
+
+.header-friends {
+  margin-top: 1rem;
+  margin-left: 5rem;
+  grid-area: header;
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 30px 0 30px;
+  background-image: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
 }
 
 .main-friends {

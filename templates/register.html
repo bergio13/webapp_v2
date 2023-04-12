@@ -27,14 +27,16 @@ content %}
       />
       <label for="password" class="label">Password</label>
     </div>
-
-    <ul>
-      <li>Must be at least 8 characters</li>
-      <li>Must contain at least one uppercase letter</li>
-      <li>Must contain at least one lowercase letter</li>
-      <li>Must contain at least one number</li>
-      <li>Must contain at least one special character</li>
-    </ul>
+    <div class="field">
+      <input
+        type="password"
+        name="confirm_password"
+        class="input"
+        placeholder=""
+        required
+      />
+      <label for="confirm_password" class="label">Confirm Password</label>
+    </div>
 
     <div class="buttons">
       <button
