@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_by_id, insert_movies, get_movies, get_monthly_movies, get_user_name, insert_friends, get_friends, get_user_id, remove_movie_by_id
+from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_by_id, insert_movies, get_movies, get_monthly_movies, get_user_name, insert_friends, get_friends, get_user_id, remove_movie_by_id, update_movie
 import os
 import datetime
 
@@ -195,6 +195,22 @@ def remove_movie():
             movie_id = request.form['movie_id']
             remove_movie_by_id(movie_id)
             flash('Movie removed', category='success')
+            return redirect('/home')
+    return redirect('/login')
+
+@app.route('/edit_movie', methods=['GET', 'POST'])
+def edit_movie():
+    if 'loggedin' in session:
+        if request.method == "GET":
+            return render_template('edit_movie.html')
+        else:
+            movie_id = request.form['movie_id']
+            movie = request.form['movie']
+            director = request.form['director']
+            p_year = request.form['year']
+            rating = request.form['rating']
+            update_movie(movie_id, movie, director, p_year, rating)
+            flash('Movie updated', category='success')
             return redirect('/home')
     return redirect('/login')
 

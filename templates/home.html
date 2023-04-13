@@ -11,7 +11,7 @@
     Film visti questo mese
   </h3>
   <a href="/add_movie" style="margin-left: 2%">Aggiungi un film</a>
-  <table class="table-home">
+  <table class="table-home" id="table-home">
     <thead>
       <tr>
         <th>Movie</th>
@@ -19,6 +19,7 @@
         <th>Director</th>
         <th>Rating</th>
         <th style="width: 5%"></th>
+        <th style="width: 7%"></th>
       </tr>
     </thead>
     <tbody>
@@ -45,7 +46,6 @@
       {% else %}
       <tr>
         <td>{{movie['movie'].upper()}}</td>
-
         <td>{{movie['p_year']}}</td>
 
         <td>{{movie['director'].upper()}}</td>
@@ -56,7 +56,22 @@
             <input type="hidden" name="movie_id" value="{{movie['id']}}" />
           </form>
         </td>
+        <td>
+          <form action="/edit_movie" method="GET">
+            <button type="submit" class="table-button">Edit</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+            <input type="hidden" name="movie" value="{{movie['movie']}}" />
+            <input type="hidden" name="year" value="{{movie['p_year']}}" />
+            <input
+              type="hidden"
+              name="director"
+              value="{{movie['director']}}"
+            />
+            <input type="hidden" name="rating" value="{{movie['rating']}}" />
+          </form>
+        </td>
       </tr>
+
       {% endif %} {% endfor %}
     </tbody>
   </table>

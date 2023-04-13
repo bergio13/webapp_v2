@@ -1,0 +1,29 @@
+{% extends 'base.html'%}{% block title %}Home{% endblock %} {%block body
+%}{%block content %}
+
+<main>
+  <form action="/edit_movie" method="post">
+    <input type="hidden" name="movie_id" value="movie_id" />
+    <input type="text" name="movie" value="movie" />
+    <input type="number" name="year" value="year" />
+    <input type="text" name="director" value="director" />
+    <input type="number" name="rating" value="rating" />
+    <input type="submit" value="Submit" />
+  </form>
+</main>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("movie_id");
+  const name = urlParams.get("movie");
+  const year = urlParams.get("year");
+  const director = urlParams.get("director");
+  const rating = urlParams.get("rating");
+  document.getElementsByName("movie_id")[0].value = id;
+  document.getElementsByName("movie")[0].value = name;
+  document.getElementsByName("year")[0].value = year;
+  document.getElementsByName("director")[0].value = director;
+  document.getElementsByName("rating")[0].value = rating;
+</script>
+
+{% endblock %} {% endblock %}

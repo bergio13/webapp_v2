@@ -166,3 +166,8 @@ def remove_movie_by_id(lista_id):
     with engine.connect() as conn:
         query = text('DELETE FROM lista WHERE lista_id = :lista_id').bindparams(lista_id=lista_id)
         conn.execute(query)
+
+def update_movie(lista_id, movie, director, p_year, rating):
+    with engine.connect() as conn:
+        query = text('UPDATE lista SET movie=:movie, director=:director, p_year=:p_year, rating=:rating WHERE lista_id = :lista_id').bindparams(lista_id=lista_id, movie=movie, director=director, p_year=p_year, rating=rating)
+        conn.execute(query)
