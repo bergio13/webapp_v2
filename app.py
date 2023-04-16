@@ -104,12 +104,9 @@ def register():
             else:
             # Create hash of password to insert into the database
                 hash = generate_password_hash(request.form.get("password"), method='sha256')
-
                 insert_user(name, email, password=hash)
                 flash('Account created', category='success')
-                
                 return redirect("/home")
-
         return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -117,7 +114,6 @@ def login():
     """Log user in"""
     # Forget any user_id
     session.clear()
-
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
         email = request.form['email']
@@ -235,7 +231,16 @@ def edit_movie():
             director = request.form['director']
             p_year = request.form['year']
             rating = request.form['rating']
-            update_movie(movie_id, movie, director, p_year, rating)
+            html = get_movie_poster(movie)
+            if html != 'None':
+                soup = BeautifulSoup(html, 'html.parser')
+                img_tag = soup.find('img')
+                src_link = img_tag['src']   
+                poster = src_link
+            else:
+                src_link = ''
+                poster = src_link  
+            update_movie(movie_id, movie, director, p_year, rating, poster)
             flash('Movie updated', category='success')
             return redirect('/home')
     return redirect('/login')

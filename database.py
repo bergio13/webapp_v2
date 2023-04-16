@@ -44,7 +44,6 @@ def load_users_from_email(email):
         query = text('SELECT * FROM users WHERE email = :email').bindparams(email=email)
         # execute the query with a parameter value
         result = conn.execute(query)
-        
         user_dicts = []
         for row in result:
             user_dict = {}
@@ -168,7 +167,7 @@ def remove_movie_by_id(lista_id):
         query = text('DELETE FROM lista WHERE lista_id = :lista_id').bindparams(lista_id=lista_id)
         conn.execute(query)
 
-def update_movie(lista_id, movie, director, p_year, rating):
+def update_movie(lista_id, movie, director, p_year, rating, poster):
     with engine.connect() as conn:
-        query = text('UPDATE lista SET movie=:movie, director=:director, p_year=:p_year, rating=:rating WHERE lista_id = :lista_id').bindparams(lista_id=lista_id, movie=movie, director=director, p_year=p_year, rating=rating)
+        query = text('UPDATE lista SET movie=:movie, director=:director, p_year=:p_year, rating=:rating, poster=:poster WHERE lista_id = :lista_id').bindparams(lista_id=lista_id, movie=movie, director=director, p_year=p_year, rating=rating, poster=poster)
         conn.execute(query)
