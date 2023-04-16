@@ -3,3 +3,4 @@ gunicorn
 sqlalchemy
 pymysql
 requests
+bs4
