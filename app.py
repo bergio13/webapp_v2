@@ -38,16 +38,16 @@ def hello():
             posters = []
             for movie in movies:
                 print(movie['movie'])
-                try:
-                    html = get_movie_poster(movie['movie'])
+                html = get_movie_poster(movie['movie'])
+                if html != 'None':
                     soup = BeautifulSoup(html, 'html.parser')
                     img_tag = soup.find('img')
                     src_link = img_tag['src']   
                     movie['poster'] = src_link
                     print(movie['poster'])
-                except:
+                else:
                     src_link = ''
-                    movie['poster'] = src_link      
+                    movie['poster'] = src_link   
         except:
             src_link = ''
             movies = []
