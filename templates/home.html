@@ -26,7 +26,7 @@
     <tbody>
       {% for movie in movies%} {% if movie['rewatch']== 1 %}
       <tr style="color: brown">
-        <td><img src="{{movie['poster']}}" width="80" height="130" /></td>
+        <td><img src="{{movie['poster']}}" width="60" height="100" /></td>
         <td>{{movie['movie'].upper()}}</td>
 
         <td>{{movie['p_year']}}</td>
@@ -56,7 +56,7 @@
       </tr>
       {% elif movie['p_year'] == now %}
       <tr style="color: green">
-        <td><img src="{{movie['poster']}}" width="80" height="130" /></td>
+        <td><img src="{{movie['poster']}}" width="60" height="100" /></td>
         <td>{{movie['movie'].upper()}}</td>
 
         <td>{{movie['p_year']}}</td>
@@ -86,7 +86,7 @@
       </tr>
       {% else %}
       <tr>
-        <td><img src="{{movie['poster']}}" width="80" height="130" /></td>
+        <td><img src="{{movie['poster']}}" width="60" height="100" /></td>
         <td>{{movie['movie'].upper()}}</td>
         <td>{{movie['p_year']}}</td>
 
