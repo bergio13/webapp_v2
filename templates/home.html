@@ -14,29 +14,25 @@
   <table class="table-home" id="table-home">
     <thead>
       <tr>
+        <th></th>
         <th>Movie</th>
         <th>Year</th>
         <th>Director</th>
         <th>Rating</th>
-        <th style="width: 5%"></th>
         <th style="width: 7%"></th>
+        <th style="width: 5%"></th>
       </tr>
     </thead>
     <tbody>
       {% for movie in movies%} {% if movie['rewatch']== 1 %}
       <tr style="color: brown">
+        <td><img src="{{movie['poster']}}" width="80" height="130" /></td>
         <td>{{movie['movie'].upper()}}</td>
 
         <td>{{movie['p_year']}}</td>
 
         <td>{{movie['director'].upper()}}</td>
         <td>{{movie['rating']}}</td>
-        <td>
-          <form action="/remove_movie" method="post">
-            <button type="submit" class="table-button">X</button>
-            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-          </form>
-        </td>
         <td>
           <form action="/edit_movie" method="GET">
             <button type="submit" class="table-button">Edit</button>
@@ -49,23 +45,24 @@
               value="{{movie['director']}}"
             />
             <input type="hidden" name="rating" value="{{movie['rating']}}" />
+          </form>
+        </td>
+        <td>
+          <form action="/remove_movie" method="post">
+            <button type="submit" class="table-button">X</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
           </form>
         </td>
       </tr>
       {% elif movie['p_year'] == now %}
       <tr style="color: green">
+        <td><img src="{{movie['poster']}}" width="80" height="130" /></td>
         <td>{{movie['movie'].upper()}}</td>
 
         <td>{{movie['p_year']}}</td>
 
         <td>{{movie['director'].upper()}}</td>
         <td>{{movie['rating']}}</td>
-        <td>
-          <form action="/remove_movie" method="post">
-            <button type="submit" class="table-button">X</button>
-            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-          </form>
-        </td>
         <td>
           <form action="/edit_movie" method="GET">
             <button type="submit" class="table-button">Edit</button>
@@ -78,22 +75,23 @@
               value="{{movie['director']}}"
             />
             <input type="hidden" name="rating" value="{{movie['rating']}}" />
+          </form>
+        </td>
+        <td>
+          <form action="/remove_movie" method="post">
+            <button type="submit" class="table-button">X</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
           </form>
         </td>
       </tr>
       {% else %}
       <tr>
+        <td><img src="{{movie['poster']}}" width="80" height="130" /></td>
         <td>{{movie['movie'].upper()}}</td>
         <td>{{movie['p_year']}}</td>
 
         <td>{{movie['director'].upper()}}</td>
         <td>{{movie['rating']}}</td>
-        <td>
-          <form action="/remove_movie" method="post">
-            <button type="submit" class="table-button">X</button>
-            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-          </form>
-        </td>
         <td>
           <form action="/edit_movie" method="GET">
             <button type="submit" class="table-button">Edit</button>
@@ -108,8 +106,13 @@
             <input type="hidden" name="rating" value="{{movie['rating']}}" />
           </form>
         </td>
+        <td>
+          <form action="/remove_movie" method="post">
+            <button type="submit" class="table-button">X</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+          </form>
+        </td>
       </tr>
-
       {% endif %} {% endfor %}
     </tbody>
   </table>

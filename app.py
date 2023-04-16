@@ -3,6 +3,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_by_id, insert_movies, get_movies, get_monthly_movies, get_user_name, insert_friends, get_friends, get_user_id, remove_movie_by_id, update_movie
 import os
 import datetime
+import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -12,15 +14,44 @@ month_now = datetime.date.today().month
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 dict_months = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
 
+def get_movie_poster(movie_title):
+    # Replace spaces with underscores
+    movie_title = movie_title.replace(' ', '_')
+    # Construct URL
+    url = f'https://en.wikipedia.org/wiki/{movie_title}'
+    # Send GET request
+    response = requests.get(url)
+    # Parse HTML content
+    soup = BeautifulSoup(response.content, 'html.parser')
+    # Find poster image
+    img_tag = soup.find('a', {'class': 'image'})
+    # Return image URL
+    return str(img_tag)
+
+
 @app.route('/home')
 def hello():
     if 'loggedin' in session:
         try:
             movies = get_monthly_movies(session['id'], month_now)
             print(movies)
+            posters = []
+            for movie in movies:
+                print(movie['movie'])
+                try:
+                    html = get_movie_poster(movie['movie'])
+                    soup = BeautifulSoup(html, 'html.parser')
+                    img_tag = soup.find('img')
+                    src_link = img_tag['src']   
+                    movie['poster'] = src_link
+                    print(movie['poster'])
+                except:
+                    src_link = ''
+                    movie['poster'] = src_link      
         except:
+            src_link = ''
             movies = []
-            flash('Something went wrong, please refresh the page', category='error')
+            flash('Something went wrong, please refresh the page', category='error', poster=src_link)
     else:
         return render_template('home.html', movies=[])
     return render_template('home.html', session=session, movies=movies)
