@@ -76,11 +76,11 @@ def get_user_by_id(id):
             user_dicts.append(user_dict)
         return user_dicts
         
-def insert_movies(title, director, genre, p_year, v_date, rating, rewatch, tv_show, parent_id):
+def insert_movies(title, director, genre, p_year, v_date, rating, rewatch, tv_show, poster, parent_id):
      with engine.connect() as conn:
-        query = text('INSERT INTO lista (movie, director, genre, p_year, v_date, rating, rewatch, tv_show, parent_id) \
-                     VALUES (:movie, :director, :genre, :p_year, :v_date, :rating, :rewatch, :tv_show, :parent_id)'
-                     ).bindparams(movie=title, director=director, genre=genre, p_year=p_year, v_date=v_date, rating=rating, rewatch=rewatch, tv_show=tv_show, parent_id=parent_id)
+        query = text('INSERT INTO lista (movie, director, genre, p_year, v_date, rating, rewatch, tv_show, poster, parent_id) \
+                     VALUES (:movie, :director, :genre, :p_year, :v_date, :rating, :rewatch, :tv_show, :poster, :parent_id)'
+                     ).bindparams(movie=title, director=director, genre=genre, p_year=p_year, v_date=v_date, rating=rating, rewatch=rewatch, tv_show=tv_show, poster=poster, parent_id=parent_id)
         conn.execute(query)
         
 def get_movies(parent_id):
@@ -117,7 +117,8 @@ def get_monthly_movies(parent_id, month):
             lista_dict["v_date"] = row[5]
             lista_dict["rating"] = row[6]
             lista_dict["rewatch"] = row[7]
-            lista_dict["tv_show"] = row[8]     
+            lista_dict["tv_show"] = row[8]
+            lista_dict["poster"] = row[9]     
             lista_dicts.append(lista_dict)      
         return lista_dicts
     

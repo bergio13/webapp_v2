@@ -35,23 +35,9 @@ def hello():
         try:
             movies = get_monthly_movies(session['id'], month_now)
             print(movies)
-            posters = []
-            for movie in movies:
-                print(movie['movie'])
-                html = get_movie_poster(movie['movie'])
-                if html != 'None':
-                    soup = BeautifulSoup(html, 'html.parser')
-                    img_tag = soup.find('img')
-                    src_link = img_tag['src']   
-                    movie['poster'] = src_link
-                    print(movie['poster'])
-                else:
-                    src_link = ''
-                    movie['poster'] = src_link   
         except:
-            src_link = ''
             movies = []
-            flash('Something went wrong, please refresh the page', category='error', poster=src_link)
+            flash('Something went wrong, please refresh the page', category='error')
     else:
         return render_template('home.html', movies=[])
     return render_template('home.html', session=session, movies=movies)
@@ -208,8 +194,17 @@ def add_movie():
                     rating = request.form["rating"]
                     rewatch = request.form["rewatch"] # 0 false, 1 true
                     tv = request.form["tv"]
+                    html = get_movie_poster(title)
+                    if html != 'None':
+                        soup = BeautifulSoup(html, 'html.parser')
+                        img_tag = soup.find('img')
+                        src_link = img_tag['src']   
+                        poster = src_link
+                    else:
+                        src_link = ''
+                        poster = src_link  
                     print(title, director, year, date, genre, rating, rewatch, tv, session['id'])
-                    insert_movies(title, director, genre, year, date, rating, rewatch, tv, session['id'])
+                    insert_movies(title, director, genre, year, date, rating, rewatch, tv, poster, session['id'])
                     flash('Movie added', category='success')
                 else:
                     flash('You need to be logged in to add a movie', category='error')
