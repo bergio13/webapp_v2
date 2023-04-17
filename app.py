@@ -5,6 +5,11 @@ import os
 import datetime
 import requests
 from bs4 import BeautifulSoup
+from tmdbv3api import TMDb, Movie
+
+tmdb = TMDb()
+
+tmdb.api_key = '73e5cb6f15bae80e1647d22349799e4f'
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -28,6 +33,7 @@ def get_movie_poster(movie_title):
     # Return image URL
     return str(img_tag)
 
+movie = Movie()
 
 @app.route('/home')
 def hello():
@@ -190,15 +196,20 @@ def add_movie():
                     rating = request.form["rating"]
                     rewatch = request.form["rewatch"] # 0 false, 1 true
                     tv = request.form["tv"]
-                    html = get_movie_poster(title)
-                    if html != 'None':
-                        soup = BeautifulSoup(html, 'html.parser')
-                        img_tag = soup.find('img')
-                        src_link = img_tag['src']   
-                        poster = src_link
-                    else:
-                        src_link = ''
-                        poster = src_link  
+                    try:
+                        res = movie.search(title)
+                        poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
+                        print(poster)
+                    except:
+                        html = get_movie_poster(title)
+                        if html != 'None':
+                            soup = BeautifulSoup(html, 'html.parser')
+                            img_tag = soup.find('img')
+                            src_link = img_tag['src']   
+                            poster = src_link
+                        else: 
+                            res = movie.search(title)
+                            poster = res[0]['poster_path']
                     print(title, director, year, date, genre, rating, rewatch, tv, session['id'])
                     insert_movies(title, director, genre, year, date, rating, rewatch, tv, poster, session['id'])
                     flash('Movie added', category='success')
