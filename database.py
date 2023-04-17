@@ -97,7 +97,8 @@ def get_movies(parent_id):
             lista_dict["v_date"] = row[5]
             lista_dict["rating"] = row[6]
             lista_dict["rewatch"] = row[7]
-            lista_dict["tv_show"] = row[8]     
+            lista_dict["tv_show"] = row[8]
+            lista_dict["poster"] = row[9]    
             lista_dicts.append(lista_dict)      
         return lista_dicts
 

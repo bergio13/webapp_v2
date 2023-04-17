@@ -30,6 +30,14 @@
       {% endfor %}
     </ol>
   </div>
-  <main>
+
+  <div>
+    <h2>Your friends liked</h2>
+    <ul>
+      {% for like in liked %}
+      <li><img width=50 height= 80 src={{like.poster}}> {{like.movie}} - {{like.p_year}} - {{like.director }}</li>
+      {% endfor %}
+    </ul>
+  </main>
 </div>
 {% endblock %} {% endblock %}

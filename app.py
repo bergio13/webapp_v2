@@ -263,12 +263,17 @@ def search_friends():
         if request.method == "POST":
             name = request.form['name']
             users = get_user_name(name)
-            print(users)
             if users == []:
                 flash('No user found', category='error')
             else:
-                return render_template('friends.html', users=users, friends=friends, session=session)          
-        return render_template('friends.html', friends=friends)
+                return render_template('friends.html', users=users, friends=friends, session=session) 
+        liked = []   
+        for friend in friends:
+            movies = get_movies(friend['user_id'])
+            for movie in movies:
+                if movie['rating'] >= 8:
+                    liked.append(movie)                  
+        return render_template('friends.html', friends=friends, liked=liked, session=session)
     return redirect('/login')
 
 @app.route('/follow', methods=['GET', 'POST'])
