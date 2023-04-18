@@ -238,20 +238,25 @@ def edit_movie():
             return render_template('edit_movie.html')
         else:
             movie_id = request.form['movie_id']
-            movie = request.form['movie']
+            title = request.form['movie']
             director = request.form['director']
             p_year = request.form['year']
             rating = request.form['rating']
-            html = get_movie_poster(movie)
-            if html != 'None':
-                soup = BeautifulSoup(html, 'html.parser')
-                img_tag = soup.find('img')
-                src_link = img_tag['src']   
-                poster = src_link
-            else:
-                src_link = ''
-                poster = src_link  
-            update_movie(movie_id, movie, director, p_year, rating, poster)
+            try:
+                res = movie.search(title)
+                poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
+                print(poster)
+            except:
+                html = get_movie_poster(title)
+                if html != 'None':
+                    soup = BeautifulSoup(html, 'html.parser')
+                    img_tag = soup.find('img')
+                    src_link = img_tag['src']   
+                    poster = src_link
+                else: 
+                    res = movie.search(title)
+                    poster = res[0]['poster_path']
+            update_movie(movie_id, title, director, p_year, rating, poster)
             flash('Movie updated', category='success')
             return redirect('/home')
     return redirect('/login')

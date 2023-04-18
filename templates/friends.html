@@ -2,42 +2,54 @@
 {% block content%}
 <div class="friends">
   <header class="header header-friends">
-      <div class="search-container">
+    <div class="search-container">
       <form method="post" class="f-form">
-        <input type="text" placeholder="Search user..." name="name" class="search" />
+        <input
+          type="text"
+          placeholder="Search user..."
+          name="name"
+          class="search"
+        />
         <button type="submit"><i class="fa fa-search"></i></button>
       </form>
-      </div>
+    </div>
   </header>
 
   <main class="main-container main-friends">
-  {% for user in users %}
-  <p style="display: inline-block">{{ user.username }}</p>
-  {% if user.id not in friends|map(attribute="user_id")|list and user.id != session.id %}
-  <form method="post" action="/follow" class="follow-form">
-    <input type="submit" value="Follow" />
-    <input type="hidden" name="username" value="{{ user.username }}" />
-    <input type="hidden" name="user_id" value="{{ user.id }}" />
-  </form>
-  {% endif %} {% endfor %}
-  <div>
-    <h2>Friends</h2>
-    <ol>
-      {% for friend in friends %}
-      <li>
-        <a href="/{{ friend.f_username}}"> {{ friend.f_username }} </a>
-      </li>
-      {% endfor %}
-    </ol>
-  </div>
+    {% for user in users %}
+    <p style="display: inline-block">{{ user.username }}</p>
+    {% if user.id not in friends|map(attribute="user_id")|list and user.id !=
+    session.id %}
+    <form method="post" action="/follow" class="follow-form">
+      <input type="submit" value="Follow" />
+      <input type="hidden" name="username" value="{{ user.username }}" />
+      <input type="hidden" name="user_id" value="{{ user.id }}" />
+    </form>
+    {% endif %} {% endfor %}
+    <div>
+      <h2>Friends</h2>
+      <ol>
+        {% for friend in friends %}
+        <li>
+          <a href="/{{ friend.f_username}}"> {{ friend.f_username }} </a>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
 
-  <div>
-    <h2>Your friends liked</h2>
-    <ul>
-      {% for like in liked %}
-      <li><img width=50 height= 80 src={{like.poster}}> {{like.movie}} - {{like.p_year}} - {{like.director }}</li>
-      {% endfor %}
-    </ul>
+    <div>
+      <h2 style="margin-top: 5%">Your friends liked</h2>
+      <section class="carta-list">
+        {% for like in liked %}
+        <article class="carta">
+          <header class="carta-header">
+            <img width="150" height="210" src="{{like.poster}}" />
+            <h5>{{like.movie}} - {{like.p_year}} - {{like.director }}</h5>
+          </header>
+        </article>
+        {% endfor %}
+      </section>
+    </div>
   </main>
+  {% endblock %} {% endblock %}
 </div>
-{% endblock %} {% endblock %}

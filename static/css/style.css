@@ -79,6 +79,10 @@ h4 {
   margin-left: 1%;
 }
 
+h5 {
+  font-size: 16px;
+}
+
 .lista {
   font-size: 23px;
   font-weight: normal;
@@ -740,6 +744,55 @@ ol {
   display: inline-block;
   margin-left: 2rem;
 }
+
+.carta-list {
+  display: flex;
+  padding: 3rem;
+  overflow-x: scroll;
+}
+
+.carta-list::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.carta-list::-webkit-scrollbar-thumb {
+  background: var(--bg-primary);
+  border-radius: 10px;
+  box-shadow: inset 2px 2px 2px hsla(0, 0%, 100%, 0.25),
+    inset -2px -2px 2px hsla(0, 0%, 0%, 0.25);
+}
+
+.carta-list::-webkit-scrollbar-track {
+  background: linear-gradient(90deg, #35353d 0%, #2b2255 100%);
+}
+
+.carta {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  height: 300px;
+  width: 200px;
+  min-width: 200px;
+  padding: 1.5rem;
+
+  border-radius: 10px;
+  background-color: var(--bg-primary);
+
+  transition: 0.2s;
+}
+
+.carta:hover {
+  transform: translateY(-1rem);
+}
+
+.carta:hover ~ .carta {
+  transform: translateX(130px);
+}
+
+.carta:not(:first-child) {
+  margin-left: -130px;
+}
+
 /*----------------------------------------------------- Small screens--------------------------------------------------------- */
 @media only screen and (max-width: 600px) {
   .navbar {
