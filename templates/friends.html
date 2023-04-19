@@ -38,12 +38,12 @@
     </div>
 
     <div>
-      <h2 style="margin-top: 5%">Your friends liked</h2>
+      <h2 style="margin-top: 5%">Popular With Friends</h2>
       <section class="carta-list">
         {% for like in liked %}
         <article class="carta">
           <header class="carta-header">
-            <img width="150" height="210" src="{{like.poster}}" />
+            <img class="img-carta" src="{{like.poster}}" />
             <h5>{{like.movie}} - {{like.p_year}} - {{like.director }}</h5>
           </header>
         </article>

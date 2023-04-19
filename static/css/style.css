@@ -771,12 +771,14 @@ ol {
   position: relative;
   flex-direction: column;
   height: 300px;
-  width: 200px;
-  min-width: 200px;
+  width: 180px;
+  min-width: 150px;
   padding: 1.5rem;
 
   border-radius: 10px;
   background-color: var(--bg-primary);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+  border: #090909 1px solid;
 
   transition: 0.2s;
 }
@@ -791,6 +793,15 @@ ol {
 
 .carta:not(:first-child) {
   margin-left: -130px;
+}
+
+.img-carta {
+  margin-left: 10%;
+  width: 80%;
+  height: 210px;
+  object-fit: cover;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+  border: #d6d6e3 4px solid;
 }
 
 /*----------------------------------------------------- Small screens--------------------------------------------------------- */

@@ -5,7 +5,7 @@ import os
 import datetime
 import requests
 from bs4 import BeautifulSoup
-from tmdbv3api import TMDb, Movie
+from tmdbv3api import TMDb, Movie, TV
 
 tmdb = TMDb()
 
@@ -34,9 +34,11 @@ def get_movie_poster(movie_title):
     return str(img_tag)
 
 movie = Movie()
+tv = TV()
 
 @app.route('/home')
 def hello():
+    print(tv.search('Vinland Saga'))
     if 'loggedin' in session:
         try:
             movies = get_monthly_movies(session['id'], month_now)
@@ -195,11 +197,14 @@ def add_movie():
                     genre = request.form["genre"]
                     rating = request.form["rating"]
                     rewatch = request.form["rewatch"] # 0 false, 1 true
-                    tv = request.form["tv"]
+                    tv_show = request.form["tv"]
                     try:
-                        res = movie.search(title)
+                        if tv_show == '1':
+                            res = tv.search(title)
+                        else:
+                            res = movie.search(title)
                         poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
-                        print(poster)
+                        print(res)
                     except:
                         html = get_movie_poster(title)
                         if html != 'None':
@@ -210,8 +215,8 @@ def add_movie():
                         else: 
                             res = movie.search(title)
                             poster = res[0]['poster_path']
-                    print(title, director, year, date, genre, rating, rewatch, tv, session['id'])
-                    insert_movies(title, director, genre, year, date, rating, rewatch, tv, poster, session['id'])
+                    print(title, director, year, date, genre, rating, rewatch, tv_show, session['id'])
+                    insert_movies(title, director, genre, year, date, rating, rewatch, tv_show, poster, session['id'])
                     flash('Movie added', category='success')
                 else:
                     flash('You need to be logged in to add a movie', category='error')
@@ -245,7 +250,6 @@ def edit_movie():
             try:
                 res = movie.search(title)
                 poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
-                print(poster)
             except:
                 html = get_movie_poster(title)
                 if html != 'None':
