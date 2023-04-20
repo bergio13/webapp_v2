@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import load_users_from_db, load_users_from_username, engine, load_users_from_email, insert_user, get_user_by_id, insert_movies, get_movies, get_monthly_movies, get_user_name, insert_friends, get_friends, get_user_id, remove_movie_by_id, update_movie
+from database import *
 import os
 import datetime
 import requests
@@ -57,8 +57,6 @@ def animation():
 @app.route('/lista')
 def lista():
     if 'loggedin' in session:
-        us = get_user_by_id(session['id'])
-        username = us[0]['username']
         try:
             movies = get_movies(session['id'])
         except:
@@ -66,7 +64,63 @@ def lista():
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return redirect('/login')
-    return render_template('lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months, username=username)
+    return render_template('lista.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
+
+@app.route('/directors', methods=['GET'])
+def show_directors():
+    if 'loggedin' in session:
+        try:
+            movies = get_movies_groupby_director(session['id'])
+            directors = get_directors(session['id'])
+        except:
+            movies = []
+            directors = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('directors.html', movies=movies, directors=directors)
+
+@app.route('/genres', methods=['GET'])
+def show_genres():
+    if 'loggedin' in session:
+        try:
+            movies = get_movies_groupby_genre(session['id'])
+            generi = get_genres(session['id'])
+        except:
+            movies = []
+            generi = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('genres.html', movies=movies, genres=generi)
+
+@app.route('/years', methods=['GET'])
+def show_years():
+    if 'loggedin' in session:
+        try:
+            movies = get_movies_groupby_year(session['id'])
+            anni = get_years(session['id'])
+        except:
+            movies = []
+            anni = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('years.html', movies=movies, years=anni)
+
+@app.route('/ratings', methods=['GET'])
+def show_ratings():
+    if 'loggedin' in session:
+        try:
+            movies = get_movies_groupby_year(session['id'])
+            ratings = get_ratings(session['id'])
+        except:
+            movies = []
+            ratings = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('ratings.html', movies=movies, ratings=ratings)
 
 @app.route("/users/<name>")
 def show_user_profile(name):

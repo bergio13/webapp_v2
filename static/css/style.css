@@ -81,6 +81,8 @@ h4 {
 
 h5 {
   font-size: 16px;
+  margin-bottom: 0;
+  margin-top: 10%;
 }
 
 .lista {
@@ -144,9 +146,137 @@ ul.add li {
 }
 
 /* -----------------------------------List styling----------------------------------------------------------------- */
+.grid-container1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 0.2fr 3fr;
+  grid-template-areas:
+    "header header header"
+    "main main main";
+  height: 100%;
+  background-color: #1d2634;
+}
+
+.grid-item {
+  text-align: center;
+  padding: 10px;
+  font-size: 30px;
+}
+
+.item1 {
+  background-color: #1d2634;
+  grid-column: 1 / span 3;
+  grid-row: 1;
+  padding-top: 0;
+  padding-bottom: 0;
+  text-align: center;
+  width: 98%;
+}
+
+/* Dropdown Button */
+.dropbtn {
+  background-color: var(--bg-primary);
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  margin-top: 8%;
+  border-style: solid;
+  border-image: linear-gradient(to right, yellow, rgb(106, 235, 252)) 1 100%;
+  border-image-slice: 1;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover,
+.dropbtn:focus {
+  background-color: var(--bg-secondary);
+}
+
+/* The search field */
+#myInput {
+  box-sizing: border-box;
+  background-image: url("searchicon.png");
+  background-position: 10px 10px;
+  background-size: 30px 30px;
+  background-repeat: no-repeat;
+  background-color: var(--text-tertiary);
+  font-size: 16px;
+  padding: 14px 20px 12px 45px;
+  border: none;
+  border-bottom: 1px solid #000000;
+}
+
+/* The search field when it gets focus/clicked on */
+#myInput:focus {
+  outline: 3px solid #000000;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: var(--text-tertiary);
+  min-width: 230px;
+  border: 1px solid #000000;
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  font-size: 14px;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {
+  display: block;
+}
+
+.item2 {
+  background-color: #1d2634;
+  grid-column: 1 / span 2;
+  grid-row: 2;
+  width: 125%;
+}
+
+.item3 {
+  background-color: #1d2634;
+  grid-column: 3;
+  grid-row: 2;
+  width: 42%;
+  margin-left: 54%;
+}
+
+.item4 {
+  background-color: #1d2634;
+  grid-column: 1 / span 3;
+  grid-row: 3;
+  padding: 0;
+  text-align: center;
+}
+
+.row {
+  margin-left: 7%;
+}
+
 .column {
   float: left;
-  width: 24%;
+  width: 22.7%;
   padding: 46.5px 60px;
   text-align: center;
   cursor: pointer;
@@ -174,7 +304,7 @@ ul.add li {
 
 .containerTab {
   position: relative;
-  width: 96%;
+  width: 96.5%;
   padding: 0 16px;
   color: #ececec;
   display: none;
@@ -201,7 +331,7 @@ ul.add li {
 }
 
 table {
-  width: 98%;
+  width: 100%;
   font-size: 20px;
   text-align: left;
   margin-top: 1%;
@@ -300,6 +430,22 @@ tbody tr:hover {
   width: 70px;
   height: 100px;
   object-fit: cover;
+}
+
+.table-poster1 {
+  border-radius: 5px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+  width: 40px;
+  height: 70px;
+  object-fit: cover;
+}
+
+.table-list {
+  text-decoration: none;
+  color: black;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
 .navbar {
@@ -829,7 +975,7 @@ ol {
   width: 80%;
   height: 210px;
   object-fit: cover;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
   border: #d6d6e3 4px solid;
 }
 

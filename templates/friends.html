@@ -44,7 +44,8 @@
         <article class="carta">
           <header class="carta-header">
             <img class="img-carta" src="{{like.poster}}" />
-            <h5>{{like.movie}} - {{like.p_year}} - {{like.director }}</h5>
+            <h5>{{like.movie.upper()}}</h5>
+            <p style="margin-top: 0">{{like.director }} - {{like.p_year}}</p>
           </header>
         </article>
         {% endfor %}

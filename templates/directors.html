@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block body%}
+{% block content %}
+<main>
+  <h1>By director</h1>
+  {% for director in directors %}
+  <h3>{{ director.name }}</h3>
+  <ul>
+    {% for movie in movies %} {% if movie.director == director.name %}
+    <li>{{ movie.movie }}</li>
+    {% endif %} {% endfor %}
+  </ul>
+  {% endfor %}
+</main>
+{% endblock %} {% endblock %}

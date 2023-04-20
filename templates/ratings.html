@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block body%}
+{% block content %}
+<main>
+  <h1>By rating</h1>
+  {% for rating in ratings %}
+  <h3>{{ rating.name }}</h3>
+  <ul>
+    {% for movie in movies %} {% if movie.rating == rating.name %}
+    <li>{{ movie.movie }}</li>
+    {% endif %} {% endfor %}
+  </ul>
+  {% endfor %}
+</main>
+{% endblock %} {% endblock %}

@@ -172,3 +172,127 @@ def update_movie(lista_id, movie, director, p_year, rating, poster):
     with engine.connect() as conn:
         query = text('UPDATE lista SET movie=:movie, director=:director, p_year=:p_year, rating=:rating, poster=:poster WHERE lista_id = :lista_id').bindparams(lista_id=lista_id, movie=movie, director=director, p_year=p_year, rating=rating, poster=poster)
         conn.execute(query)
+        
+def get_movies_groupby_director(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM lista WHERE parent_id = :parent_id ORDER BY director').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["id"] = row[0]
+            lista_dict["movie"] = row[1]
+            lista_dict["director"] = row[2]
+            lista_dict["genre"] = row[3]
+            lista_dict["p_year"] = row[4]
+            lista_dict["v_date"] = row[5]
+            lista_dict["rating"] = row[6]
+            lista_dict["rewatch"] = row[7]
+            lista_dict["tv_show"] = row[8]
+            lista_dict["poster"] = row[9]    
+            lista_dicts.append(lista_dict)      
+        return lista_dicts
+
+def get_directors(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT DISTINCT director FROM lista WHERE parent_id = :parent_id ORDER BY director').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["name"] = row[0]
+            lista_dicts.append(lista_dict)      
+        return lista_dicts
+    
+def get_movies_groupby_genre(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM lista WHERE parent_id = :parent_id ORDER BY genre').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["id"] = row[0]
+            lista_dict["movie"] = row[1]
+            lista_dict["director"] = row[2]
+            lista_dict["genre"] = row[3]
+            lista_dict["p_year"] = row[4]
+            lista_dict["v_date"] = row[5]
+            lista_dict["rating"] = row[6]
+            lista_dict["rewatch"] = row[7]
+            lista_dict["tv_show"] = row[8]
+            lista_dict["poster"] = row[9]    
+            lista_dicts.append(lista_dict)      
+        return lista_dicts
+
+def get_genres(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT DISTINCT genre FROM lista WHERE parent_id = :parent_id ORDER BY genre').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["name"] = row[0]
+            lista_dicts.append(lista_dict)      
+        return lista_dicts
+    
+def get_movies_groupby_year(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM lista WHERE parent_id = :parent_id ORDER BY p_year').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["id"] = row[0]
+            lista_dict["movie"] = row[1]
+            lista_dict["director"] = row[2]
+            lista_dict["genre"] = row[3]
+            lista_dict["p_year"] = row[4]
+            lista_dict["v_date"] = row[5]
+            lista_dict["rating"] = row[6]
+            lista_dict["rewatch"] = row[7]
+            lista_dict["tv_show"] = row[8]
+            lista_dict["poster"] = row[9]    
+            lista_dicts.append(lista_dict)      
+        return lista_dicts
+
+def get_years(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT DISTINCT p_year FROM lista WHERE parent_id = :parent_id ORDER BY p_year').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["name"] = row[0]
+            lista_dicts.append(lista_dict)      
+        return lista_dicts
+    
+def get_movies_groupby_rating(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM lista WHERE parent_id = :parent_id ORDER BY rating').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["id"] = row[0]
+            lista_dict["movie"] = row[1]
+            lista_dict["director"] = row[2]
+            lista_dict["genre"] = row[3]
+            lista_dict["p_year"] = row[4]
+            lista_dict["v_date"] = row[5]
+            lista_dict["rating"] = row[6]
+            lista_dict["rewatch"] = row[7]
+            lista_dict["tv_show"] = row[8]
+            lista_dict["poster"] = row[9]    
+            lista_dicts.append(lista_dict)      
+        return lista_dicts
+
+def get_ratings(parent_id):
+    with engine.connect() as conn:
+        query = text('SELECT DISTINCT rating FROM lista WHERE parent_id = :parent_id ORDER BY rating').bindparams(parent_id=parent_id)
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["name"] = row[0]
+            lista_dicts.append(lista_dict)      
+        return lista_dicts

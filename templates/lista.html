@@ -2,11 +2,148 @@
 {% block content %}
 <script src="static/js/grid.js"></script>
 
-<main style="background-color: #2a2a37">
+<!--<main style="background-color: #2a2a37; padding: 0">>-->
+<div class="grid-container1">
+  <div class="grid-item item1">
+    <div class="dropdown">
+      <button onclick="myFunction()" class="dropbtn">Filter by</button>
+      <div id="myDropdown" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
+        <a href="/directors">Director</a>
+        <a href="/genres">Genre</a>
+        <a href="/years">Year</a>
+        <a href="/ratings">Rating</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-item item2">
+    <div class="row">
+      {% for month in months %}
+      <div class="column" onclick="openTab('{{month}}');">
+        <h4 class="title">{{month}}</h4>
+      </div>
+      <div id="{{month}}" class="containerTab">
+        <span
+          onclick="this.parentElement.style.display='none';"
+          class="closebtn"
+          >&times;</span
+        >
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Movie</th>
+              <th>Year</th>
+              <th>Director</th>
+              <th>Rating</th>
+              <th style="width: 5%"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for movie in movies%} 
+            {% if movie['v_date'].year == year_now %}
+            {% if dict_months[movie['v_date'].month] ==
+            month %} 
+            {% if movie['rewatch']== 1 %}
+            <tr style="color: brown">
+              <td><img class="table-poster1" src="{{movie['poster']}}"/></td>
+              <td>{{movie['movie'].upper()}}</td>
+
+              <td>{{movie['p_year']}}</td>
+
+              <td>{{movie['director'].upper()}}</td>
+              <td>{{movie['rating']}}</td>
+              <td>
+                <form action="/remove_movie" method="post">
+                  <button type="submit" class="table-button">X</button>
+                  <input
+                    type="hidden"
+                    name="movie_id"
+                    value="{{movie['id']}}"
+                  />
+                </form>
+              </td>
+            </tr>
+            {% elif movie['p_year'] == now %}
+            <tr style="color: green">
+              <td><img class="table-poster1" src="{{movie['poster']}}"/></td>
+              <td>{{movie['movie'].upper()}}</td>
+
+              <td>{{movie['p_year']}}</td>
+
+              <td>{{movie['director'].upper()}}</td>
+              <td>{{movie['rating']}}</td>
+              <td>
+                <form action="/remove_movie" method="post">
+                  <button type="submit" class="table-button">X</button>
+                  <input
+                    type="hidden"
+                    name="movie_id"
+                    value="{{movie['id']}}"
+                  />
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td><img class="table-poster1" src="{{movie['poster']}}"/></td>
+              <td>{{movie['movie'].upper()}}</td>
+
+              <td>{{movie['p_year']}}</td>
+
+              <td>{{movie['director'].upper()}}</td>
+              <td>{{movie['rating']}}</td>
+              <td>
+                <form action="/remove_movie" method="post">
+                  <button type="submit" class="table-button">X</button>
+                  <input
+                    type="hidden"
+                    name="movie_id"
+                    value="{{movie['id']}}"
+                  />
+                </form>
+              </td>
+            </tr>
+            {% endif %} {% endif %} {% endif %} {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% endfor %}
+    </div>
+  </div>
+
+    <div class="grid-item item3">
+      <ul class="table-list">
+        <li> <a href="/lista">2022</a></li>
+        <li> <a href="/lista">2023</a></li>
+        <li><a
+          href="/add_movie"
+          style="
+            font-size: 18px;
+          "
+        >
+          Add movie
+        </a>
+      </li>
+      </ul>
+    </div>
+
+    <div class="grid-item item4">
+      <p style="font-size: 10px; color: #b3b3b3; display: inline-block">
+        (Color legend: brown=rewatch, green=2023/seen in the theater)
+      </p>
+    </div>
+  </div>
+  <!--<header class="header-list">
+    <div class="header-left-list">
+      <span class="material-icons-outlined"> search </span>
+      <span class="material-icons-outlined"> filter_list </span>
+    </div>
+  </header>
   <div>
-    <h1 style="margin-bottom: 2px; display: inline-block">My Watched List</h1>
-    <brown
-      ="rewatch,"
+    <p
       style="
         margin-left: 10px;
         font-size: 15px;
@@ -15,7 +152,7 @@
       "
     >
       (Color legend: brown=rewatch, green=2023/seen in the theater)
-    </brown>
+    </p>
     <a
       href="/add_movie"
       style="
@@ -28,12 +165,13 @@
       Add movie
     </a>
   </div>
+
   <div class="row">
     {% for month in months %}
     <div class="column" onclick="openTab('{{month}}');">
       <h4 class="title">{{month}}</h4>
     </div>
-    <div id="{{month}}" class="containerTab">
+    < id="{{month}}" class="containerTab">
       <span onclick="this.parentElement.style.display='none';" class="closebtn"
         >&times;</span
       >
@@ -52,7 +190,8 @@
         </li>
         {% endif %} {% endfor %}
       </ol>-->
-      <table>
+
+  <!--<table>
         <thead>
           <tr>
             <th>Movie</th>
@@ -116,5 +255,6 @@
 
     {% endfor %}
   </div>
-</main>
+</main> -->
+</div>
 {% endblock %} {% endblock %}
