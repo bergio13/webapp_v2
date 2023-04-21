@@ -361,7 +361,7 @@ def lista_user(username):
     except:
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_lista.html', movies=movies, months=months, now=year_now, dict_months=dict_months, username=username)
+    return render_template('_lista.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months, username=username)
     
     
 

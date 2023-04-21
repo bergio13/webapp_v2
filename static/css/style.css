@@ -300,6 +300,23 @@ ul.add li {
   border-image-slice: 1;
 }
 
+.column-friend {
+  float: left;
+  width: 21%;
+  padding: 46.5px 50px;
+  text-align: center;
+  cursor: pointer;
+  color: #ececec;
+  background-color: #2a2a37;
+  transition: 200ms ease;
+  border-width: 1px;
+  margin: 0px;
+  border-style: solid;
+  border-image: linear-gradient(to right, rgb(255, 0, 234), rgb(97, 67, 228)) 1
+    100%;
+  border-image-slice: 1;
+}
+
 .title {
   font-size: 24px;
   font-weight: normal;
@@ -310,6 +327,10 @@ ul.add li {
 
 .column:hover {
   background-color: #6649b8;
+}
+
+.column-friend:hover {
+  background-color: #49abb8;
 }
 
 .containerTab {
@@ -395,11 +416,6 @@ tbody tr:hover {
 
 .table-home tbody tr {
   border-bottom: 1px solid #4999b8;
-}
-
-.column-friend {
-  border-image: linear-gradient(to right, rgb(255, 0, 234), rgb(106, 235, 252))
-    1 100%;
 }
 
 .table-button {
