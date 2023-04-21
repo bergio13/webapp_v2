@@ -416,9 +416,9 @@ tbody tr:hover {
 }
 
 .table-button-list {
-  width: 90%;
+  width: 120%;
   height: 100%;
-  text-align: left;
+  text-align: center;
   background-color: rgb(119, 8, 198);
   border: solid 1px black;
   color: black;
