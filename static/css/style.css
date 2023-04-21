@@ -12,6 +12,7 @@
 body {
   margin: 0;
   padding: 0;
+  background: #2980b9;
   background: -webkit-linear-gradient(to right, #2980b9, #2c3e50);
   background: linear-gradient(to right, #2980b9, #2c3e50);
   color: black;
@@ -26,6 +27,7 @@ body:before {
   bottom: 0;
   width: 100%;
   z-index: -1;
+  background: #2980b9;
   background: -webkit-linear-gradient(
     to right,
     #2980b9,
@@ -264,7 +266,7 @@ ul.add li {
   background-color: #1d2634;
   grid-column: 3;
   grid-row: 2;
-  width: 42%;
+  width: 41%;
   margin-left: 54%;
 }
 
