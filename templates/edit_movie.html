@@ -8,6 +8,7 @@
     <input type="number" name="year" value="year" />
     <input type="text" name="director" value="director" />
     <input type="number" name="rating" value="rating" />
+    <input type="hidden" name="tv" value="tv" />
     <input type="submit" value="Submit" />
   </form>
 </main>
@@ -19,11 +20,13 @@
   const year = urlParams.get("year");
   const director = urlParams.get("director");
   const rating = urlParams.get("rating");
+  const tv_show = urlParams.get("tv");
   document.getElementsByName("movie_id")[0].value = id;
   document.getElementsByName("movie")[0].value = name;
   document.getElementsByName("year")[0].value = year;
   document.getElementsByName("director")[0].value = director;
   document.getElementsByName("rating")[0].value = rating;
+  document.getElementsByName("tv")[0].value = tv_show;
 </script>
 
 {% endblock %} {% endblock %}

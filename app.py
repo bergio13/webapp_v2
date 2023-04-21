@@ -9,7 +9,7 @@ from tmdbv3api import TMDb, Movie, TV
 
 tmdb = TMDb()
 
-tmdb.api_key = '73e5cb6f15bae80e1647d22349799e4f'
+tmdb.api_key = '2b790b926b7fb852b28da2eeae27f328'
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -38,7 +38,6 @@ tv = TV()
 
 @app.route('/home')
 def hello():
-    print(tv.search('Vinland Saga'))
     if 'loggedin' in session:
         try:
             movies = get_monthly_movies(session['id'], month_now)
@@ -365,8 +364,12 @@ def edit_movie():
             director = request.form['director']
             p_year = request.form['year']
             rating = request.form['rating']
+            tv_show = request.form['tv']
             try:
-                res = movie.search(title)
+                if tv_show == '1':
+                    res = tv.search(title)
+                else:
+                    res = movie.search(title)
                 poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
             except:
                 html = get_movie_poster(title)
