@@ -415,6 +415,19 @@ tbody tr:hover {
   border-radius: 5px;
 }
 
+.table-button-list {
+  width: 90%;
+  height: 100%;
+  text-align: left;
+  background-color: rgb(119, 8, 198);
+  border: solid 1px black;
+  color: black;
+  font-size: 10px;
+  cursor: pointer;
+  transition: 200ms ease;
+  border-radius: 5px;
+}
+
 .table-button:hover {
   background-color: rgb(255, 0, 0);
 }
