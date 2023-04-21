@@ -1044,6 +1044,11 @@ ol {
   border: #d6d6e3 4px solid;
 }
 
+.carta-link {
+  text-decoration: none;
+  color: #6082b6;
+}
+
 /*----------------------------------------------------- Small screens--------------------------------------------------------- */
 @media only screen and (max-width: 600px) {
   .navbar {
