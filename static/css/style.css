@@ -312,7 +312,7 @@ ul.add li {
 
 .containerTab {
   position: relative;
-  width: 96.5%;
+  width: 100%;
   padding: 0 16px;
   color: #ececec;
   display: none;
@@ -377,7 +377,7 @@ tbody tr:hover {
 }
 
 .table-home {
-  width: 93vw;
+  width: 92vw;
   font-size: 20px;
   position: absolute;
   z-index: 0;
