@@ -281,12 +281,12 @@ ul.add li {
 }
 
 .row {
-  margin-left: 7%;
+  margin-left: 10%;
 }
 
 .column {
   float: left;
-  width: 22.7%;
+  width: 21%;
   padding: 46.5px 50px;
   text-align: center;
   cursor: pointer;
