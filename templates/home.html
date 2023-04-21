@@ -29,7 +29,14 @@
         <td>
           <img class="table-poster" src="{{movie['poster']}}" />
         </td>
-        <td>{{movie['movie'].upper()}}</td>
+        <td>
+          <a
+            class="table-link"
+            href="https://www.google.com/search?q={{movie['movie']}}"
+            target="_blank"
+            >{{movie['movie'].upper()}}
+          </a>
+        </td>
 
         <td>{{movie['p_year']}}</td>
 
@@ -59,7 +66,14 @@
       {% elif movie['p_year'] == now %}
       <tr style="color: green">
         <td><img class="table-poster" src="{{movie['poster']}}" /></td>
-        <td>{{movie['movie'].upper()}}</td>
+        <td>
+          <a
+            class="table-link"
+            href="https://www.google.com/search?q={{movie['movie']}}"
+            target="_blank"
+            >{{movie['movie'].upper()}}</a
+          >
+        </td>
 
         <td>{{movie['p_year']}}</td>
 
@@ -91,7 +105,14 @@
         <td>
           <img class="table-poster" src="{{movie['poster']}}" />
         </td>
-        <td>{{movie['movie'].upper()}}</td>
+        <td>
+          <a
+            class="table-link"
+            href="https://www.google.com/search?q={{movie['movie']}}"
+            target="_blank"
+            >{{movie['movie'].upper()}}</a
+          >
+        </td>
         <td>{{movie['p_year']}}</td>
 
         <td>{{movie['director'].upper()}}</td>

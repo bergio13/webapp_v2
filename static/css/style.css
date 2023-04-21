@@ -12,6 +12,7 @@
 body {
   margin: 0;
   padding: 0;
+  background: -webkit-linear-gradient(to right, #2980b9, #2c3e50);
   background: linear-gradient(to right, #2980b9, #2c3e50);
   color: black;
   height: 100vh;
@@ -25,6 +26,11 @@ body:before {
   bottom: 0;
   width: 100%;
   z-index: -1;
+  background: -webkit-linear-gradient(
+    to right,
+    #2980b9,
+    #2c3e50
+  ); /*linear-gradient(to bottom, #40c057 5%, #9775fa 95%);*/
   background: linear-gradient(
     to right,
     #2980b9,
@@ -277,7 +283,7 @@ ul.add li {
 .column {
   float: left;
   width: 22.7%;
-  padding: 46.5px 60px;
+  padding: 46.5px 55px;
   text-align: center;
   cursor: pointer;
   color: #ececec;
@@ -343,6 +349,7 @@ table {
 thead tr {
   color: black;
   text-align: left;
+  background: -webkit-linear-gradient(to right, yellow, rgb(106, 235, 252));
   background: linear-gradient(to right, yellow, rgb(106, 235, 252));
 }
 
@@ -446,6 +453,11 @@ tbody tr:hover {
   list-style-type: none;
   margin: 0;
   padding: 0;
+}
+
+.table-link {
+  text-decoration: none;
+  color: white;
 }
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
 .navbar {
@@ -568,6 +580,12 @@ tbody tr:hover {
 }*/
 
 canvas {
+  background: -webkit-linear-gradient(
+    45deg,
+    #141418,
+    #6649b8,
+    #141418
+  ); /* rgb(125, 232, 246) */
   background: linear-gradient(
     45deg,
     #141418,
@@ -749,6 +767,11 @@ select option {
     "header header header"
     "main main main";
   height: 100%;
+  background: -webkit-linear-gradient(
+    to right,
+    #41295a,
+    #2f0743
+  ); /*linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
   background: linear-gradient(
     to right,
     #41295a,
@@ -812,18 +835,22 @@ select option {
 }
 
 .card:first-child {
+  background: -webkit-linear-gradient(to right, #7950f2 5%, #748ffc 95%);
   background: linear-gradient(to right, #7950f2 5%, #748ffc 95%);
 }
 
 .card:nth-child(2) {
+  background: -webkit-linear-gradient(to right, #4ecdc4, #556270);
   background: linear-gradient(to right, #4ecdc4, #556270);
 }
 
 .card:nth-child(3) {
+  background: -webkit-linear-gradient(to right, #82c91e 5%, #3bc9db 95%);
   background: linear-gradient(to right, #82c91e 5%, #3bc9db 95%);
 }
 
 .card:nth-child(4) {
+  background: -webkit-linear-gradient(to right, #be4bdb 5%, #f783ac 95%);
   background: linear-gradient(to right, #be4bdb 5%, #f783ac 95%);
 }
 .card-inner {
@@ -864,6 +891,7 @@ select option {
     "header"
     "main";
   height: 100%;
+  background: -webkit-linear-gradient(94deg, #202c42 6%, #295fbd 90%);
   background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
 }
 

@@ -42,7 +42,6 @@ def hello():
     if 'loggedin' in session:
         try:
             movies = get_monthly_movies(session['id'], month_now)
-            print(movies)
         except:
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
