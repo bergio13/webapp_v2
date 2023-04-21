@@ -79,6 +79,22 @@ def show_directors():
         return redirect('/login')
     return render_template('directors.html', movies=movies, directors=directors)
 
+@app.route('/directors<username>', methods=['GET'])
+def show_directors_friends(username):
+    if 'loggedin' in session:
+        try:
+            id = get_user_id(username)
+            id = id[0]['id']
+            movies = get_movies_groupby_director(id)
+            directors = get_directors(id)
+        except:
+            movies = []
+            directors = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('directors.html', movies=movies, directors=directors)
+
 @app.route('/genres', methods=['GET'])
 def show_genres():
     if 'loggedin' in session:
@@ -92,6 +108,23 @@ def show_genres():
     else:
         return redirect('/login')
     return render_template('genres.html', movies=movies, genres=generi)
+
+@app.route('/genres<username>', methods=['GET'])
+def show_genres_friends(username):
+    if 'loggedin' in session:
+        try:
+            id = get_user_id(username)
+            id = id[0]['id']
+            movies = get_movies_groupby_genre(id)
+            generi = get_genres(id)
+        except:
+            movies = []
+            generi = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('genres.html', movies=movies, genres=generi)
+
 
 @app.route('/years', methods=['GET'])
 def show_years():
@@ -107,12 +140,44 @@ def show_years():
         return redirect('/login')
     return render_template('years.html', movies=movies, years=anni)
 
+@app.route('/years<username>', methods=['GET'])
+def show_years_friends(username):
+    if 'loggedin' in session:
+        try:
+            id = get_user_id(username)
+            id = id[0]['id']
+            movies = get_movies_groupby_year(id)
+            anni = get_years(id)
+        except:
+            movies = []
+            anni = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('years.html', movies=movies, years=anni)
+
 @app.route('/ratings', methods=['GET'])
 def show_ratings():
     if 'loggedin' in session:
         try:
             movies = get_movies_groupby_year(session['id'])
             ratings = get_ratings(session['id'])
+        except:
+            movies = []
+            ratings = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('ratings.html', movies=movies, ratings=ratings)
+
+@app.route('/ratings<username>', methods=['GET'])
+def show_ratings_friends(username):
+    if 'loggedin' in session:
+        try:
+            id = get_user_id(username)
+            id = id[0]['id']
+            movies = get_movies_groupby_year(id)
+            ratings = get_ratings(id)
         except:
             movies = []
             ratings = []
