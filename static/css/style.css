@@ -193,7 +193,7 @@ ul.add li {
   cursor: pointer;
   margin-top: 8%;
   border-style: solid;
-  border-image: linear-gradient(to right, yellow, rgb(106, 235, 252)) 1 100%;
+  border-image: linear-gradient(to top left, yellow, rgb(92, 0, 128)) 1 100%;
   border-image-slice: 1;
 }
 
@@ -296,7 +296,7 @@ ul.add li {
   border-width: 1px;
   margin: 0px;
   border-style: solid;
-  border-image: linear-gradient(to right, yellow, rgb(106, 235, 252)) 1 100%;
+  border-image: linear-gradient(to top left, yellow, rgb(92, 0, 128)) 1 100%;
   border-image-slice: 1;
 }
 
