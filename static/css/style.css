@@ -428,6 +428,10 @@ tbody tr:hover {
   border-radius: 5px;
 }
 
+.table-button-list:hover {
+  background-color: rgb(255, 0, 0);
+}
+
 .table-button:hover {
   background-color: rgb(255, 0, 0);
 }
