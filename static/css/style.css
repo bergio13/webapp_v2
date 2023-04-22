@@ -1042,6 +1042,8 @@ ol {
   object-fit: cover;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
   border: #d6d6e3 4px solid;
+  outline: 3px solid black;
+  outline-offset: 0px;
 }
 
 .carta-link {
