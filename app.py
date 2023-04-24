@@ -9,7 +9,7 @@ from tmdbv3api import TMDb, Movie, TV
 
 tmdb = TMDb()
 
-tmdb.api_key = '2b790b926b7fb852b28da2eeae27f328'
+tmdb.api_key = os.environ.get('TMDB_API_KEY')
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
