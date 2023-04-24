@@ -225,6 +225,7 @@ ul.add li {
 /* The container <div> - needed to position the dropdown content */
 .dropdown {
   position: relative;
+  margin-left: -15%;
   display: inline-block;
 }
 
@@ -232,6 +233,7 @@ ul.add li {
 .dropdown-content {
   display: none;
   position: absolute;
+  margin-left: -75%;
   background-color: var(--text-tertiary);
   min-width: 230px;
   border: 1px solid #000000;
@@ -495,6 +497,87 @@ tbody tr:hover {
 .table-link {
   text-decoration: none;
   color: white;
+}
+
+.grid-container2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 0.2fr 3fr;
+  grid-template-areas:
+    "header header header"
+    "main main main";
+  height: 100%;
+  background-color: transparent;
+}
+
+.grid-item2 {
+  background-color: transparent;
+  text-align: center;
+  padding: 20px 0;
+  font-size: 30px;
+}
+
+.filtered {
+  background: transparent;
+  background-color: transparent;
+}
+
+.filterby {
+  height: 100%;
+  background: transparent;
+}
+
+.filterby:before {
+  content: "";
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: -1;
+  background: #304352; /* fallback for old browsers */
+  background: -webkit-linear-gradient(
+    to right,
+    #d7d2cc,
+    #304352
+  ); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(
+    to right,
+    #d7d2cc,
+    #304352
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+
+.column-directors {
+  text-align: center;
+  font-size: medium;
+  cursor: pointer;
+  color: black;
+  background-color: transparent;
+  transition: 200ms ease;
+  border-width: 1px;
+  margin: 0px;
+}
+.column-directors:hover {
+  color: rgb(176, 46, 46);
+}
+
+.column1 {
+  float: left;
+  width: 15%;
+  padding: 46.5px 50px;
+  text-align: center;
+  cursor: pointer;
+  color: black;
+  background-color: transparent;
+  transition: 200ms ease;
+  border-width: 1px;
+  margin: 0px;
+}
+
+.column1:hover {
+  color: white;
+  background-color: rgb(136, 30, 30);
 }
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
 .navbar {
