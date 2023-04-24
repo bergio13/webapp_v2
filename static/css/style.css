@@ -229,6 +229,11 @@ ul.add li {
   display: inline-block;
 }
 
+.dropdown1 {
+  position: relative;
+  display: inline-block;
+}
+
 /* Dropdown Content (Hidden by Default) */
 .dropdown-content {
   display: none;
