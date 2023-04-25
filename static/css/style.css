@@ -1119,10 +1119,20 @@ ol {
   width: 80%;
   height: 210px;
   object-fit: cover;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
-  border: #d6d6e3 4px solid;
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.5);
+  border: transparent 4px solid;
   outline: 3px solid black;
   outline-offset: 0px;
+}
+
+.img-carta-back {
+  position: absolute;
+  margin-left: -70%;
+  width: 71%;
+  height: 225px;
+  object-fit: cover;
+  filter: blur(8px);
+  z-index: -1;
 }
 
 .carta-link {
