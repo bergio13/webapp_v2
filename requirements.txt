@@ -5,3 +5,4 @@ pymysql
 requests
 bs4
 tmdbv3api
+flask-mail
