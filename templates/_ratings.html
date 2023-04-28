@@ -5,16 +5,16 @@
 <main class="filterby">
 <div class="grid-container2">
   <div class="grid-item2 item1">
-    <h1 style="margin-right: 5%; display: inline-block; color: white">By year</h1>
+    <h1 style="margin-right: 5%; display: inline-block; color: white">By rating</h1>
   </div>
 
   <div class="grid-item2 item2 filtered">
     <div class="row">
-      {% for year in years %}
-      <div class="column1" onclick="openTab('{{year.name}}');">
-        <h3 class="title">{{year.name}}</h3>
+      {% for rating in ratings %}
+      <div class="column1" onclick="openTab('{{rating.name}}');">
+        <h2 class="title">{{rating.name}}</h2>
       </div>
-      <div id="{{year.name}}" class="containerTab">
+      <div id="{{rating.name}}" class="containerTab">
         <span
           onclick="this.parentElement.style.display='none';"
           class="closebtn"
@@ -25,14 +25,14 @@
             <tr>
               <th></th>
               <th>Movie</th>
+              <th>Year</th>
               <th>Director</th>
-              <th>Rating</th>
-              <th style="width: 5%"></th>
             </tr>
           </thead>
           <tbody>
             {% for movie in movies%} 
-            {% if movie.p_year == year.name %} 
+            {% if movie.rating == rating.name %} 
+
 
             {% if movie['rewatch']== 1 %}
             <tr style="color: brown">
@@ -44,19 +44,9 @@
                 >
                 {{movie['movie'].upper()}}</a></td>
 
+              <td>{{movie['p_year']}}</td>
 
               <td>{{movie['director'].upper()}}</td>
-              <td>{{movie['rating']}}</td>
-              <td>
-                <form action="/remove_movie" method="post">
-                  <button type="submit" class="table-button-list">X</button>
-                  <input
-                    type="hidden"
-                    name="movie_id"
-                    value="{{movie['id']}}"
-                  />
-                </form>
-              </td>
             </tr>
             {% elif movie['p_year'] == now %}
             <tr style="color: green">
@@ -67,18 +57,9 @@
                 target="_blank"
                 >{{movie['movie'].upper()}}</a></td>
 
+              <td>{{movie['p_year']}}</td>
+
               <td>{{movie['director'].upper()}}</td>
-              <td>{{movie['rating']}}</td>
-              <td>
-                <form action="/remove_movie" method="post">
-                  <button type="submit" class="table-button-list">X</button>
-                  <input
-                    type="hidden"
-                    name="movie_id"
-                    value="{{movie['id']}}"
-                  />
-                </form>
-              </td>
             </tr>
             {% else %}
             <tr>
@@ -89,18 +70,9 @@
                 target="_blank"
                 >{{movie['movie'].upper()}}</a></td>
 
+              <td>{{movie['p_year']}}</td>
+
               <td>{{movie['director'].upper()}}</td>
-              <td>{{movie['rating']}}</td>
-              <td>
-                <form action="/remove_movie" method="post">
-                  <button type="submit" class="table-button-list">X</button>
-                  <input
-                    type="hidden"
-                    name="movie_id"
-                    value="{{movie['id']}}"
-                  />
-                </form>
-              </td>
             </tr>
             {% endif %} {% endif %} {% endfor %}
           </tbody>
@@ -121,4 +93,3 @@
 </div>
 </main>
 {% endblock %} {% endblock %}
-

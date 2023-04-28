@@ -1,0 +1,25 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {%block body
+    %}{%block content %}
+    <main>
+      <form method="post">
+        <div class="field">
+          <input
+            type="password"
+            name="password"
+            class="input"
+            placeholder=""
+            required
+          />
+          <label for="password" class="label">Password</label>
+        </div>
+        <div class="buttons">
+            <button
+              type="submit"
+              class="button button-Login"
+              style="display: inline-block"
+            >
+              Set new password
+            </button>
+      </form>
+    </main>
+    {% endblock %}{% endblock %}

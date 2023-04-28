@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block body%}
 {% block content %}
-<script src="static/js/grid.js"></script>
+<script src="/static/js/grid.js"></script>
 
 <!--<main style="background-color: #2a2a37">
   <div>
@@ -87,10 +87,10 @@
       <button onclick="myFunction()" class="dropbtn">Filter by</button>
       <div id="myDropdown" class="dropdown-content">
         <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
-        <a href="/directors{{username}}">Director</a>
-        <a href="/genres{{username}}">Genre</a>
-        <a href="/years{{username}}">Year</a>
-        <a href="/ratings{{username}}">Rating</a>
+        <a href="/directors/{{username}}">Director</a>
+        <a href="/genres/{{username}}">Genre</a>
+        <a href="/years/{{username}}">Year</a>
+        <a href="/ratings/{{username}}">Rating</a>
       </div>
     </div>
   </div>
@@ -176,17 +176,7 @@
 
     <div class="grid-item item3">
       <ul class="table-list">
-        <li> <a href="/lista">2022</a></li>
-        <li> <a href="/lista">2023</a></li>
-        <li><a
-          href="/add_movie"
-          style="
-            font-size: 18px;
-          "
-        >
-          Add movie
-        </a>
-      </li>
+        <li> <a href="#">2023</a></li>
       </ul>
     </div>
 

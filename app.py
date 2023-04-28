@@ -6,13 +6,21 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV
+from flask_mail import Mail, Message
+import secrets
 
 tmdb = TMDb()
-
 tmdb.api_key = os.environ.get('TMDB_API_KEY')
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'kinetowebapp@gmail.com'
+app.config['MAIL_PASSWORD'] = os.environ.get('KINETO_MAIL_PASSWORD')
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
 
 year_now = datetime.date.today().year
 month_now = datetime.date.today().month
@@ -39,6 +47,9 @@ tv = TV()
 @app.route('/home')
 def hello():
     if 'loggedin' in session:
+        msg = Message('Hello', sender='kinetowebapp@gmail.com', recipients=['bergio343@gmail.com'])
+        msg.body = "Hello Flask message sent from Flask-Mail"
+        mail.send(msg)
         try:
             movies = get_monthly_movies(session['id'], month_now)
         except:
@@ -78,7 +89,7 @@ def show_directors():
         return redirect('/login')
     return render_template('directors.html', movies=movies, directors=directors)
 
-@app.route('/directors<username>', methods=['GET'])
+@app.route('/directors/<username>', methods=['GET'])
 def show_directors_friends(username):
     if 'loggedin' in session:
         try:
@@ -92,7 +103,7 @@ def show_directors_friends(username):
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return redirect('/login')
-    return render_template('directors.html', movies=movies, directors=directors)
+    return render_template('_directors.html', movies=movies, directors=directors)
 
 @app.route('/genres', methods=['GET'])
 def show_genres():
@@ -108,7 +119,7 @@ def show_genres():
         return redirect('/login')
     return render_template('genres.html', movies=movies, genres=generi)
 
-@app.route('/genres<username>', methods=['GET'])
+@app.route('/genres/<username>', methods=['GET'])
 def show_genres_friends(username):
     if 'loggedin' in session:
         try:
@@ -122,7 +133,7 @@ def show_genres_friends(username):
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return redirect('/login')
-    return render_template('genres.html', movies=movies, genres=generi)
+    return render_template('_genres.html', movies=movies, genres=generi)
 
 
 @app.route('/years', methods=['GET'])
@@ -139,7 +150,7 @@ def show_years():
         return redirect('/login')
     return render_template('years.html', movies=movies, years=anni)
 
-@app.route('/years<username>', methods=['GET'])
+@app.route('/years/<username>', methods=['GET'])
 def show_years_friends(username):
     if 'loggedin' in session:
         try:
@@ -153,7 +164,7 @@ def show_years_friends(username):
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return redirect('/login')
-    return render_template('years.html', movies=movies, years=anni)
+    return render_template('_years.html', movies=movies, years=anni)
 
 @app.route('/ratings', methods=['GET'])
 def show_ratings():
@@ -169,7 +180,7 @@ def show_ratings():
         return redirect('/login')
     return render_template('ratings.html', movies=movies, ratings=ratings)
 
-@app.route('/ratings<username>', methods=['GET'])
+@app.route('/ratings/<username>', methods=['GET'])
 def show_ratings_friends(username):
     if 'loggedin' in session:
         try:
@@ -183,7 +194,7 @@ def show_ratings_friends(username):
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return redirect('/login')
-    return render_template('ratings.html', movies=movies, ratings=ratings)
+    return render_template('_ratings.html', movies=movies, ratings=ratings)
 
 @app.route("/users/<name>")
 def show_user_profile(name):
@@ -297,6 +308,60 @@ def logout():
     session.pop('email', None)
     # Redirect to login page
     return redirect('/login')
+
+def generate_token():
+        return secrets.token_hex(16)
+
+def is_expired(creation_date):
+        return datetime.datetime.utcnow() > (creation_date + datetime.timedelta(hours=24))
+
+
+@app.route('/passwordreset', methods=['GET', 'POST'])
+def request_password_reset():
+    if request.method == 'POST':
+        email = request.form['email']
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        user = get_user_by_email(email)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Generate a new reset token
+        token = generate_token()
+        insert_token(token, user.id, datetime.datetime.utcnow())
+
+        # Send an email to the user with the reset link
+        reset_url = f"https://lista-film-v2.onrender.com/passwordreset/{token}"
+        msg = Message('Reset Your Password', sender='kinetowebapp@gmail.com', recipients=[user.email])
+        msg.body = f"Click this link to reset your password: {reset_url}"
+        mail.send(msg)
+        return jsonify({'message': 'Password reset email sent, if you do not find it check your spam folder'})
+    return render_template('passwordreset.html')
+
+@app.route('/passwordreset/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if request.method == 'POST':
+        password = request.form['password']
+        hash = generate_password_hash(password, method='sha256')
+        if not password:
+            return jsonify({'error': 'Password is required'}), 400
+    
+        # Find the reset token
+        reset_token = get_token(token)
+        if not reset_token:
+            return jsonify({'error': 'Invalid token'}), 404
+        if is_expired(reset_token.created_at):
+            return jsonify({'error': 'Token has expired'}), 400
+    
+        # Update the user's password
+        user_id = reset_token.user_id
+        update_user_password(user_id, hash)
+        delete_token(token)
+    
+        return jsonify({'message': 'Password reset successful'})
+    return render_template('reset2.html')
+
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
@@ -418,7 +483,7 @@ def follow():
             return redirect('/login')
     return redirect('/friends')
 
-@app.route('/<username>')
+@app.route('/list/<username>')
 def lista_user(username):
     user = get_user_id(username)
     print(user)

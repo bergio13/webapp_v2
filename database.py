@@ -296,3 +296,32 @@ def get_ratings(parent_id):
             lista_dict["name"] = row[0]
             lista_dicts.append(lista_dict)      
         return lista_dicts
+    
+def get_user_by_email(email):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM users WHERE email = :email').bindparams(email=email)
+        result = conn.execute(query)
+        user = result.fetchone()
+        return user
+
+def insert_token(token, user_id, date):
+    with engine.connect() as conn:
+        query = text('INSERT INTO tokens (token, user_id, created_at) VALUES (:token, :user_id, :created_at)').bindparams(token=token, user_id=user_id, created_at=date)
+        conn.execute(query)
+        
+def get_token(token):
+    with engine.connect() as conn:
+        query = text('SELECT * FROM tokens WHERE token = :token').bindparams(token=token)
+        result = conn.execute(query)
+        token = result.fetchone()
+        return token
+    
+def delete_token(token):
+    with engine.connect() as conn:
+        query = text('DELETE FROM tokens WHERE token = :token').bindparams(token=token)
+        conn.execute(query)
+
+def update_user_password(user_id, password):
+    with engine.connect() as conn:
+        query = text('UPDATE users SET password = :password WHERE id = :user_id').bindparams(password=password, user_id=user_id)
+        conn.execute(query)
