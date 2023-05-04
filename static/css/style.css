@@ -1007,8 +1007,9 @@ select option {
     "header"
     "main";
   height: 100%;
-  background: -webkit-linear-gradient(94deg, #202c42 6%, #295fbd 90%);
-  background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
+  /*background: -webkit-linear-gradient(94deg, #202c42 6%, #295fbd 90%);
+  background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
+  background-color: #17141d;
 }
 
 .header-friends {
@@ -1019,7 +1020,8 @@ select option {
   display: flex;
   justify-content: space-between;
   padding: 0 30px 0 30px;
-  background-image: linear-gradient(94deg, #202c42 6%, #295fbd 90%);
+  /*background-image: linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
+  background: #17141d;
 }
 
 .main-friends {
@@ -1075,14 +1077,14 @@ ol {
   height: 10px;
 }
 .carta-list::-webkit-scrollbar-thumb {
-  background: var(--bg-primary);
+  background: #201c29;
   border-radius: 10px;
   box-shadow: inset 2px 2px 2px hsla(0, 0%, 100%, 0.25),
     inset -2px -2px 2px hsla(0, 0%, 0%, 0.25);
 }
 
 .carta-list::-webkit-scrollbar-track {
-  background: linear-gradient(90deg, #35353d 0%, #2b2255 100%);
+  background: linear-gradient(90deg, #201c29 0%, #2b2255 100%);
 }
 
 .carta {
@@ -1090,13 +1092,13 @@ ol {
   position: relative;
   flex-direction: column;
   height: 300px;
-  width: 180px;
-  min-width: 180px;
-  padding: 1.5rem;
+  width: 190px;
+  min-width: 190px;
+  padding: 1.6rem 1rem 1.5rem;
 
   border-radius: 10px;
-  background-color: var(--bg-primary);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+  background-color: #1f1b27;
+  box-shadow: -1rem 0rem 2rem rgba(0, 0, 0, 0.5);
   border: #090909 1px solid;
 
   transition: 0.2s;

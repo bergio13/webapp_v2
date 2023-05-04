@@ -42,10 +42,9 @@
           </thead>
           <tbody>
             {% for movie in movies%} 
-            {% if movie['v_date'].year == year_now %}
-            {% if dict_months[movie['v_date'].month] ==
-            month %} 
-            {% if movie['rewatch']== 1 %}
+              {% if movie['v_date'].year == year_now %}
+                {% if dict_months[movie['v_date'].month] ==month %} 
+                  {% if movie['rewatch'] == 1 %}
             <tr style="color: brown">
               <td><img class="table-poster1" src="{{movie['poster']}}"/></td>
               <td><a
@@ -122,7 +121,6 @@
           </tbody>
         </table>
       </div>
-
       {% endfor %}
     </div>
   </div>
