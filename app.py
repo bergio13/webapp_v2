@@ -380,6 +380,7 @@ def add_movie():
                     rating = request.form["rating"]
                     rewatch = request.form["rewatch"] # 0 false, 1 true
                     tv_show = request.form["tv"]
+                    cinema = request.form["cinema"]
                     try:
                         if tv_show == '1':
                             res = tv.search(title)
@@ -398,7 +399,7 @@ def add_movie():
                             res = movie.search(title)
                             poster = res[0]['poster_path']
                     print(title, director, year, date, genre, rating, rewatch, tv_show, session['id'])
-                    insert_movies(title, director, genre, year, date, rating, rewatch, tv_show, poster, session['id'])
+                    insert_movies(title, director, genre, year, date, rating, rewatch, tv_show, poster, session['id'], cinema)
                     flash('Movie added', category='success')
                 else:
                     flash('You need to be logged in to add a movie', category='error')
@@ -466,7 +467,7 @@ def search_friends():
         for friend in friends:
             movies = get_movies(friend['user_id'])
             for movie in movies:
-                if movie['rating'] >= 8:
+                if movie['rating'] >= 8 and datetime.date.today() - movie['v_date'] < datetime.timedelta(days=30):
                     liked.append(movie)                  
         return render_template('friends.html', friends=friends, liked=liked, session=session)
     return redirect('/login')
