@@ -82,17 +82,7 @@
 </main>-->
 <div class="grid-container1">
   <div class="grid-item item1">
-    <h1 style="margin-right: 5%; display: inline-block; color: white">{{username}}'s Watched List</h1>
-    <div class="dropdown1">
-      <button onclick="myFunction()" class="dropbtn">Filter by</button>
-      <div id="myDropdown" class="dropdown-content">
-        <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
-        <a href="/directors/{{username}}">Director</a>
-        <a href="/genres/{{username}}">Genre</a>
-        <a href="/years/{{username}}">Year</a>
-        <a href="/ratings/{{username}}">Rating</a>
-      </div>
-    </div>
+    <h1 style="margin-right: 5%; display: inline-block; color: white"><a class="f-name" href="/profile/{{username}}">{{username}}</a></h1>
   </div>
 
   <div class="grid-item item2">
@@ -177,6 +167,16 @@
     <div class="grid-item item3">
       <ul class="table-list">
         <li> <a href="#">2023</a></li>
+        <div class="dropdown1">
+          <button onclick="myFunction()" class="dropbtn">Filter by</button>
+          <div id="myDropdown" class="dropdown-content drop-friend">
+            <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
+            <a href="/directors/{{username}}">Director</a>
+            <a href="/genres/{{username}}">Genre</a>
+            <a href="/years/{{username}}">Year</a>
+            <a href="/ratings/{{username}}">Rating</a>
+          </div>
+        </div>
       </ul>
     </div>
 

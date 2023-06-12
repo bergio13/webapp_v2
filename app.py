@@ -208,6 +208,12 @@ def list_about():
         movies = get_movies(session['id'])
     return jsonify(movies)
 
+@app.route('/data/<username>')
+def list_about_friend(username):
+    if 'loggedin' in session:
+        users = get_user_id(username)
+        movies = get_movies(users[0]['id'])
+    return jsonify(movies)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -298,6 +304,31 @@ def profile():
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
         return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
+    return redirect('/login')
+
+@app.route('/profile/<username>')
+def profile_friend(username):
+    if 'loggedin' in session:
+        users = get_user_id(username)
+        try:
+            movies = get_movies(users[0]['id'])
+            length = len(movies)
+            lenght_month = len(get_monthly_movies(users[0]['id'], month_now))
+            rating = 0
+            genres = {}
+            for movie in movies:
+                rating += movie['rating']
+                genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
+                favorite_genre = max(genres, key=genres.get)
+            if length == 0:
+                avg_rating = 0
+                favorite_genre = 'No movies added'
+            else:
+                avg_rating = round(rating/length, 2)
+        except:
+            movies = []
+            flash('Something went wrong, please refresh the page', category='error')
+        return render_template('_profile.html', username= username, user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
     return redirect('/login')
 
 @app.route('/logout')

@@ -167,6 +167,13 @@ ul.add li {
   background-color: #1d2634;
 }
 
+.f-name {
+  color: white;
+}
+.f-name:hover {
+  color: #2980b9;
+}
+
 .grid-item {
   text-align: center;
   padding: 10px;
@@ -243,6 +250,10 @@ ul.add li {
   min-width: 230px;
   border: 1px solid #000000;
   z-index: 1;
+}
+
+.drop-friend {
+  margin-left: -115%;
 }
 
 /* Links inside the dropdown */
@@ -1207,6 +1218,15 @@ ol {
   .column {
     width: 10%;
     padding: 5vh 5vh 5vw 4vw;
+  }
+
+  .column-friend {
+    width: 10%;
+    padding: 5vh 5vh 5vw 4vw;
+  }
+
+  .drop-friend {
+    margin-left: -260%;
   }
 
   .row {

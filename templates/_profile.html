@@ -1,0 +1,65 @@
+{% extends 'base.html' %} {% block title %}Profile{% endblock %} {%block body%}
+{% block content%}
+<div class="grid-container">
+  <header class="header">
+    <div class="header-left">
+      <p class="material-icons-outlined" id="username">{{username}}</p>
+    </div>
+    <div class="header-right">
+      <span class="material-icons-outlined"><a href="/logout">logout</a> </span>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="main-cards">
+      <div class="card">
+        <div class="card-inner">
+          <h2>Total</h2>
+        </div>
+        <h1>{{length}}</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>This month</h2>
+        </div>
+        <h1>{{lmonth}}</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Favourite genre</h2>
+        </div>
+        <h1>{{favorite_genre}}</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Average rating</h2>
+        </div>
+        <h1>{{avg_rating}}</h1>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="charts-card">
+        <h2 class="chart-title">Top 6 Genres</h2>
+        <div id="bar-chart"></div>
+      </div>
+
+      <div class="charts-card">
+        <h2 class="chart-title">Movies Watched Per Month</h2>
+        <div id="line-chart"></div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.37.2/apexcharts.min.js"
+  integrity="sha512-yWglrpRYz/pD0pp1cSpWmSVvcFwuuc739X4WHy7hRKB11BGijnz7fuqKRQB7Ksot42IN365OGvuOhSgUejKbmA=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+<script src="/static/js/profile1.js"></script>
+{% endblock %}
