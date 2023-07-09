@@ -294,7 +294,12 @@ def profile():
             for movie in movies:
                 rating += movie['rating']
                 genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
-                favorite_genre = max(genres, key=genres.get)
+                if movie['rating'] > 5:
+                    premium = (movie['rating'] - 5)/2
+                    genres[movie['genre']] += premium
+            print(genres)
+            favorite_genre = max(genres, key=genres.get)
+            
             if length == 0:
                 avg_rating = 0
                 favorite_genre = 'No movies added'
@@ -527,8 +532,15 @@ def lista_user(username):
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
     return render_template('_lista.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months, username=username)
-    
-    
 
+@app.route('/discover')
+def discover():
+    if 'loggedin' in session:   
+        movies = get_highest_rating()                 
+        return render_template('explore.html', movies=movies, session=session)
+    return redirect('/login')
+    
+################################################################################################
 if __name__ == '__main__':
     app.run(debug=True)
+    

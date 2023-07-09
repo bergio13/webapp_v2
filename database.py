@@ -326,3 +326,17 @@ def update_user_password(user_id, password):
     with engine.connect() as conn:
         query = text('UPDATE users SET password = :password WHERE id = :user_id').bindparams(password=password, user_id=user_id)
         conn.execute(query)
+        
+def get_highest_rating():
+    with engine.connect() as conn:
+        query = text('SELECT DISTINCT movie, director, p_year, poster FROM lista WHERE rating >= 9 AND v_date >= DATE_SUB(CURDATE(), INTERVAL 2 MONTH)')
+        result = conn.execute(query)
+        lista_dicts = []
+        for row in result:
+            lista_dict = {}
+            lista_dict["movie"] = row[0]
+            lista_dict["director"] = row[1]
+            lista_dict["p_year"] = row[2]
+            lista_dict["poster"] = row[3]    
+            lista_dicts.append(lista_dict)      
+        return lista_dicts

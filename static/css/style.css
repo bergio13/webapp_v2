@@ -1088,7 +1088,7 @@ ol {
 .carta-list {
   display: flex;
   padding: 3rem;
-  overflow-x: scroll;
+  overflow-x: auto;
 }
 
 .carta-list::-webkit-scrollbar {

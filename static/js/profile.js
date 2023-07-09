@@ -87,17 +87,17 @@ async function main() {
             {
               from: 0,
               to: 5,
-              color: "#CA3BE0",
+              color: "#7217D6",
             },
             {
               from: 5,
               to: 10,
-              color: "#E8DB11",
+              color: "#7217D6",
             },
             {
               from: 10,
               to: 20,
-              color: "#992D2D",
+              color: "#7217D6",
             },
             {
               from: 20,

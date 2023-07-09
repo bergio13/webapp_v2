@@ -1,0 +1,67 @@
+{% extends 'base.html' %} {% block title %}Discover{% endblock %} {%block body%}
+{% block content%}
+<main>
+  <div>
+    <h2 style="color: yellow">Top Rated Recently Watched Movies on Kineto</h2>
+    <section class="carta-list" id="scrollableSection">
+      {% for m in movies %}
+      <article class="carta">
+        <header class="carta-header">
+          <img class="img-carta" src="{{m.poster}}" />
+          <img class="img-carta-back" src="{{m.poster}}" />
+          {% if m.movie|length < 29 %}
+          <h5>
+            <a
+              class="carta-link"
+              href="https://www.google.com/search?q={{m['movie']}}"
+              >{{m.movie.upper()}}</a
+            >
+          </h5>
+          {% else %}
+          <h5 style="font-size: 14px">
+            <a
+              class="carta-link"
+              href="https://www.google.com/search?q={{m['movie']}}"
+              >{{m.movie.upper()}}</a
+            >
+          </h5>
+          {% endif %}
+          <p style="font-size: 14px; margin-top: 0; color: white">
+            {{m.director }} ({{m.p_year}})
+          </p>
+        </header>
+      </article>
+      {% endfor %}
+    </section>
+  </div>
+</main>
+{% endblock %}
+<script>
+  const scrollableSection = document.getElementById("scrollableSection");
+  let isScrolling = false;
+  let targetScrollLeft = 0;
+
+  scrollableSection.addEventListener("wheel", (event) => {
+    event.preventDefault();
+    const scrollAmount = event.deltaY;
+    targetScrollLeft += scrollAmount;
+
+    if (!isScrolling) {
+      requestAnimationFrame(scrollSmooth);
+      isScrolling = true;
+    }
+  });
+
+  function scrollSmooth() {
+    scrollableSection.scrollLeft +=
+      (targetScrollLeft - scrollableSection.scrollLeft) * 0.1;
+
+    if (Math.abs(targetScrollLeft - scrollableSection.scrollLeft) < 0.1) {
+      scrollableSection.scrollLeft = targetScrollLeft;
+      isScrolling = false;
+    } else {
+      requestAnimationFrame(scrollSmooth);
+    }
+  }
+</script>
+{% endblock %}
