@@ -398,6 +398,11 @@ def reset_password(token):
         return jsonify({'message': 'Password reset successful'})
     return render_template('reset2.html')
 
+def clean_and_format(word):
+    word = word.strip()
+    word = " ".join(word.split())
+    word = word.lower()
+    return word
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
@@ -409,7 +414,9 @@ def add_movie():
                 if 'loggedin' in session:
                     parent_id = get_user_by_id(session['id'])
                     title = request.form["title"]
+                    title = clean_and_format(title)
                     director = request.form["director"]
+                    director = clean_and_format(director)
                     year = request.form["year"]
                     date = request.form["date"]
                     genre = request.form["genre"]
