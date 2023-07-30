@@ -422,8 +422,13 @@ def add_movie():
                             res = tv.search(title)
                         else:
                             res = movie.search(title)
-                        poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
-                        print(res)
+                            for result in res:
+                                print(result)
+                                if result['release_date'][:4] == str(year):
+                                    print(result['release_date'][:4])
+                                    poster = "https://image.tmdb.org/t/p/w200/" + result['poster_path']
+                                    break
+                            print(res)
                     except:
                         html = get_movie_poster(title)
                         if html != 'None':
