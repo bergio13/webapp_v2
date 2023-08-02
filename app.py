@@ -398,11 +398,20 @@ def reset_password(token):
         return jsonify({'message': 'Password reset successful'})
     return render_template('reset2.html')
 
-def clean_and_format(word):
+def clean_and_format(word, is_person=False):
     word = word.strip()
     word = " ".join(word.split())
     word = word.lower()
     return word
+
+def clean_and_capitalize_name(name):
+    # Remove leading and trailing spaces and convert to lowercase
+    cleaned_name = name.strip().lower()
+    
+    # Capitalize the first letter of each word
+    capitalized_name = ' '.join(word.capitalize() for word in cleaned_name.split())
+    
+    return capitalized_name
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
@@ -416,7 +425,7 @@ def add_movie():
                     title = request.form["title"]
                     title = clean_and_format(title)
                     director = request.form["director"]
-                    director = clean_and_format(director)
+                    director = clean_and_capitalize_name(director)
                     year = request.form["year"]
                     date = request.form["date"]
                     genre = request.form["genre"]
