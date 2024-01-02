@@ -431,11 +431,18 @@ def add_movie():
                     genre = request.form["genre"]
                     rating = request.form["rating"]
                     rewatch = request.form["rewatch"] # 0 false, 1 true
-                    tv_show = request.form["tv"]
+                    tv_show = request.form["tv"] # 0 if movie, 1 if tv show
                     cinema = request.form["cinema"]
                     try:
                         if tv_show == '1':
                             res = tv.search(title)
+                            for result in res:
+                                print(result)
+                                if result['release_date'][:4] == str(year):
+                                    print(result['first_air_date'][:4])
+                                    poster = "https://image.tmdb.org/t/p/w200" + result['poster_path']
+                                    break
+                            print(res)
                         else:
                             res = movie.search(title)
                             for result in res:
