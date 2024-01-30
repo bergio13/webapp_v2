@@ -75,6 +75,18 @@ def lista():
         return redirect('/login')
     return render_template('lista.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
 
+@app.route('/lista_<year_selected>')
+def lista_year(year_selected):
+    if 'loggedin' in session:
+        try:
+            movies = get_movies(session['id'])
+        except:
+            movies = []
+            flash('Something went wrong, please refresh the page', category='error')
+    else:
+        return redirect('/login')
+    return render_template('lista_year.html', year=int(year_selected), movies=movies, months=months, dict_months=dict_months)
+
 @app.route('/directors', methods=['GET'])
 def show_directors():
     if 'loggedin' in session:

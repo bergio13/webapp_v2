@@ -42,7 +42,7 @@
           </thead>
           <tbody>
             {% for movie in movies%} 
-              {% if movie['v_date'].year == year_now %}
+              {% if movie['v_date'].year == year %}
                 {% if dict_months[movie['v_date'].month] ==month %} 
                   {% if movie['rewatch'] == 1 %}
             <tr style="color: brown">
@@ -127,7 +127,7 @@
 
     <div class="grid-item item3">
       <ul class="table-list">
-        <li> <a href="/lista_2023">2023</a></li>
+        <li> <a href="/lista">2024</a></li>
         <li><a
           href="/add_movie"
           style="
