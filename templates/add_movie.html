@@ -96,8 +96,12 @@ content %}
     </div>
     <div class="field-add">
       <label for="tv">Tv show</label>
-      <input type="radio" class="radio" name="tv" id="tv_yes" value=1>Yes</input>
-      <input type="radio" class="radio" name="tv"  id="tv_no" value=0 checked>No</input>
+      <input type="radio" class="radio" name="tv" id="tv_yes" onclick="showSeasonField()" value=1>Yes</input>
+      <input type="radio" class="radio" name="tv"  id="tv_no" checked onclick="hideSeasonField()" value=0 checked>No</input>
+    </div>
+    <div class="field-add" id="seasonField" style="display: none;">
+      <label for="season">Season</label>
+      <input type="number" class="input" id="season" name="season" placeholder="Enter season number" />
     </div>
     <div class="field-add">
       <label for="tv">Watched at the cinema?</label>
@@ -106,6 +110,15 @@ content %}
     </div>
     <button type="submit" class="button">Submit</button>
   </form>
+  <script>
+    function showSeasonField() {
+      document.getElementById("seasonField").style.display = "block";
+    }
+
+    function hideSeasonField() {
+      document.getElementById("seasonField").style.display = "none";
+    }
+  </script>
 </main>
 
 {% endblock %}

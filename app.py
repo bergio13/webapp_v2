@@ -5,7 +5,7 @@ import os
 import datetime
 import requests
 from bs4 import BeautifulSoup
-from tmdbv3api import TMDb, Movie, TV
+from tmdbv3api import TMDb, Movie, TV, Season
 from flask_mail import Mail, Message
 import secrets
 
@@ -427,6 +427,7 @@ def clean_and_capitalize_name(name):
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
+    season = Season()
     if 'loggedin' not in session:
         return redirect('/login')
     else:
@@ -444,15 +445,19 @@ def add_movie():
                     rating = request.form["rating"]
                     rewatch = request.form["rewatch"] # 0 false, 1 true
                     tv_show = request.form["tv"] # 0 if movie, 1 if tv show
+                    which_season = request.form["season"]
                     cinema = request.form["cinema"]
                     try:
                         if tv_show == '1':
                             res = tv.search(title)
                             for result in res:
                                 print(result)
-                                if result['release_date'][:4] == str(year):
+                                if result['first_air_date'][:4] == str(year):
                                     print(result['first_air_date'][:4])
-                                    poster = "https://image.tmdb.org/t/p/w200" + result['poster_path']
+                                    ids = result['id']
+                                    show_season = season.details(ids, which_season)
+                                    poster = "https://image.tmdb.org/t/p/w200" + show_season.poster_path
+                                    title = title + ', ' + show_season.name
                                     break
                             print(res)
                         else:
@@ -461,7 +466,7 @@ def add_movie():
                                 print(result)
                                 if result['release_date'][:4] == str(year):
                                     print(result['release_date'][:4])
-                                    poster = "https://image.tmdb.org/t/p/w200/" + result['poster_path']
+                                    poster = "https://image.tmdb.org/t/p/w200/" + result[0]['poster_path']
                                     break
                             print(res)
                     except:

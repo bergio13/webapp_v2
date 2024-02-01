@@ -18,7 +18,7 @@ body {
   background: linear-gradient(to right, #2980b9, #2c3e50);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#2980b9", endColorstr="#2c3e50", GradientType=1);
   color: black;
-  height: 100vh;
+  /*height: 100vh;*/
   background-size: 100%;
   background-repeat: no-repeat;
 }
@@ -156,6 +156,62 @@ ul.add li {
 }
 
 /* -----------------------------------List styling----------------------------------------------------------------- */
+.list_page::before {
+  background: linear-gradient(
+      45deg,
+      transparent 15%,
+      #6e6d71 15%,
+      #6e6d71 20%,
+      transparent 20%,
+      transparent 80%,
+      #6e6d71 80%,
+      #6e6d71 85%,
+      transparent 85%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 15%,
+      #6e6d71 15%,
+      #6e6d71 20%,
+      transparent 20%,
+      transparent 80%,
+      #6e6d71 80%,
+      #6e6d71 85%,
+      transparent 85%
+    ),
+    radial-gradient(
+      circle at top,
+      transparent 9%,
+      #6e6d71 10%,
+      #6e6d71 15%,
+      transparent 16%
+    ),
+    radial-gradient(
+      circle at bottom,
+      transparent 9%,
+      #6e6d71 10%,
+      #6e6d71 15%,
+      transparent 16%
+    ),
+    radial-gradient(
+      circle at right,
+      transparent 9%,
+      #6e6d71 10%,
+      #6e6d71 15%,
+      transparent 16%
+    ),
+    radial-gradient(
+      circle at left,
+      transparent 9%,
+      #6e6d71 10%,
+      #6e6d71 15%,
+      transparent 16%
+    );
+  background-size: 1em 1em;
+  background-color: #ffffff;
+  opacity: 1;
+}
+
 .grid-container1 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -164,7 +220,9 @@ ul.add li {
     "header header header"
     "main main main";
   height: 100%;
-  background-color: #1d2634;
+  /*background-color: whitesmoke /*#1d2634*/
+  align-content: stretch;
+  align-items: flex-start;
 }
 
 .f-name {
@@ -181,7 +239,7 @@ ul.add li {
 }
 
 .item1 {
-  background-color: #1d2634;
+  /*background-color: whitesmoke /*#1d2634*/
   grid-column: 1 / span 3;
   grid-row: 1;
   padding-top: 0;
@@ -192,22 +250,28 @@ ul.add li {
 
 /* Dropdown Button */
 .dropbtn {
-  background-color: var(--bg-primary);
-  color: white;
+  /*background-color: whitesmoke /*var(--bg-primary)*/
+  color: black /*white*/;
   padding: 16px;
   font-size: 16px;
   border: none;
   cursor: pointer;
-  margin-top: 8%;
+  margin-top: 50% /*8%*/;
   border-style: solid;
-  border-image: linear-gradient(to top left, yellow, rgb(92, 0, 128)) 1 100%;
+  border-width: 2px;
+  border-image: linear-gradient(
+      to top left,
+      black /*yellow*/,
+      black /*rgb(92, 0, 128)*/
+    )
+    1 100%;
   border-image-slice: 1;
 }
 
 /* Dropdown button on hover & focus */
 .dropbtn:hover,
 .dropbtn:focus {
-  background-color: var(--bg-secondary);
+  background-color: whitesmoke /*var(--bg-secondary)*/;
 }
 
 /* The search field */
@@ -232,7 +296,7 @@ ul.add li {
 /* The container <div> - needed to position the dropdown content */
 .dropdown {
   position: relative;
-  margin-left: -15%;
+  /*margin-left: -15%;*/
   display: inline-block;
 }
 
@@ -245,7 +309,7 @@ ul.add li {
 .dropdown-content {
   display: none;
   position: absolute;
-  margin-left: -75%;
+  margin-left: -95% /*-75%*/;
   background-color: var(--text-tertiary);
   min-width: 230px;
   border: 1px solid #000000;
@@ -276,26 +340,32 @@ ul.add li {
 }
 
 .item2 {
-  background-color: #1d2634;
+  /*background-color: whitesmoke /*#1d2634*/
   grid-column: 1 / span 2;
   grid-row: 2;
   width: 125%;
+  margin-top: 3%;
+  margin-left: 3%;
 }
 
 .item3 {
-  background-color: #1d2634;
+  /*background-color: whitesmoke /*#1d2634*/
   grid-column: 3;
   grid-row: 2;
-  width: 41%;
-  margin-left: 54%;
+  /*width: 41%;*/
+  margin-left: 50%; /*54%;*/
+  margin-top: 3%;
 }
 
 .item4 {
-  background-color: #1d2634;
+  /*background-color: whitesmoke /*#1d2634*/
   grid-column: 1 / span 3;
   grid-row: 3;
   padding: 0;
   text-align: center;
+  /*color: #b3b3b3;*/
+  color: purple;
+  font-weight: bold;
 }
 
 .row {
@@ -305,16 +375,21 @@ ul.add li {
 .column {
   float: left;
   width: 21%;
-  padding: 46.5px 50px;
+  padding: 40px 40px /*46.5px 50px*/;
   text-align: center;
   cursor: pointer;
-  color: #ececec;
-  background-color: #2a2a37;
+  color: black /*#ececec*/;
+  background-color: whitesmoke /*#2a2a37*/;
   transition: 200ms ease;
-  border-width: 1px;
-  margin: 0px;
+  border-width: 2px /*1px*/;
+  margin: 1px /*0px*/;
   border-style: solid;
-  border-image: linear-gradient(to top left, yellow, rgb(92, 0, 128)) 1 100%;
+  border-image: linear-gradient(
+      to top left,
+      black /*yellow*/,
+      black /*rgb(92, 0, 128)*/
+    )
+    1 100%;
   border-image-slice: 1;
 }
 
@@ -361,7 +436,12 @@ ul.add li {
   background-color: #1d2634;
   border-width: 1px;
   border-style: solid;
-  border-image: linear-gradient(to right, yellow, rgb(106, 235, 252)) 1 100%;
+  border-image: linear-gradient(
+      to right,
+      black /*yellow*/,
+      black /*rgb(106, 235, 252)*/
+    )
+    1 100%;
   border-image-slice: 1;
 }
 
@@ -373,7 +453,7 @@ ul.add li {
 
 .closebtn {
   float: right;
-  color: yellow;
+  color: white /*yellow*/;
   font-size: 35px;
   cursor: pointer;
   top: 0;
@@ -387,6 +467,21 @@ table {
   margin-bottom: 1%;
   border-collapse: collapse;
   border-width: 1px;
+}
+
+.tabletr {
+  color: black;
+  text-align: left;
+  background: -webkit-linear-gradient(
+    to right,
+    whitesmoke /*yellow*/,
+    grey /*rgb(106, 235, 252)*/
+  );
+  background: linear-gradient(
+    to right,
+    whitesmoke /*yellow*/,
+    grey /*rgb(106, 235, 252)*/
+  );
 }
 
 thead tr {
@@ -507,7 +602,10 @@ tbody tr:hover {
   color: black;
   list-style-type: none;
   margin: 0;
+  margin-top: 10%;
   padding: 0;
+  text-decoration: overline;
+  font-weight: bold;
 }
 
 .table-link {
@@ -1028,7 +1126,14 @@ select option {
   height: 100%;
   /*background: -webkit-linear-gradient(94deg, #202c42 6%, #295fbd 90%);
   background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
-  background-color: #17141d;
+  /*background-color: #17141d;*/
+  background-color: #323232;
+  opacity: 1;
+  background-image: radial-gradient(
+    #7a4dc2 0.7000000000000001px,
+    #323232 0.7000000000000001px
+  );
+  background-size: 14px 14px;
 }
 
 .header-friends {
@@ -1040,11 +1145,18 @@ select option {
   justify-content: space-between;
   padding: 0 30px 0 30px;
   /*background-image: linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
-  background: #17141d;
+  /*background: #17141d;*/
+  background-color: #323232;
+  opacity: 1;
+  background-image: radial-gradient(
+    #7a4dc2 0.7000000000000001px,
+    #323232 0.7000000000000001px
+  );
+  background-size: 14px 14px;
 }
 
 .main-friends {
-  margin-left: 8rem;
+  margin-left: 6rem;
 }
 
 ol {
@@ -1161,6 +1273,66 @@ ol {
 .carta-link {
   text-decoration: none;
   color: #6082b6;
+}
+
+/*---------------------------------------------------Explore page-----------------------------------------*/
+.explore_page {
+  background: #e5e5f7;
+}
+.explore_page::before {
+  background-color: #323232;
+  opacity: 0.9;
+  background-image: linear-gradient(
+      30deg,
+      #780202 12%,
+      transparent 12.5%,
+      transparent 87%,
+      #780202 87.5%,
+      #780202
+    ),
+    linear-gradient(
+      150deg,
+      #780202 12%,
+      transparent 12.5%,
+      transparent 87%,
+      #780202 87.5%,
+      #780202
+    ),
+    linear-gradient(
+      30deg,
+      #780202 12%,
+      transparent 12.5%,
+      transparent 87%,
+      #780202 87.5%,
+      #780202
+    ),
+    linear-gradient(
+      150deg,
+      #780202 12%,
+      transparent 12.5%,
+      transparent 87%,
+      #780202 87.5%,
+      #780202
+    ),
+    linear-gradient(
+      60deg,
+      #78020277 25%,
+      transparent 25.5%,
+      transparent 75%,
+      #78020277 75%,
+      #78020277
+    ),
+    linear-gradient(
+      60deg,
+      #78020277 25%,
+      transparent 25.5%,
+      transparent 75%,
+      #78020277 75%,
+      #78020277
+    );
+  background-size: 26px 46px;
+  background-position: 0 0, 0 0, 13px 23px, 13px 23px, 0 0, 13px 23px;
+  z-index: -1;
 }
 
 /*----------------------------------------------------- Small screens--------------------------------------------------------- */

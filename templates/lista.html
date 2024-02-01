@@ -1,20 +1,12 @@
-{% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block body%}
+{% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block
+  body_attributes %} class="list_page"{% endblock %}{% block body%}
 {% block content %}
 <script src="static/js/grid.js"></script>
 
 <!--<main style="background-color: #2a2a37; padding: 0">>-->
 <div class="grid-container1">
   <div class="grid-item item1">
-    <div class="dropdown">
-      <button onclick="myFunction()" class="dropbtn">Filter by</button>
-      <div id="myDropdown" class="dropdown-content">
-        <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
-        <a href="/directors">Director</a>
-        <a href="/genres">Genre</a>
-        <a href="/years">Year</a>
-        <a href="/ratings">Rating</a>
-      </div>
-    </div>
+    
   </div>
 
   <div class="grid-item item2">
@@ -30,8 +22,8 @@
           >&times;</span
         >
         <table>
-          <thead>
-            <tr>
+          <thead class="tabletr">
+            <tr class="tabletr">
               <th></th>
               <th>Movie</th>
               <th>Year</th>
@@ -126,22 +118,33 @@
   </div>
 
     <div class="grid-item item3">
-      <ul class="table-list">
-        <li> <a href="/lista_2023">2023</a></li>
+      <ul class="table-list" >
+        <li> <a href="/lista_2023" style="color: purple;">2023</a></li>
         <li><a
           href="/add_movie"
           style="
             font-size: 18px;
+            color: purple;
           "
         >
           Add movie
         </a>
       </li>
+      <div class="dropdown">
+        <button onclick="myFunction()" class="dropbtn">Filter by</button>
+        <div id="myDropdown" class="dropdown-content">
+          <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
+          <a href="/directors">Director</a>
+          <a href="/genres">Genre</a>
+          <a href="/years">Year</a>
+          <a href="/ratings">Rating</a>
+        </div>
+      </div>
       </ul>
     </div>
 
     <div class="grid-item item4">
-      <p style="font-size: 10px; color: #b3b3b3; display: inline-block">
+      <p style="font-size: 12px; display: inline-block">
         (Color legend: brown = rewatch, green= watched at the cinema. Credits: This product uses the TMDb API but is not endorsed or certified by TMDb)
       </p>
     </div>
