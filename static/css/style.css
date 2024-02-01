@@ -252,8 +252,8 @@ ul.add li {
 .dropbtn {
   /*background-color: whitesmoke /*var(--bg-primary)*/
   color: black /*white*/;
-  padding: 16px;
-  font-size: 16px;
+  padding: 14px;
+  font-size: 14px;
   border: none;
   cursor: pointer;
   margin-top: 50% /*8%*/;
@@ -266,12 +266,13 @@ ul.add li {
     )
     1 100%;
   border-image-slice: 1;
+  opacity: 0.9;
 }
 
 /* Dropdown button on hover & focus */
 .dropbtn:hover,
 .dropbtn:focus {
-  background-color: whitesmoke /*var(--bg-secondary)*/;
+  background-color: var(--text-tertiary) /*var(--bg-secondary)*/;
 }
 
 /* The search field */
@@ -309,7 +310,7 @@ ul.add li {
 .dropdown-content {
   display: none;
   position: absolute;
-  margin-left: -95% /*-75%*/;
+  margin-left: -145% /*-75%*/;
   background-color: var(--text-tertiary);
   min-width: 230px;
   border: 1px solid #000000;
@@ -346,6 +347,7 @@ ul.add li {
   width: 125%;
   margin-top: 3%;
   margin-left: 3%;
+  opacity: 0.9;
 }
 
 .item3 {
