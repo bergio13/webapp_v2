@@ -466,7 +466,7 @@ def add_movie():
                                 print(result)
                                 if result['release_date'][:4] == str(year):
                                     print(result['release_date'][:4])
-                                    poster = "https://image.tmdb.org/t/p/w200/" + result[0]['poster_path']
+                                    poster = "https://image.tmdb.org/t/p/w200/" + result['poster_path']
                                     break
                             print(res)
                     except:
