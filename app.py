@@ -47,9 +47,6 @@ tv = TV()
 @app.route('/home')
 def hello():
     if 'loggedin' in session:
-        msg = Message('Hello', sender='kinetowebapp@gmail.com', recipients=['bergio343@gmail.com'])
-        msg.body = "Hello Flask message sent from Flask-Mail"
-        mail.send(msg)
         try:
             movies = get_monthly_movies(session['id'], month_now)
         except:
