@@ -894,6 +894,8 @@ canvas {
   position: absolute;
   z-index: -1;
   animation: canvasAnimation 20s ease-in-out infinite;
+  width: 99.99%;
+  height: 99.99%;
 }
 
 .animation_title {
