@@ -19,13 +19,25 @@ class Particle {
     this.maxLength = Math.floor(Math.random() * 80 + 10);
     this.angle = 0;
     this.timer = this.maxLength * 2;
-    this.colors = [
+    /*this.colors = [
       "rgb(138, 43, 226)",
       "#6649b8",
       "rgb(255, 0, 204)",
       "indigo",
       "rgb(153,50,204)",
       "#7d05f5",
+    ];*/
+    this.colors = [
+      "#40128B",
+      "#40128B",
+      "#40128B",
+      "#40128B",
+      "#9336B4",
+      "#9336B4",
+      "#9336B4",
+      "#DD58D6",
+      "#DD58D6",
+      "#FFE79B",
     ];
     this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
   }

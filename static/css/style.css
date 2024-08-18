@@ -903,7 +903,11 @@ canvas {
   top: 40%;
   left: 40%;
   font-size: 60px;
-  background: -webkit-linear-gradient(45deg, gold, lightblue);
+  background: -webkit-linear-gradient(
+    45deg,
+    #ffe79b,
+    indigo
+  ); /*gold, lighblue*/
 }
 
 /* -----------------------------------Form styling----------------------------------------------------------------- */
