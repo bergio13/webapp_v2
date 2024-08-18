@@ -1,16 +1,25 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %} {%block body
 %}{%block content %}
 <main>
-  <h1>Meglio di un file Word</h1>
+  <!--<h1>Meglio di un file Word</h1> -->
   <!--<img
     class="rotate"
     id="banner"
     src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Simple_Stick_Figure.svg/640px-Simple_Stick_Figure.svg.png"
   />-->
-  <h3 style="display: inline-block; margin-bottom: 0; margin-top: 1%">
-    Film visti questo mese
-  </h3>
-  <a href="/add_movie" style="margin-left: 2%">Aggiungi un film</a>
+  <h1 style="display: inline-block; margin-bottom: 0; margin-top: 1%">
+    Movies Watched This Month
+  </h1>
+  <a
+    href="/add_movie"
+    style="
+      text-align: right;
+      display: block;
+      padding-right: 4%;
+      font-size: 1.3rem;
+    "
+    >Add movie</a
+  >
   <table class="table-home" id="table-home">
     <thead>
       <tr>

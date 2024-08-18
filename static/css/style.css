@@ -1166,6 +1166,7 @@ select option {
   background: -webkit-linear-gradient(to right, #be4bdb 5%, #f783ac 95%);
   background: linear-gradient(to right, #be4bdb 5%, #f783ac 95%);
 }
+
 .card-inner {
   display: flex;
   justify-content: space-between;
