@@ -906,7 +906,7 @@ canvas {
   background: -webkit-linear-gradient(
     45deg,
     #ffe79b,
-    indigo
+    #9336b4
   ); /*gold, lighblue*/
 }
 
@@ -1008,7 +1008,7 @@ form {
 }
 
 .button:hover {
-  background: rgb(255, 0, 204);
+  background: gold; /*rgb(255, 0, 204);*/
   color: var(--bg-secondary);
 }
 
@@ -1023,7 +1023,7 @@ form {
 }
 
 .button-Login:hover {
-  background: rgb(255, 0, 204);
+  background: gold; /*rgb(255, 0, 204);*/
   color: var(--bg-primary);
 }
 
