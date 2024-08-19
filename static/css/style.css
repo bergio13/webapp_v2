@@ -141,8 +141,8 @@ ul.add li {
 
 .neonText {
   color: #fff;
-  text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #bc13fe,
-    0 0 82px #bc13fe, 0 0 92px #bc13fe, 0 0 102px #bc13fe, 0 0 151px #bc13fe;
+  text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #9405cc,
+    0 0 82px #9405cc, 0 0 92px #9405cc, 0 0 102px #9405cc, 0 0 151px #9405cc;
 }
 .flashes {
   text-align: center;
@@ -212,12 +212,18 @@ ul.add li {
 
 .a_list {
   font-size: 18px;
-  color: gold;
   margin-right: 2rem;
+  color: #fff;
+  text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff,
+    0 0 42px rgb(0, 204, 255), 0 0 82px rgb(0, 204, 255),
+    0 0 92px rgb(0, 204, 255), 0 0 102px rgb(0, 204, 255),
+    0 0 151px rgb(0, 204, 255);
 }
 
 .a_list:hover {
-  color: #7950f2;
+  color: #fff;
+  text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px gold,
+    0 0 82px gold, 0 0 92px gold, 0 0 102px gold, 0 0 151px gold;
 }
 
 .grid-container1 {
@@ -258,30 +264,45 @@ ul.add li {
 
 /* Dropdown Button */
 .dropbtn {
-  /*background-color: whitesmoke /*var(--bg-primary)*/
-  background-color: gold;
-  color: black /*white*/;
-  padding: 14px;
-  font-size: 14px;
-  border: none;
+  background-color: transparent;
+  color: #fff;
+  text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff,
+    0 0 42px rgb(0, 204, 255), 0 0 82px rgb(0, 204, 255),
+    0 0 92px rgb(0, 204, 255), 0 0 102px rgb(0, 204, 255),
+    0 0 151px rgb(0, 204, 255);
   cursor: pointer;
+  font-size: 16px;
   margin-top: 20% /*8%*/;
-  border-style: solid;
-  border-width: 2px;
-  border-image: linear-gradient(
-      to top left,
-      black /*yellow*/,
-      black /*rgb(92, 0, 128)*/
-    )
-    1 100%;
-  border-image-slice: 1;
-  opacity: 0.9;
+  border: 0.1rem solid var(--bg-primary);
+  border-radius: 2rem;
+  padding: 0.8em;
 }
+
+/*.dropbtn{
+  /*background-color: whitesmoke /*var(--bg-primary)*/
+/*background-color: gold;
+  /*color: black /*white*/
+/*padding: 14px;
+  /*border: none;
+  /*border-style: solid;
+  /*border-width: 2px;
+  /*border-image: linear-gradient(
+  /*    to top left,
+  /*    black /*yellow*/
+/*black /*rgb(92, 0, 128)*/
+/*  /*)
+  /*  1 100%;
+  /*border-image-slice: 1;
+  /*opacity: 0.9; 
+}*/
 
 /* Dropdown button on hover & focus */
 .dropbtn:hover,
 .dropbtn:focus {
-  background-color: var(--text-tertiary) /*var(--bg-secondary)*/;
+  /*background-color: var(--text-tertiary) /*var(--bg-secondary)*/
+  color: #fff;
+  text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px gold,
+    0 0 82px gold, 0 0 92px gold, 0 0 102px gold, 0 0 151px gold;
 }
 
 /* The search field */
