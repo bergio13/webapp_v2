@@ -1,0 +1,101 @@
+{% extends 'base.html' %} {% block title %}Watched Movies{% endblock %} {% block
+body_attributes %} class="list_page"{% endblock %} {% block body %} {% block
+content %}
+
+<script src="static/js/grid.js"></script>
+
+<div class="list_list">
+  <!-- Filter and Add Movie Section -->
+  <div style="margin-left: 40%; height: 5%">
+    <a href="/add_movie" class="a_list">ADD MOVIE</a>
+
+    <div class="dropdown" style="display: inline-block">
+      <button onclick="myFunction()" class="dropbtn">FILTER</button>
+      <div id="myDropdown" class="dropdown-content">
+        <input
+          type="text"
+          placeholder="Search.."
+          id="myInput"
+          onkeyup="filterFunction()"
+        />
+        <a href="/directors">Director</a>
+        <a href="/genres">Genre</a>
+        <a href="/years">Year</a>
+        <a href="/ratings">Rating</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Movies Watched Table -->
+  <h2 style="color: white">Watched List</h2>
+
+  <table style="width: 100%; border-collapse: collapse; margin-top: 2%">
+    <thead>
+      <tr style="background-color: #444; color: #444; text-align: left">
+        <th style="padding: 10px">View Date</th>
+        <th style="padding: 10px">Poster</th>
+        <th style="padding: 10px">Movie</th>
+        <th style="padding: 10px">Year</th>
+        <th style="padding: 10px">Director</th>
+        <th style="padding: 10px">Rating</th>
+        <th style="padding: 10px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set current_month = None %} {% for movie in movies %} {% set
+      movie_month = movie['v_date'].strftime('%b %Y') %}
+      <tr style="color: white">
+        <td style="padding: 10px">
+          {% if movie_month != current_month %} {{ movie['v_date'].strftime('%b
+          %Y') }} {% set current_month = movie_month %} {% else %} &nbsp; {%
+          endif %}
+        </td>
+        <td style="padding: 10px">
+          <img
+            class="table-poster1"
+            src="{{movie['poster']}}"
+            style="width: 50px"
+          />
+        </td>
+        <td style="padding: 10px">
+          <a
+            href="https://www.google.com/search?q={{movie['movie']}}"
+            target="_blank"
+            style="color: inherit"
+          >
+            {{movie['movie'].upper()}}
+          </a>
+        </td>
+        <td style="padding: 10px">{{movie['p_year']}}</td>
+        <td style="padding: 10px">{{movie['director'].upper()}}</td>
+        <td style="padding: 10px; text-align: center">{{movie['rating']}}</td>
+        <td style="padding: 10px">
+          <form action="/remove_movie" method="post" style="margin: 0">
+            <button
+              type="submit"
+              class="table-button-list"
+              style="
+                background-color: #ff4d4d;
+                border: none;
+                color: white;
+                padding: 5px 10px;
+                cursor: pointer;
+              "
+            >
+              X
+            </button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="font-size: 12px; color: white; margin-top: 20px">
+    (Color legend: brown = rewatch, green = watched at the cinema. Credits: This
+    product uses the TMDb API but is not endorsed or certified by TMDb)
+  </p>
+</div>
+
+{% endblock %} {% endblock %}

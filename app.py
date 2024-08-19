@@ -65,12 +65,15 @@ def lista():
     if 'loggedin' in session:
         try:
             movies = get_movies(session['id'])
-        except:
+            # sort movies in descendig order by v_date
+            movies.sort(key=lambda movie: movie["v_date"], reverse=True)
+        except Exception as e:
+            print(f"Error{e}")
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return redirect('/login')
-    return render_template('lista.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
+    return render_template('lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
 
 @app.route('/lista_<year_selected>')
 def lista_year(year_selected):
