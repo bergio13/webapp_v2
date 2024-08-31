@@ -144,6 +144,13 @@ ul.add li {
   text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #9405cc,
     0 0 82px #9405cc, 0 0 92px #9405cc, 0 0 102px #9405cc, 0 0 151px #9405cc;
 }
+
+.neonText_friends {
+  color: #fff;
+  text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #05cc79,
+    0 0 82px #05cc79, 0 0 92px #05cc79, 0 0 102px #05cc79, 0 0 151px #05cc79;
+}
+
 .flashes {
   text-align: center;
   margin: 0;

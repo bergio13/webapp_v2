@@ -10,9 +10,7 @@ content %}
 
 <div class="list_list">
   <!-- Filter and Add Movie Section -->
-  <div style="margin-left: 40%; height: 5%">
-    <a href="/add_movie" class="a_list">ADD MOVIE</a>
-
+  <div style="margin-left: 50%; height: 5%">
     <div class="dropdown" style="display: inline-block">
       <button onclick="myFunction()" class="dropbtn">FILTER</button>
       <div id="myDropdown" class="dropdown-content">
@@ -31,7 +29,10 @@ content %}
   </div>
 
   <!-- Movies Watched Table -->
-  <h2 style="color: white" class="neonText">Watched List</h2>
+  <h2 style="color: white" class="neonText_friends">
+    <a class="f-name" href="/profile/{{username}}">{{username}}</a>'s Watched
+    List
+  </h2>
 
   <table style="width: 100%; border-collapse: collapse; margin-top: 2%">
     <thead>
@@ -40,7 +41,7 @@ content %}
           background-color: #444;
           color: #444;
           text-align: left;
-          background: linear-gradient(to right, #7a4dc2, rgb(106, 235, 252));
+          background: linear-gradient(to right, #05cc79, rgb(106, 235, 252));
         "
       >
         <th style="padding: 10px">View Date</th>
@@ -49,7 +50,6 @@ content %}
         <th style="padding: 10px">Year</th>
         <th style="padding: 10px">Director</th>
         <th style="padding: 10px">Rating</th>
-        <th style="padding: 10px"></th>
       </tr>
     </thead>
     <tbody>
@@ -57,14 +57,14 @@ content %}
       movie_month = movie['v_date'].strftime('%b %Y') %}
       <tr style="color: white">
         <td style="padding: 10px">
-          {{ movie['v_date'].strftime('%b %Y') }} {% if movie['cinema'] | int ==
-          1 %}
+          {% if movie_month != current_month %} {{ movie['v_date'].strftime('%b
+          %Y') }} {% set current_month = movie_month %} {% else %} &nbsp; {%
+          endif %}{% if movie['cinema'] | int == 1 %}
           <i class="fa-solid fa-film"></i>
           {% endif %} {% if movie['rewatch'] | int == 1 %}
           <i class="fa-solid fa-repeat"></i>
           {% endif %}
         </td>
-
         <td style="padding: 10px">
           <img
             class="table-poster1"
@@ -84,24 +84,6 @@ content %}
         <td style="padding: 10px">{{movie['p_year']}}</td>
         <td style="padding: 10px">{{movie['director'].upper()}}</td>
         <td style="padding: 10px; text-align: center">{{movie['rating']}}</td>
-        <td style="padding: 10px">
-          <form action="/remove_movie" method="post" style="margin: 0">
-            <button
-              type="submit"
-              class="table-button-list"
-              style="
-                background-color: #ff4d4d;
-                border: none;
-                color: white;
-                padding: 5px 10px;
-                cursor: pointer;
-              "
-            >
-              X
-            </button>
-            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-          </form>
-        </td>
       </tr>
       {% endfor %}
     </tbody>

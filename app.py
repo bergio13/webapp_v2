@@ -44,6 +44,84 @@ def get_movie_poster(movie_title):
 movie = Movie()
 tv = TV()
 
+########################### Login - Logout - Register 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Log user in"""
+    # Forget any user_id
+    session.clear()
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        email = request.form['email']
+        password = request.form['password']
+        try:
+            users = load_users_from_email(email)
+        except:
+            users = []
+            flash('Something went wrong, please try again', category='error')
+        if users != []:
+            if users[0]['email'] == email and check_password_hash(users[0]['password'], password) == True:
+                session['loggedin'] = True
+                session['id'] = users[0]['id']
+                session['email'] = users[0]['email']
+                flash ('Logged in successfully!', category='success')
+                return redirect('/home')
+            # If account exists in accounts table in out database
+            else:
+            # Account doesnt exist or username/password incorrect
+                flash ('Incorrect username/password!', category='error')
+        else:
+            flash ('Something went wrong, please try again', category='error')
+    # User reached route via GET (as by clicking a link or via redirect)
+    return render_template("login.html", session=session)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+        """Register user"""
+        if request.method == "POST":
+            # Require username
+            email = request.form.get("email")
+            name = request.form.get("username")
+            password = request.form.get("password")
+            confirm_password = request.form.get("confirm_password")
+
+            # Check if email already exists
+            users = load_users_from_email(email)
+            usernames = load_users_from_username(name)
+            if users:
+                flash('Email already exists', category='error')
+            elif not email or len(email) < 4:
+                flash('Email must be valid', category='error')
+            if usernames:
+                flash('Username already taken', category='error')
+            elif len(name) < 2 :
+                flash('Username must be greater than 1 character', category='error')
+            # Check and validate passwords
+            elif not password:
+                flash("Must provide password", category='error')
+            elif len(password) < 3:
+                flash("Password must be greater than 3 characters", category='error')
+            elif password != confirm_password:
+                flash("Passwords must match", category='error')
+            else:
+            # Create hash of password to insert into the database
+                hash = generate_password_hash(request.form.get("password"), method='sha256')
+                insert_user(name, email, password=hash)
+                flash('Account created', category='success')
+                return redirect("/home")
+        return render_template('register.html')
+    
+@app.route('/logout')
+def logout():
+    # Remove session data, this will log the user out
+    session.pop('loggedin', None)
+    session.pop('id', None)
+    session.pop('email', None)
+    # Redirect to login page
+    return redirect('/login')
+
+########################################### Main pages ################
+
 @app.route('/home')
 def hello():
     if 'loggedin' in session:
@@ -74,6 +152,21 @@ def lista():
     else:
         return redirect('/login')
     return render_template('lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
+
+@app.route('/list/<username>')
+def lista_user(username):
+    user = get_user_id(username)
+    print(user)
+    id = user[0]['id']
+    print(id)
+    try:
+        movies = get_movies(id)
+        movies.sort(key=lambda movie: movie["v_date"], reverse=True)
+    except Exception as e:
+        print(f"Error{e}")
+        movies = []
+        flash('Something went wrong, please refresh the page', category='error')
+    return render_template('_lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months, username=username)
 
 @app.route('/lista_<year_selected>')
 def lista_year(year_selected):
@@ -227,72 +320,6 @@ def list_about_friend(username):
         movies = get_movies(users[0]['id'])
     return jsonify(movies)
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-        """Register user"""
-        if request.method == "POST":
-            # Require username
-            email = request.form.get("email")
-            name = request.form.get("username")
-            password = request.form.get("password")
-            confirm_password = request.form.get("confirm_password")
-
-            # Check if email already exists
-            users = load_users_from_email(email)
-            usernames = load_users_from_username(name)
-            if users:
-                flash('Email already exists', category='error')
-            elif not email or len(email) < 4:
-                flash('Email must be valid', category='error')
-            if usernames:
-                flash('Username already taken', category='error')
-            elif len(name) < 2 :
-                flash('Username must be greater than 1 character', category='error')
-            # Check and validate passwords
-            elif not password:
-                flash("Must provide password", category='error')
-            elif len(password) < 3:
-                flash("Password must be greater than 3 characters", category='error')
-            elif password != confirm_password:
-                flash("Passwords must match", category='error')
-            else:
-            # Create hash of password to insert into the database
-                hash = generate_password_hash(request.form.get("password"), method='sha256')
-                insert_user(name, email, password=hash)
-                flash('Account created', category='success')
-                return redirect("/home")
-        return render_template('register.html')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """Log user in"""
-    # Forget any user_id
-    session.clear()
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-        email = request.form['email']
-        password = request.form['password']
-        try:
-            users = load_users_from_email(email)
-        except:
-            users = []
-            flash('Something went wrong, please try again', category='error')
-        if users != []:
-            if users[0]['email'] == email and check_password_hash(users[0]['password'], password) == True:
-                session['loggedin'] = True
-                session['id'] = users[0]['id']
-                session['email'] = users[0]['email']
-                flash ('Logged in successfully!', category='success')
-                return redirect('/home')
-            # If account exists in accounts table in out database
-            else:
-            # Account doesnt exist or username/password incorrect
-                flash ('Incorrect username/password!', category='error')
-        else:
-            flash ('Something went wrong, please try again', category='error')
-    # User reached route via GET (as by clicking a link or via redirect)
-    return render_template("login.html", session=session)
-
 @app.route('/profile')
 def profile():
     if 'loggedin' in session:
@@ -348,68 +375,47 @@ def profile_friend(username):
         return render_template('_profile.html', username= username, user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
     return redirect('/login')
 
-@app.route('/logout')
-def logout():
-    # Remove session data, this will log the user out
-    session.pop('loggedin', None)
-    session.pop('id', None)
-    session.pop('email', None)
-    # Redirect to login page
+@app.route('/friends', methods=['GET', 'POST'])
+def search_friends():
+    if 'loggedin' in session:
+        friends = get_friends(session['id'])
+        if request.method == "POST":
+            name = request.form['name']
+            users = get_user_name(name)
+            if users == []:
+                flash('No user found', category='error')
+            else:
+                return render_template('friends.html', users=users, friends=friends, session=session) 
+        liked = []   
+        for friend in friends:
+            movies = get_movies(friend['user_id'])
+            for movie in movies:
+                if movie['rating'] >= 8 and datetime.date.today() - movie['v_date'] < datetime.timedelta(days=30):
+                    liked.append(movie)                  
+        return render_template('friends.html', friends=friends, liked=liked, session=session)
     return redirect('/login')
 
-def generate_token():
-        return secrets.token_hex(16)
+@app.route('/follow', methods=['GET', 'POST'])
+def follow():
+    if request.method == "POST":
+        if 'loggedin' in session:
+            friend_id = request.form['user_id']
+            friend_username = request.form['username']
+            insert_friends(friend_id, friend_username, session['id'])
+            return redirect('/friends')
+        else:
+            return redirect('/login')
+    return redirect('/friends')
 
-def is_expired(creation_date):
-        return datetime.datetime.utcnow() > (creation_date + datetime.timedelta(hours=24))
 
+@app.route('/discover')
+def discover():
+    if 'loggedin' in session:   
+        movies = get_highest_rating()                 
+        return render_template('explore.html', movies=movies, session=session)
+    return redirect('/login')
 
-@app.route('/passwordreset', methods=['GET', 'POST'])
-def request_password_reset():
-    if request.method == 'POST':
-        email = request.form['email']
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
-
-        user = get_user_by_email(email)
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-
-        # Generate a new reset token
-        token = generate_token()
-        insert_token(token, user.id, datetime.datetime.utcnow())
-
-        # Send an email to the user with the reset link
-        reset_url = f"https://lista-film-v2.onrender.com/passwordreset/{token}"
-        msg = Message('Reset Your Password', sender='kinetowebapp@gmail.com', recipients=[user.email])
-        msg.body = f"Click this link to reset your password: {reset_url}"
-        mail.send(msg)
-        return jsonify({'message': 'Password reset email sent, if you do not find it check your spam folder'})
-    return render_template('passwordreset.html')
-
-@app.route('/passwordreset/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    if request.method == 'POST':
-        password = request.form['password']
-        hash = generate_password_hash(password, method='sha256')
-        if not password:
-            return jsonify({'error': 'Password is required'}), 400
-    
-        # Find the reset token
-        reset_token = get_token(token)
-        if not reset_token:
-            return jsonify({'error': 'Invalid token'}), 404
-        if is_expired(reset_token.created_at):
-            return jsonify({'error': 'Token has expired'}), 400
-    
-        # Update the user's password
-        user_id = reset_token.user_id
-        update_user_password(user_id, hash)
-        delete_token(token)
-    
-        return jsonify({'message': 'Password reset successful'})
-    return render_template('reset2.html')
-
+####################### Add / edit / remove movies ################################
 def clean_and_format(word, is_person=False):
     word = word.strip()
     word = " ".join(word.split())
@@ -532,59 +538,62 @@ def edit_movie():
             flash('Movie updated', category='success')
             return redirect('/home')
     return redirect('/login')
-
-@app.route('/friends', methods=['GET', 'POST'])
-def search_friends():
-    if 'loggedin' in session:
-        friends = get_friends(session['id'])
-        if request.method == "POST":
-            name = request.form['name']
-            users = get_user_name(name)
-            if users == []:
-                flash('No user found', category='error')
-            else:
-                return render_template('friends.html', users=users, friends=friends, session=session) 
-        liked = []   
-        for friend in friends:
-            movies = get_movies(friend['user_id'])
-            for movie in movies:
-                if movie['rating'] >= 8 and datetime.date.today() - movie['v_date'] < datetime.timedelta(days=30):
-                    liked.append(movie)                  
-        return render_template('friends.html', friends=friends, liked=liked, session=session)
-    return redirect('/login')
-
-@app.route('/follow', methods=['GET', 'POST'])
-def follow():
-    if request.method == "POST":
-        if 'loggedin' in session:
-            friend_id = request.form['user_id']
-            friend_username = request.form['username']
-            insert_friends(friend_id, friend_username, session['id'])
-            return redirect('/friends')
-        else:
-            return redirect('/login')
-    return redirect('/friends')
-
-@app.route('/list/<username>')
-def lista_user(username):
-    user = get_user_id(username)
-    print(user)
-    id = user[0]['id']
-    print(id)
-    try:
-        movies = get_movies(id)
-    except:
-        movies = []
-        flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_lista.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months, username=username)
-
-@app.route('/discover')
-def discover():
-    if 'loggedin' in session:   
-        movies = get_highest_rating()                 
-        return render_template('explore.html', movies=movies, session=session)
-    return redirect('/login')
+   
     
+########################### Restore password #########################################
+def generate_token():
+        return secrets.token_hex(16)
+
+def is_expired(creation_date):
+        return datetime.datetime.utcnow() > (creation_date + datetime.timedelta(hours=24))
+
+
+@app.route('/passwordreset', methods=['GET', 'POST'])
+def request_password_reset():
+    if request.method == 'POST':
+        email = request.form['email']
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        user = get_user_by_email(email)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Generate a new reset token
+        token = generate_token()
+        insert_token(token, user.id, datetime.datetime.utcnow())
+
+        # Send an email to the user with the reset link
+        reset_url = f"https://lista-film-v2.onrender.com/passwordreset/{token}"
+        msg = Message('Reset Your Password', sender='kinetowebapp@gmail.com', recipients=[user.email])
+        msg.body = f"Click this link to reset your password: {reset_url}"
+        mail.send(msg)
+        return jsonify({'message': 'Password reset email sent, if you do not find it check your spam folder'})
+    return render_template('passwordreset.html')
+
+@app.route('/passwordreset/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if request.method == 'POST':
+        password = request.form['password']
+        hash = generate_password_hash(password, method='sha256')
+        if not password:
+            return jsonify({'error': 'Password is required'}), 400
+    
+        # Find the reset token
+        reset_token = get_token(token)
+        if not reset_token:
+            return jsonify({'error': 'Invalid token'}), 404
+        if is_expired(reset_token.created_at):
+            return jsonify({'error': 'Token has expired'}), 400
+    
+        # Update the user's password
+        user_id = reset_token.user_id
+        update_user_password(user_id, hash)
+        delete_token(token)
+    
+        return jsonify({'message': 'Password reset successful'})
+    return render_template('reset2.html')
+
 ################################################################################################
 if __name__ == '__main__':
     app.run(debug=True)
