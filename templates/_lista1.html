@@ -60,9 +60,9 @@ content %}
           {% if movie_month != current_month %} {{ movie['v_date'].strftime('%b
           %Y') }} {% set current_month = movie_month %} {% else %} &nbsp; {%
           endif %}{% if movie['cinema'] | int == 1 %}
-          <i class="fa-solid fa-film"></i>
+          <i class="fa-solid fa-film" style="font-size: 16px"></i>
           {% endif %} {% if movie['rewatch'] | int == 1 %}
-          <i class="fa-solid fa-repeat"></i>
+          <i class="fa-solid fa-repeat" style="font-size: 16px"></i>
           {% endif %}
         </td>
         <td style="padding: 10px">
