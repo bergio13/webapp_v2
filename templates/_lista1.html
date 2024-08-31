@@ -1,6 +1,6 @@
-{% extends 'base.html' %} {% block title %}Watched Movies{% endblock %} {% block
-body_attributes %} class="list_page"{% endblock %} {% block body %} {% block
-content %}
+{% extends 'base.html' %} {% block title %} Friends Watched Movies{% endblock %}
+{% block body_attributes %} class="list_page"{% endblock %} {% block body %} {%
+block content %}
 
 <script src="static/js/grid.js"></script>
 <script
@@ -9,21 +9,21 @@ content %}
 ></script>
 
 <div class="list_list">
-  <!-- Filter and Add Movie Section -->
+  <!-- Filter Section -->
   <div style="margin-left: 50%; height: 5%">
     <div class="dropdown" style="display: inline-block">
       <button onclick="myFunction()" class="dropbtn">FILTER</button>
-      <div id="myDropdown" class="dropdown-content">
+      <div id="myDropdown" class="dropdown-content drop-friend">
         <input
           type="text"
           placeholder="Search.."
           id="myInput"
           onkeyup="filterFunction()"
         />
-        <a href="/directors">Director</a>
-        <a href="/genres">Genre</a>
-        <a href="/years">Year</a>
-        <a href="/ratings">Rating</a>
+        <a href="/directors/{{username}}">Director</a>
+        <a href="/genres/{{username}}">Genre</a>
+        <a href="/years/{{username}}">Year</a>
+        <a href="/ratings/{{username}}">Rating</a>
       </div>
     </div>
   </div>
@@ -96,5 +96,23 @@ content %}
     <i class="fa-solid fa-repeat"></i> = rewatch
   </p>
 </div>
+
+<script>
+  function myFunction() {
+    document.getElementById("myDropdown").classList.toggle("show");
+  }
+
+  window.onclick = function (event) {
+    if (!event.target.matches(".dropbtn")) {
+      var dropdowns = document.getElementsByClassName("dropdown-content");
+      for (var i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains("show")) {
+          openDropdown.classList.remove("show");
+        }
+      }
+    }
+  };
+</script>
 
 {% endblock %} {% endblock %}
