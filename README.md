@@ -14,3 +14,4 @@ Credits:
 - [TMDB](https://www.themoviedb.org/?language=it-IT) 
 - [Frankslaboratory](https://www.youtube.com/@Frankslaboratory)
 - [Fireship](https://www.youtube.com/@Fireship)
+- [CSS - Tricks](https://css-tricks.com/)
