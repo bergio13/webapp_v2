@@ -546,8 +546,6 @@ def generate_token():
 
 def is_expired(creation_date):
         return datetime.datetime.now() > (creation_date + datetime.timedelta(hours=24))
-
-import json 
  
 
 @app.route('/passwordreset', methods=['GET', 'POST'])
