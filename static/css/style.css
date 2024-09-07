@@ -1126,6 +1126,12 @@ select option {
 }
 
 /*-----------------------------------------------Profile styling------------------------------------------------------------- */
+.prof_h {
+  font-weight: bold;
+  color: aliceblue;
+  margin-top: 10%;
+}
+
 .grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
