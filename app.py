@@ -545,8 +545,10 @@ def generate_token():
         return secrets.token_hex(16)
 
 def is_expired(creation_date):
-        return datetime.datetime.utcnow() > (creation_date + datetime.timedelta(hours=24))
+        return datetime.datetime.now() > (creation_date + datetime.timedelta(hours=24))
 
+import json 
+ 
 
 @app.route('/passwordreset', methods=['GET', 'POST'])
 def request_password_reset():
@@ -558,14 +560,18 @@ def request_password_reset():
         user = get_user_by_email(email)
         if not user:
             return jsonify({'error': 'User not found'}), 404
+        print(user)
 
         # Generate a new reset token
         token = generate_token()
-        insert_token(token, user.id, datetime.datetime.utcnow())
+        now = datetime.datetime.now()
+        now =  now.strftime("%Y-%m-%d %H:%M:%S") 
+        insert_token(user['id'], token, now)
+        
 
         # Send an email to the user with the reset link
         reset_url = f"https://lista-film-v2.onrender.com/passwordreset/{token}"
-        msg = Message('Reset Your Password', sender='kinetowebapp@gmail.com', recipients=[user.email])
+        msg = Message('Reset Your Password', sender='kinetowebapp@gmail.com', recipients=[user['email']])
         msg.body = f"Click this link to reset your password: {reset_url}"
         mail.send(msg)
         return jsonify({'message': 'Password reset email sent, if you do not find it check your spam folder'})
