@@ -1394,7 +1394,7 @@ ol {
 }
 
 .carta:hover ~ .carta {
-  transform: translateX(130px);
+  transform: translateX(100px); /*130px*/
 }
 
 .carta:not(:first-child) {
