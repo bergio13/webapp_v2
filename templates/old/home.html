@@ -1,0 +1,155 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {%block body
+%}{%block content %}
+<main>
+  <h1>Meglio di un file Word</h1>
+  <img
+    class="rotate"
+    id="banner"
+    src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Simple_Stick_Figure.svg/640px-Simple_Stick_Figure.svg.png"
+  />
+  <h1 style="display: inline-block; margin-bottom: 0">Watched This Month</h1>
+  <a
+    href="/add_movie"
+    style="
+      text-align: right;
+      display: block;
+      padding-right: 4%;
+      font-size: 1.3rem;
+    "
+    >ADD MOVIE</a
+  >
+  <table class="table-home" id="table-home">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Movie</th>
+        <th>Year</th>
+        <th>Director</th>
+        <th>Rating</th>
+        <th style="width: 7%"></th>
+        <th style="width: 5%"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for movie in movies%} {% if movie['rewatch']== 1 %}
+      <tr style="color: brown">
+        <td>
+          <img class="table-poster" src="{{movie['poster']}}" />
+        </td>
+        <td>
+          <a
+            class="table-link"
+            href="https://www.google.com/search?q={{movie['movie']}}"
+            target="_blank"
+            >{{movie['movie'].upper()}}
+          </a>
+        </td>
+
+        <td>{{movie['p_year']}}</td>
+
+        <td>{{movie['director'].upper()}}</td>
+        <td>{{movie['rating']}}</td>
+        <td>
+          <form action="/edit_movie" method="GET">
+            <button type="submit" class="table-edit">Edit</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+            <input type="hidden" name="movie" value="{{movie['movie']}}" />
+            <input type="hidden" name="year" value="{{movie['p_year']}}" />
+            <input
+              type="hidden"
+              name="director"
+              value="{{movie['director']}}"
+            />
+            <input type="hidden" name="rating" value="{{movie['rating']}}" />
+            <input type="hidden" name="tv" value="{{movie['tv_show']}}" />
+          </form>
+        </td>
+        <td>
+          <form action="/remove_movie" method="post">
+            <button type="submit" class="table-button">X</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+          </form>
+        </td>
+      </tr>
+      {% elif movie['p_year'] == now %}
+      <tr style="color: green">
+        <td><img class="table-poster" src="{{movie['poster']}}" /></td>
+        <td>
+          <a
+            class="table-link"
+            href="https://www.google.com/search?q={{movie['movie']}}"
+            target="_blank"
+            >{{movie['movie'].upper()}}</a
+          >
+        </td>
+
+        <td>{{movie['p_year']}}</td>
+
+        <td>{{movie['director'].upper()}}</td>
+        <td>{{movie['rating']}}</td>
+        <td>
+          <form action="/edit_movie" method="GET">
+            <button type="submit" class="table-edit">Edit</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+            <input type="hidden" name="movie" value="{{movie['movie']}}" />
+            <input type="hidden" name="year" value="{{movie['p_year']}}" />
+            <input
+              type="hidden"
+              name="director"
+              value="{{movie['director']}}"
+            />
+            <input type="hidden" name="rating" value="{{movie['rating']}}" />
+            <input type="hidden" name="tv" value="{{movie['tv_show']}}" />
+          </form>
+        </td>
+        <td>
+          <form action="/remove_movie" method="post">
+            <button type="submit" class="table-button">X</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td>
+          <img class="table-poster" src="{{movie['poster']}}" />
+        </td>
+        <td>
+          <a
+            class="table-link"
+            href="https://www.google.com/search?q={{movie['movie']}}"
+            target="_blank"
+            >{{movie['movie'].upper()}}</a
+          >
+        </td>
+        <td>{{movie['p_year']}}</td>
+
+        <td>{{movie['director'].upper()}}</td>
+        <td>{{movie['rating']}}</td>
+        <td>
+          <form action="/edit_movie" method="GET">
+            <button type="submit" class="table-edit">Edit</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+            <input type="hidden" name="movie" value="{{movie['movie']}}" />
+            <input type="hidden" name="year" value="{{movie['p_year']}}" />
+            <input
+              type="hidden"
+              name="director"
+              value="{{movie['director']}}"
+            />
+            <input type="hidden" name="rating" value="{{movie['rating']}}" />
+            <input type="hidden" name="tv" value="{{movie['tv_show']}}" />
+          </form>
+        </td>
+        <td>
+          <form action="/remove_movie" method="post">
+            <button type="submit" class="table-button">X</button>
+            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
+          </form>
+        </td>
+      </tr>
+      {% endif %} {% endfor %}
+    </tbody>
+  </table>
+</main>
+{% endblock %} {% endblock %}

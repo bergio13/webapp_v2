@@ -1,6 +1,11 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %} {%block body
 %}{%block content %}
-<main>
+<script
+  src="https://kit.fontawesome.com/a735d6df86.js"
+  crossorigin="anonymous"
+></script>
+
+<div class="list_list">
   <!--<h1>Meglio di un file Word</h1> -->
   <!--<img
     class="rotate"
@@ -13,44 +18,62 @@
     style="
       text-align: right;
       display: block;
-      padding-right: 4%;
+      padding-right: 3%;
       font-size: 1.3rem;
     "
     >ADD MOVIE</a
   >
   <table class="table-home" id="table-home">
     <thead>
-      <tr>
-        <th></th>
-        <th>Movie</th>
-        <th>Year</th>
-        <th>Director</th>
-        <th>Rating</th>
-        <th style="width: 7%"></th>
-        <th style="width: 5%"></th>
+      <tr style="text-align: left">
+        <th style="padding: 10px"></th>
+        <th style="padding: 10px"></th>
+        <th style="padding: 10px">Title</th>
+        <th style="padding: 10px">Year</th>
+        <th style="padding: 10px">Director</th>
+        <th style="padding: 10px">Rating</th>
+        <th style="width: 7%; padding: 10px"></th>
+        <th style="width: 5%; padding: 10px"></th>
       </tr>
     </thead>
     <tbody>
-      {% for movie in movies%} {% if movie['rewatch']== 1 %}
-      <tr style="color: brown">
-        <td>
-          <img class="table-poster" src="{{movie['poster']}}" />
+      {% if movies == [] %}
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 10px">
+          <h2>No movies watched this month</h2>
         </td>
-        <td>
+      </tr>
+      {% endif %} {% for movie in movies%}
+      <tr style="color: white">
+        <td style="padding: 10px">
+          {% if movie['cinema'] | int == 1 %}
+          <i class="fa-solid fa-film" style="font-size: 16px"></i>
+          {% endif %} {% if movie['rewatch'] | int == 1 %}
+          <i class="fa-solid fa-repeat" style="font-size: 16px"></i>
+          {% endif %}
+        </td>
+
+        <td style="padding: 10px">
+          <img
+            class="table-poster1"
+            src="{{movie['poster']}}"
+            style="width: 50px"
+          />
+        </td>
+        <td style="padding: 10px">
           <a
-            class="table-link"
             href="https://www.google.com/search?q={{movie['movie']}}"
             target="_blank"
-            >{{movie['movie'].upper()}}
+            style="color: inherit"
+          >
+            {{movie['movie'].upper()}}
           </a>
         </td>
-
-        <td>{{movie['p_year']}}</td>
-
-        <td>{{movie['director'].upper()}}</td>
-        <td>{{movie['rating']}}</td>
-        <td>
-          <form action="/edit_movie" method="GET">
+        <td style="padding: 10px">{{movie['p_year']}}</td>
+        <td style="padding: 10px">{{movie['director'].upper()}}</td>
+        <td style="padding: 10px; text-align: center">{{movie['rating']}}</td>
+        <td style="padding: 10px">
+          <form action="/edit_movie" method="GET" style="margin: 0">
             <button type="submit" class="table-edit">Edit</button>
             <input type="hidden" name="movie_id" value="{{movie['id']}}" />
             <input type="hidden" name="movie" value="{{movie['movie']}}" />
@@ -64,92 +87,34 @@
             <input type="hidden" name="tv" value="{{movie['tv_show']}}" />
           </form>
         </td>
-        <td>
-          <form action="/remove_movie" method="post">
-            <button type="submit" class="table-button">X</button>
+        <td style="padding: 10px">
+          <form action="/remove_movie" method="post" style="margin: 0">
+            <button
+              type="submit"
+              class="table-button"
+              style="
+                border: none;
+                color: white;
+                padding: 5px 10px;
+                cursor: pointer;
+              "
+            >
+              X
+            </button>
             <input type="hidden" name="movie_id" value="{{movie['id']}}" />
           </form>
         </td>
       </tr>
-      {% elif movie['p_year'] == now %}
-      <tr style="color: green">
-        <td><img class="table-poster" src="{{movie['poster']}}" /></td>
-        <td>
-          <a
-            class="table-link"
-            href="https://www.google.com/search?q={{movie['movie']}}"
-            target="_blank"
-            >{{movie['movie'].upper()}}</a
-          >
-        </td>
-
-        <td>{{movie['p_year']}}</td>
-
-        <td>{{movie['director'].upper()}}</td>
-        <td>{{movie['rating']}}</td>
-        <td>
-          <form action="/edit_movie" method="GET">
-            <button type="submit" class="table-edit">Edit</button>
-            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-            <input type="hidden" name="movie" value="{{movie['movie']}}" />
-            <input type="hidden" name="year" value="{{movie['p_year']}}" />
-            <input
-              type="hidden"
-              name="director"
-              value="{{movie['director']}}"
-            />
-            <input type="hidden" name="rating" value="{{movie['rating']}}" />
-            <input type="hidden" name="tv" value="{{movie['tv_show']}}" />
-          </form>
-        </td>
-        <td>
-          <form action="/remove_movie" method="post">
-            <button type="submit" class="table-button">X</button>
-            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-          </form>
-        </td>
-      </tr>
-      {% else %}
-      <tr>
-        <td>
-          <img class="table-poster" src="{{movie['poster']}}" />
-        </td>
-        <td>
-          <a
-            class="table-link"
-            href="https://www.google.com/search?q={{movie['movie']}}"
-            target="_blank"
-            >{{movie['movie'].upper()}}</a
-          >
-        </td>
-        <td>{{movie['p_year']}}</td>
-
-        <td>{{movie['director'].upper()}}</td>
-        <td>{{movie['rating']}}</td>
-        <td>
-          <form action="/edit_movie" method="GET">
-            <button type="submit" class="table-edit">Edit</button>
-            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-            <input type="hidden" name="movie" value="{{movie['movie']}}" />
-            <input type="hidden" name="year" value="{{movie['p_year']}}" />
-            <input
-              type="hidden"
-              name="director"
-              value="{{movie['director']}}"
-            />
-            <input type="hidden" name="rating" value="{{movie['rating']}}" />
-            <input type="hidden" name="tv" value="{{movie['tv_show']}}" />
-          </form>
-        </td>
-        <td>
-          <form action="/remove_movie" method="post">
-            <button type="submit" class="table-button">X</button>
-            <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-          </form>
-        </td>
-      </tr>
-      {% endif %} {% endfor %}
+      {% endfor %}
     </tbody>
   </table>
-</main>
+
+  <p style="font-size: 12px; color: white; margin-top: 20px">
+    Credits: This product uses the TMDb API but is not endorsed or certified by
+    TMDb <br />
+    Legend: <i class="fa-solid fa-film"></i> = watched at the cinema,
+    <i class="fa-solid fa-repeat"></i> = rewatch
+  </p>
+</div>
+
 {% endblock %} {% endblock %}

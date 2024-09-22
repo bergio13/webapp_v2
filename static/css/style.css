@@ -643,9 +643,9 @@ tbody tr:hover {
 .table-home {
   width: 92vw;
   font-size: 20px;
-  position: absolute;
   z-index: 0;
   color: white;
+  border-collapse: collapse;
 }
 .table-home tbody tr:nth-child(even) {
   background-color: transparent;
@@ -657,6 +657,10 @@ tbody tr:hover {
 
 .table-home tbody tr {
   border-bottom: 1px solid #4999b8;
+}
+
+.table-home tbody tr:last-child {
+  border-bottom: 2px solid #4999b8;
 }
 
 .table-button {
@@ -1553,7 +1557,6 @@ ol {
   .table-home {
     width: 10vw;
     font-size: 10px;
-    margin-bottom: 6rem;
   }
 
   .main-container {
@@ -1623,6 +1626,7 @@ ol {
   .list_list {
     margin-left: 1%;
     margin-bottom: 5rem;
+    margin-right: 1%;
   }
 }
 
