@@ -1398,7 +1398,7 @@ ol {
 }
 
 .carta:not(:first-child) {
-  margin-left: -130px;
+  margin-left: -90px; /*-130px*/
 }
 
 .img-carta {
