@@ -4,14 +4,14 @@
   src="https://kit.fontawesome.com/a735d6df86.js"
   crossorigin="anonymous"
 ></script>
+<!-- JavaScript function for confirmation popup -->
+<script>
+  function confirmDeletion(movieName) {
+    return confirm(`Are you sure you want to remove "${movieName}"?`);
+  }
+</script>
 
 <div class="list_list">
-  <!--<h1>Meglio di un file Word</h1> -->
-  <!--<img
-    class="rotate"
-    id="banner"
-    src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Simple_Stick_Figure.svg/640px-Simple_Stick_Figure.svg.png"
-  />-->
   <h1 style="display: inline-block; margin-bottom: 0">Watched This Month</h1>
   <a
     href="/add_movie"
@@ -88,7 +88,12 @@
           </form>
         </td>
         <td style="padding: 10px">
-          <form action="/remove_movie" method="post" style="margin: 0">
+          <form
+            action="/remove_movie"
+            method="post"
+            style="margin: 0"
+            onsubmit="return confirmDeletion('{{ movie['movie'] }}')"
+          >
             <button
               type="submit"
               class="table-button"
