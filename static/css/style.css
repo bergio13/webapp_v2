@@ -167,6 +167,24 @@ ul.add li {
   color: rgb(20, 224, 109);
 }
 
+/*----------------------------- Home styling ---------------------------------*/
+
+.btn-add-movie {
+  display: inline-block;
+  color: white;
+  padding: 10px 20px;
+  text-decoration: none;
+  margin-left: auto;
+}
+
+.btn-add-movie:hover {
+  background-color: rgb(119, 8, 198);
+}
+
+.btn-add-movie i {
+  margin-right: 8px;
+}
+
 /* -----------------------------------List styling----------------------------------------------------------------- */
 /*
 .list_page::before {
@@ -1139,17 +1157,18 @@ select option {
 .grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 0.2fr 3fr;
+  grid-template-rows: 0.1fr 3fr;
   grid-template-areas:
     "header header header"
     "main main main";
   height: 100%;
-  background: -webkit-linear-gradient(
+  background-color: #6649b8;
+  /*background: -webkit-linear-gradient(
     to right,
     #41295a,
     #2f0743
   ); /*linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
-  background: linear-gradient(
+  /*background: linear-gradient(
     to right,
     #41295a,
     #2f0743
@@ -1168,7 +1187,8 @@ select option {
   display: flex;
   justify-content: space-between;
   padding: 0 30px 0 30px;
-  background-image: linear-gradient(to right, #41295a, #2f0743);
+  /* background-image:linear-gradient(to right, #41295a, #2f0743);*/
+  background-color: #6649b8;
 }
 
 .main-container {
@@ -1212,23 +1232,23 @@ select option {
 }
 
 .card:first-child {
-  background: -webkit-linear-gradient(to right, #7950f2 5%, #748ffc 95%);
-  background: linear-gradient(to right, #7950f2 5%, #748ffc 95%);
+  background: #263043; /*-webkit-linear-gradient(to right, #7950f2 5%, #748ffc 95%);*/
+  background: #263043; /*linear-gradient(to right, #7950f2 5%, #748ffc 95%);*/
 }
 
 .card:nth-child(2) {
-  background: -webkit-linear-gradient(to right, #4ecdc4, #556270);
-  background: linear-gradient(to right, #4ecdc4, #556270);
+  background: #263043; /*-webkit-linear-gradient(to right, #4ecdc4, #556270);*/
+  background: #263043; /*linear-gradient(to right, #4ecdc4, #556270);*/
 }
 
 .card:nth-child(3) {
-  background: -webkit-linear-gradient(to right, #82c91e 5%, #3bc9db 95%);
-  background: linear-gradient(to right, #82c91e 5%, #3bc9db 95%);
+  background: #263043; /*-webkit-linear-gradient(to right, #82c91e 5%, #3bc9db 95%);*/
+  background: #263043; /*linear-gradient(to right, #82c91e 5%, #3bc9db 95%);*/
 }
 
 .card:nth-child(4) {
-  background: -webkit-linear-gradient(to right, #be4bdb 5%, #f783ac 95%);
-  background: linear-gradient(to right, #be4bdb 5%, #f783ac 95%);
+  background: #263043; /*-webkit-linear-gradient(to right, #be4bdb 5%, #f783ac 95%);*/
+  background: #263043; /*linear-gradient(to right, #be4bdb 5%, #f783ac 95%);*/
 }
 
 .card-inner {
@@ -1313,7 +1333,7 @@ select option {
   margin-left: 6rem;
 }
 
-ol {
+.friends-list {
   font-size: 20px;
   margin-top: 0;
   margin-left: 0;
@@ -1321,7 +1341,20 @@ ol {
 
 .f-form {
   display: flex;
-  margin-left: 0rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.search {
+  padding: 10px;
+  width: 80%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-right: 10px;
 }
 
 .header .search-container {
@@ -1335,12 +1368,24 @@ ol {
   border: none;
 }
 
+.search-button {
+  background-color: #7217d6;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background-color: #4a0e92;
+}
+
 .header .search-container button {
   float: right;
   padding: 6px 10px;
   margin-top: 8px;
   margin-left: 16px;
-  background: #ddd;
   font-size: 17px;
   border: none;
   cursor: pointer;

@@ -66,6 +66,42 @@ async function main() {
   const top6Keys = top6.map(([n]) => n);
   const top6Values = top6.map(([, v]) => v);
 
+  //TOP 10 GENRES
+  const top10 = Object.entries(genres)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
+
+  const top10Keys = top10.map(([n]) => n);
+  const top10Values = top10.map(([, v]) => v);
+
+  //RADAR CHART
+  var options = {
+    series: [
+      {
+        name: "Genres",
+        data: top10Values,
+      },
+    ],
+    chart: {
+      height: 350,
+      type: "radar",
+    },
+    colors: ["#FF5733"],
+
+    xaxis: {
+      categories: top10Keys,
+    },
+    yaxis: {
+      tickAmount: 5, // Adjusts the number of concentric circles
+    },
+  };
+
+  var radarChart = new ApexCharts(
+    document.querySelector("#radar-chart"),
+    options
+  );
+  radarChart.render();
+
   //BAR CHART
   var barChartOptions = {
     series: [
@@ -84,35 +120,10 @@ async function main() {
         dataLabels: {
           position: "top", // top, center, bottom
         },
-        colors: {
-          ranges: [
-            {
-              from: 0,
-              to: 5,
-              color: "#7217D6",
-            },
-            {
-              from: 5,
-              to: 10,
-              color: "#7217D6",
-            },
-            {
-              from: 10,
-              to: 20,
-              color: "#7217D6",
-            },
-            {
-              from: 20,
-              to: 40,
-              color: "#7217D6",
-            },
-          ],
-          backgroundBarColors: [],
-          backgroundBarOpacity: 1,
-          backgroundBarRadius: 0,
-        },
       },
     },
+    colors: ["#7217D6"], // Set a single color for all bars
+
     dataLabels: {
       enabled: true,
       offsetY: -20,
@@ -136,7 +147,7 @@ async function main() {
       axisTicks: {
         show: false,
       },
-      crosshairs: {
+      /*crosshairs: {
         fill: {
           type: "gradient",
           gradient: {
@@ -147,7 +158,7 @@ async function main() {
             opacityTo: 0.4,
           },
         },
-      },
+      },*/
       tooltip: {
         enabled: true,
       },

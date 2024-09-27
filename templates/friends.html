@@ -1,23 +1,28 @@
 {% extends 'base.html' %} {% block title %}Profile{% endblock %} {% block
 body_attributes %} class="friends_page"{% endblock %}{% block body%} {% block
 content %}
+
 <div class="friends">
   <header class="header header-friends">
     <div class="search-container">
       <form method="post" class="f-form">
         <input
           type="text"
-          placeholder="Search user..."
+          placeholder="Search by username..."
           name="name"
           class="search"
         />
-        <button type="submit"><i class="fa fa-search"></i></button>
+        <button type="submit" class="search-button">
+          <i class="fa fa-search"></i>
+        </button>
       </form>
     </div>
   </header>
 
   <main class="main-container main-friends">
-    {% for user in users %}
+    {% if users == [] %}
+    <h2 style="color: white; margin-top: 5%">No friends found</h2>
+    {% endif %} {% for user in users %}
     <p style="display: inline-block">{{ user.username }}</p>
     {% if user.id not in friends|map(attribute="user_id")|list and user.id !=
     session.id %}
@@ -28,14 +33,14 @@ content %}
     </form>
     {% endif %} {% endfor %}
     <div>
-      <h2>Friends</h2>
-      <ol>
+      <h2 style="padding: 2px">Friends</h2>
+      <ul class="friends-list">
         {% for friend in friends %}
         <li>
           <a href="/list/{{ friend.f_username}}"> {{ friend.f_username }} </a>
         </li>
         {% endfor %}
-      </ol>
+      </ul>
     </div>
 
     <div>
