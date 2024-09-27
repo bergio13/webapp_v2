@@ -231,7 +231,8 @@ ul.add li {
 }
 
 .list_list {
-  padding: 1%;
+  padding-left: 1%;
+  padding-right: 1%;
   margin-left: 5rem;
 }
 
@@ -679,6 +680,14 @@ tbody tr:hover {
 
 .table-home tbody tr:last-child {
   border-bottom: 2px solid #4999b8;
+}
+
+.friend tbody tr {
+  border-bottom: 1px solid #05cc79;
+}
+
+.friend tbody tr:last-child {
+  border-bottom: 2px solid #05cc79;
 }
 
 .table-button {
