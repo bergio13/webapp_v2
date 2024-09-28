@@ -168,17 +168,6 @@ def lista_user(username):
         flash('Something went wrong, please refresh the page', category='error')
     return render_template('_lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months, username=username)
 
-@app.route('/lista_<year_selected>')
-def lista_year(year_selected):
-    if 'loggedin' in session:
-        try:
-            movies = get_movies(session['id'])
-        except:
-            movies = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
-    return render_template('lista_year.html', year=int(year_selected), movies=movies, months=months, dict_months=dict_months)
 
 @app.route('/directors', methods=['GET'])
 def show_directors():
@@ -215,14 +204,20 @@ def show_genres():
     if 'loggedin' in session:
         try:
             movies = get_movies_groupby_genre(session['id'])
+            in_genres = ""
             generi = get_genres(session['id'])
+            for genre in generi:
+                in_genres += genre['name'] + ', '
+            mid_genres = in_genres.split(', ')
+            final_genres = set([genre for genre in mid_genres if genre != ''])
+            print(final_genres)
         except:
             movies = []
             generi = []
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return redirect('/login')
-    return render_template('genres.html', movies=movies, genres=generi)
+    return render_template('genres.html', movies=movies, genres=final_genres)
 
 @app.route('/genres/<username>', methods=['GET'])
 def show_genres_friends(username):
@@ -231,14 +226,20 @@ def show_genres_friends(username):
             id = get_user_id(username)
             id = id[0]['id']
             movies = get_movies_groupby_genre(id)
+            in_genres = ""
             generi = get_genres(id)
+            for genre in generi:
+                in_genres += genre['name'] + ', '
+            mid_genres = in_genres.split(', ')
+            final_genres = set([genre for genre in mid_genres if genre != ''])
+            print(final_genres)
         except:
             movies = []
             generi = []
             flash('Something went wrong, please refresh the page', category='error')
     else:
         return redirect('/login')
-    return render_template('_genres.html', movies=movies, genres=generi)
+    return render_template('_genres.html', movies=movies, genres=final_genres)
 
 
 @app.route('/years', methods=['GET'])
@@ -416,7 +417,49 @@ def discover():
     return redirect('/login')
 
 ####################### Add / edit / remove movies ################################
-def clean_and_format(word, is_person=False):
+movie_genres = {
+    28: "Action",
+    12: "Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    14: "Fantasy",
+    36: "History",
+    27: "Horror",
+    10402: "Musical",
+    9648: "Mystery",
+    10749: "Romance",
+    878: "Sci-Fi",
+    10770: "TV Movie",
+    53: "Thriller",
+    10752: "War",
+    37: "Western"
+}
+
+tv_genres = {
+    10759: "Action & Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    10762: "Kids",
+    9648: "Mystery",
+    10763: "News",
+    10764: "Reality",
+    10765: "Sci-Fi & Fantasy",
+    10766: "Soap",
+    10767: "Talk",
+    10768: "War & Politics",
+    37: "Western"
+}
+
+
+def clean_and_format(word):
     word = word.strip()
     word = " ".join(word.split())
     word = word.lower()
@@ -447,7 +490,7 @@ def add_movie():
                     director = clean_and_capitalize_name(director)
                     year = request.form["year"]
                     date = request.form["date"]
-                    genre = request.form["genre"]
+                    genre = ""
                     rating = request.form["rating"]
                     rewatch = request.form["rewatch"] # 0 false, 1 true
                     tv_show = request.form["tv"] # 0 if movie, 1 if tv show
@@ -456,25 +499,29 @@ def add_movie():
                     try:
                         if tv_show == '1':
                             res = tv.search(title)
-                            for result in res:
-                                print(result)
+                            for i, result in enumerate(res):
+                                print(f"Result_{i}", result)
                                 if result['first_air_date'][:4] == str(year):
-                                    print(result['first_air_date'][:4])
+                                    #print(result['first_air_date'][:4])
                                     ids = result['id']
                                     show_season = season.details(ids, which_season)
                                     poster = "https://image.tmdb.org/t/p/w200" + show_season.poster_path
                                     title = title + ', ' + show_season.name
+                                    genre_ids = show_season.genre_ids
+                                    genre = genre.join([tv_genres[genre_id] + ", " for genre_id in genre_ids])
+                                    genre = genre[:-2]
                                     break
-                            print(res)
                         else:
                             res = movie.search(title)
-                            for result in res:
-                                print(result)
+                            for i, result in enumerate(res):
+                                print(f"Result_{i}", result)
                                 if result['release_date'][:4] == str(year):
-                                    print(result['release_date'][:4])
+                                    #print(result['release_date'][:4])
                                     poster = "https://image.tmdb.org/t/p/w200/" + result['poster_path']
+                                    genre_ids = result['genre_ids']
+                                    genre = genre.join([movie_genres[genre_id] + ", " for genre_id in genre_ids])
+                                    genre = genre[:-2]
                                     break
-                            print(res)
                     except:
                         html = get_movie_poster(title)
                         if html != 'None':
@@ -546,7 +593,6 @@ def generate_token():
 
 def is_expired(creation_date):
         return datetime.datetime.now() > (creation_date + datetime.timedelta(hours=24))
- 
 
 @app.route('/passwordreset', methods=['GET', 'POST'])
 def request_password_reset():
@@ -566,7 +612,6 @@ def request_password_reset():
         now =  now.strftime("%Y-%m-%d %H:%M:%S") 
         insert_token(user['id'], token, now)
         
-
         # Send an email to the user with the reset link
         reset_url = f"https://lista-film-v2.onrender.com/passwordreset/{token}"
         msg = Message('Reset Your Password', sender='kinetowebapp@gmail.com', recipients=[user['email']])
@@ -602,3 +647,15 @@ def reset_password(token):
 if __name__ == '__main__':
     app.run(debug=True)
     
+    
+#@app.route('/lista_<year_selected>')
+#def lista_year(year_selected):
+#    if 'loggedin' in session:
+#        try:
+#            movies = get_movies(session['id'])
+#        except:
+#            movies = []
+#            flash('Something went wrong, please refresh the page', category='error')
+#    else:
+#        return redirect('/login')
+#    return render_template('lista_year.html', year=int(year_selected), movies=movies, months=months, dict_months=dict_months)

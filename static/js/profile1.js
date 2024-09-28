@@ -7,15 +7,24 @@ const genres = {
   Crime: 0,
   Documentary: 0,
   Drama: 0,
+  Family: 0,
   Fantasy: 0,
   "Film-Noir": 0,
+  Kids: 0,
+  History: 0,
   Horror: 0,
   Musical: 0,
   Mystery: 0,
+  News: 0,
+  Reality: 0,
   Romance: 0,
   "Sci-Fi": 0,
+  Soap: 0,
+  Talk: 0,
+  "TV Movie": 0,
   Thriller: 0,
   War: 0,
+  Politics: 0,
   Western: 0,
 };
 
@@ -34,6 +43,12 @@ const months = {
   11: 0,
 };
 
+const genreMappings = {
+  "Action & Adventure": ["Action", "Adventure"],
+  "Sci-Fi & Fantasy": ["Sci-Fi", "Fantasy"],
+  "War & Politics": ["War", "Politics"],
+};
+
 let jsondata;
 
 async function getJson(url) {
@@ -47,10 +62,38 @@ async function main() {
   console.log(username);
   jsondata = await getJson("/data/" + username);
 
-  for (var i = 0; i < jsondata.length; ++i) {
-    genres[jsondata[i].genre] += 1;
+  // Handle genres
+  for (let i = 0; i < jsondata.length; ++i) {
+    let movieGenres;
+
+    // Check if the genre field contains multiple genres
+    if (jsondata[i].genre.includes(",")) {
+      // Split multiple genres and trim whitespace
+      movieGenres = jsondata[i].genre.split(",").map((g) => g.trim());
+    } else {
+      // If there's only one genre, wrap it in an array
+      movieGenres = [jsondata[i].genre.trim()];
+    }
+
+    // Increment the count for each genre, accounting for composite genres
+    for (const genre of movieGenres) {
+      if (genreMappings[genre]) {
+        // If the genre is composite (e.g., "Action & Adventure"), split and count both
+        for (const g of genreMappings[genre]) {
+          if (genres[g] !== undefined) {
+            genres[g] += 1;
+          }
+        }
+      } else if (genres[genre] !== undefined) {
+        // If it's a direct match with predefined genres, increment the count
+        genres[genre] += 1;
+      } else {
+        console.log(`Genre not found: ${genre}`); // Optionally log unmatched genres
+      }
+    }
   }
 
+  // Handle months
   for (var i = 0; i < jsondata.length; ++i) {
     const date = new Date(jsondata[i].v_date);
     const month = date.getMonth();

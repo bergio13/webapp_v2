@@ -11,10 +11,10 @@
   <div class="grid-item2 item2 filtered">
     <div class="row">
       {% for genre in genres %}
-      <div class="column1" onclick="openTab('{{genre.name}}');">
-        <h3 class="title">{{genre.name}}</h3>
+      <div class="column1" onclick="openTab('{{genre}}');">
+        <h3 class="title">{{genre}}</h3>
       </div>
-      <div id="{{genre.name}}" class="containerTab">
+      <div id="{{genre}}" class="containerTab">
         <span
           onclick="this.parentElement.style.display='none';"
           class="closebtn"
@@ -32,7 +32,7 @@
           </thead>
           <tbody>
             {% for movie in movies%} 
-            {% if movie.genre == genre.name %} 
+            {% if genre in movie.genre.split(', ') %} 
 
             {% if movie['rewatch']== 1 %}
             <tr style="color: brown">
