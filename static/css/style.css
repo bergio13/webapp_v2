@@ -906,11 +906,11 @@ tbody tr:hover {
 }
 
 .fa-secondary {
-  color: yellow;
+  color: #836fff; /*yellow*/
 }
 
 .fa-primary {
-  color: var(--text-tertiary);
+  color: #26355d; /*var(--text-tertiary)*/
 }
 
 .fa-primary,
@@ -971,12 +971,7 @@ canvas {
     #6649b8,
     #141418
   ); /* rgb(125, 232, 246) */
-  background: linear-gradient(
-    45deg,
-    #141418,
-    #6649b8,
-    #141418
-  ); /* rgb(125, 232, 246) */
+  background: linear-gradient(45deg, #2a2a37, #2b272d); /* rgb(125, 232, 246) */
   position: absolute;
   z-index: -1;
   animation: canvasAnimation 20s ease-in-out infinite;

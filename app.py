@@ -43,6 +43,7 @@ def get_movie_poster(movie_title):
 
 movie = Movie()
 tv = TV()
+season = Season()
 
 ########################### Login - Logout - Register 
 @app.route('/login', methods=['GET', 'POST'])
@@ -476,7 +477,6 @@ def clean_and_capitalize_name(name):
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
-    season = Season()
     if 'loggedin' not in session:
         return redirect('/login')
     else:
@@ -507,9 +507,10 @@ def add_movie():
                                     show_season = season.details(ids, which_season)
                                     poster = "https://image.tmdb.org/t/p/w200" + show_season.poster_path
                                     title = title + ', ' + show_season.name
-                                    genre_ids = show_season.genre_ids
+                                    genre_ids = result['genre_ids']
                                     genre = genre.join([tv_genres[genre_id] + ", " for genre_id in genre_ids])
                                     genre = genre[:-2]
+                                    print(genre)
                                     break
                         else:
                             res = movie.search(title)
