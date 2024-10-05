@@ -1401,6 +1401,8 @@ select option {
   margin-left: 2rem;
 }
 
+/* Cards section */
+
 .carta-list {
   display: flex;
   padding: 3rem;
@@ -1430,23 +1432,26 @@ select option {
   width: 190px;
   min-width: 190px;
   padding: 1.6rem 1rem 1.5rem;
-
   border-radius: 10px;
   background-color: #1f1b27;
-  box-shadow: -1rem 0rem 2rem rgba(0, 0, 0, 0.5);
+  box-shadow: -1rem 0rem 2rem rgba(0, 0, 0, 0.35);
   border: #090909 1px solid;
 
-  transition: 0.2s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smoother transition */
 }
 
+/* Translate current card upwards */
 .carta:hover {
-  transform: translateY(-1rem);
+  transform: translateY(-1rem) scale(1.05); /* Slight scale and lift effect */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); /* Stronger shadow on hover */
 }
 
+/* Translate subsequent cards to the right */
 .carta:hover ~ .carta {
   transform: translateX(100px); /*130px*/
 }
 
+/* Handle overlapping cards */
 .carta:not(:first-child) {
   margin-left: -90px; /*-130px*/
 }
@@ -1461,6 +1466,7 @@ select option {
   border: transparent 4px solid;
   outline: 3px solid black;
   outline-offset: 0px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smoother image transition */
 }
 
 .img-carta-back {
@@ -1472,11 +1478,24 @@ select option {
   object-fit: cover;
   filter: blur(8px);
   z-index: -1;
+  transition: filter 0.3s ease;
+}
+
+/* Remove blur only on hovered card */
+.carta:hover ~ .carta .img-carta-back {
+  filter: none; /* Remove the blur effect */
+  opacity: 0;
 }
 
 .carta-link {
   text-decoration: none;
   color: #6082b6;
+  margin-top: auto; /* Align to bottom */
+  transition: color 0.3s ease;
+}
+
+.carta-link:hover {
+  color: #fff; /* Change to white on hover */
 }
 
 /*---------------------------------------------------Explore page-----------------------------------------*/
