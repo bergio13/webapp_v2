@@ -8,11 +8,17 @@ from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV, Season
 from flask_mail import Mail, Message
 import secrets
+from auth.auth import auth # Import the auth blueprint
+from auth.restore import restore # Import the restore blueprint
 
 tmdb = TMDb()
 tmdb.api_key = os.environ.get('TMDB_API_KEY')
 
 app = Flask(__name__)
+# Register the auth blueprint with the main app
+app.register_blueprint(auth)
+
+
 app.secret_key = os.urandom(24)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
@@ -20,7 +26,9 @@ app.config['MAIL_USERNAME'] = 'kinetowebapp@gmail.com'
 app.config['MAIL_PASSWORD'] = os.environ.get('KINETO_MAIL_PASSWORD')
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+
 mail = Mail(app)
+app.register_blueprint(restore)
 
 year_now = datetime.date.today().year
 month_now = datetime.date.today().month
@@ -44,82 +52,6 @@ def get_movie_poster(movie_title):
 movie = Movie()
 tv = TV()
 season = Season()
-
-########################### Login - Logout - Register 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """Log user in"""
-    # Forget any user_id
-    session.clear()
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-        email = request.form['email']
-        password = request.form['password']
-        try:
-            users = load_users_from_email(email)
-        except:
-            users = []
-            flash('Something went wrong, please try again', category='error')
-        if users != []:
-            if users[0]['email'] == email and check_password_hash(users[0]['password'], password) == True:
-                session['loggedin'] = True
-                session['id'] = users[0]['id']
-                session['email'] = users[0]['email']
-                flash ('Logged in successfully!', category='success')
-                return redirect('/home')
-            # If account exists in accounts table in out database
-            else:
-            # Account doesnt exist or username/password incorrect
-                flash ('Incorrect username/password!', category='error')
-        else:
-            flash ('Something went wrong, please try again', category='error')
-    # User reached route via GET (as by clicking a link or via redirect)
-    return render_template("login.html", session=session)
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-        """Register user"""
-        if request.method == "POST":
-            # Require username
-            email = request.form.get("email")
-            name = request.form.get("username")
-            password = request.form.get("password")
-            confirm_password = request.form.get("confirm_password")
-
-            # Check if email already exists
-            users = load_users_from_email(email)
-            usernames = load_users_from_username(name)
-            if users:
-                flash('Email already exists', category='error')
-            elif not email or len(email) < 4:
-                flash('Email must be valid', category='error')
-            if usernames:
-                flash('Username already taken', category='error')
-            elif len(name) < 2 :
-                flash('Username must be greater than 1 character', category='error')
-            # Check and validate passwords
-            elif not password:
-                flash("Must provide password", category='error')
-            elif len(password) < 3:
-                flash("Password must be greater than 3 characters", category='error')
-            elif password != confirm_password:
-                flash("Passwords must match", category='error')
-            else:
-            # Create hash of password to insert into the database
-                hash = generate_password_hash(request.form.get("password"), method='sha256')
-                insert_user(name, email, password=hash)
-                flash('Account created', category='success')
-                return redirect("/home")
-        return render_template('register.html')
-    
-@app.route('/logout')
-def logout():
-    # Remove session data, this will log the user out
-    session.pop('loggedin', None)
-    session.pop('id', None)
-    session.pop('email', None)
-    # Redirect to login page
-    return redirect('/login')
 
 ########################################### Main pages ################
 
@@ -586,65 +518,8 @@ def edit_movie():
             flash('Movie updated', category='success')
             return redirect('/home')
     return redirect('/login')
-   
-    
-########################### Restore password #########################################
-def generate_token():
-        return secrets.token_hex(16)
 
-def is_expired(creation_date):
-        return datetime.datetime.now() > (creation_date + datetime.timedelta(hours=24))
-
-@app.route('/passwordreset', methods=['GET', 'POST'])
-def request_password_reset():
-    if request.method == 'POST':
-        email = request.form['email']
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
-
-        user = get_user_by_email(email)
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-        print(user)
-
-        # Generate a new reset token
-        token = generate_token()
-        now = datetime.datetime.now()
-        now =  now.strftime("%Y-%m-%d %H:%M:%S") 
-        insert_token(user['id'], token, now)
-        
-        # Send an email to the user with the reset link
-        reset_url = f"https://lista-film-v2.onrender.com/passwordreset/{token}"
-        msg = Message('Reset Your Password', sender='kinetowebapp@gmail.com', recipients=[user['email']])
-        msg.body = f"Click this link to reset your password: {reset_url}"
-        mail.send(msg)
-        return jsonify({'message': 'Password reset email sent, if you do not find it check your spam folder'})
-    return render_template('passwordreset.html')
-
-@app.route('/passwordreset/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    if request.method == 'POST':
-        password = request.form['password']
-        hash = generate_password_hash(password, method='sha256')
-        if not password:
-            return jsonify({'error': 'Password is required'}), 400
-    
-        # Find the reset token
-        reset_token = get_token(token)
-        if not reset_token:
-            return jsonify({'error': 'Invalid token'}), 404
-        if is_expired(reset_token.created_at):
-            return jsonify({'error': 'Token has expired'}), 400
-    
-        # Update the user's password
-        user_id = reset_token.user_id
-        update_user_password(user_id, hash)
-        delete_token(token)
-    
-        return jsonify({'message': 'Password reset successful'})
-    return render_template('reset2.html')
-
-################################################################################################
+#################################################################################################
 if __name__ == '__main__':
     app.run(debug=True)
     
