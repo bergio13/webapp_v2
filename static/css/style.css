@@ -994,8 +994,8 @@ tbody tr:hover {
 }
 
 .canvas_home {
-  background: -webkit-linear-gradient(45deg, #2a2a37, #232657);
-  background: linear-gradient(45deg, #2a2a37, #232657);
+  background: -webkit-linear-gradient(45deg, #4ba7b8, #232657);
+  background: linear-gradient(45deg, #4ba7b8, #232657);
   position: fixed;
   z-index: -1;
   animation: canvasAnimation 20s ease-in-out infinite;

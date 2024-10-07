@@ -16,18 +16,10 @@ class Particle {
     this.speedY;
     this.speedModifier = Math.floor(Math.random() * 1.5 + 0.5);
     this.history = [{ x: this.x, y: this.y }];
-    this.maxLength = Math.floor(Math.random() * 200 + 10);
+    this.maxLength = Math.floor(Math.random() * 500 + 50);
     this.angle = 0;
     this.timer = this.maxLength * 2;
-    this.colors = [
-      "#7091F5",
-      "#7091F5",
-      "#7091F5",
-      "#7091F5",
-      "#793FDF",
-      "#793FDF",
-      "#793FDF",
-    ];
+    this.colors = ["ghostwhite", "azure"];
     this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
   }
   draw(context) {
@@ -76,7 +68,7 @@ class Effect {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
     this.particles = [];
-    this.numberOfParticles = 1000;
+    this.numberOfParticles = 800;
     this.cellSize = 20;
     this.cols;
     this.rows;
@@ -85,12 +77,6 @@ class Effect {
     this.zoom = 0.15;
     this.debug = true;
     this.init();
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "d") {
-        this.debug = !this.debug;
-      }
-    });
 
     window.addEventListener("resize", (e) => {
       this.resize(e.target.innerWidth, e.target.innerHeight);
@@ -116,24 +102,6 @@ class Effect {
       this.particles.push(new Particle(this));
     }
   }
-  drawGrid(context) {
-    context.save();
-    context.strokeStyle = "#23232e";
-    context.lineWidth = 0.3;
-    for (let c = 0; c < this.cols; c++) {
-      context.beginPath();
-      context.moveTo(c * this.cellSize, 0);
-      context.lineTo(c * this.cellSize, this.height);
-      context.stroke();
-    }
-    for (let r = 0; r < this.rows; r++) {
-      context.beginPath();
-      context.moveTo(0, r * this.cellSize);
-      context.lineTo(this.width, r * this.cellSize);
-      context.stroke();
-    }
-    context.restore();
-  }
 
   resize(width, height) {
     this.canvas.width = width;
@@ -144,21 +112,47 @@ class Effect {
   }
 
   render(context) {
-    //if (this.debug) this.drawGrid(context);
     this.particles.forEach((particle) => {
-      particle.draw(context);
-      particle.update();
+      // Check if the particle's head is in the visible area
+      const isHeadVisible =
+        particle.x >= 0 &&
+        particle.x <= this.width &&
+        particle.y >= 0 &&
+        particle.y <= this.height;
+
+      // Check if any part of the particle's trail is visible
+      const isTrailVisible = particle.history.some(
+        (pos) =>
+          pos.x >= 0 &&
+          pos.x <= this.width &&
+          pos.y >= 0 &&
+          pos.y <= this.height
+      );
+
+      // Only draw if either the head or trail is visible
+      if (isHeadVisible || isTrailVisible) {
+        particle.draw(context);
+        particle.update();
+      }
     });
   }
 }
 
 const effect = new Effect(canvas);
-effect.render(ctx);
+
+let isAnimating = true; // Variable to track animation state
+
+// Event listener to handle visibility changes
+document.addEventListener("visibilitychange", function () {
+  isAnimating = !document.hidden; // Set isAnimating based on document visibility
+});
 
 function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  effect.render(ctx);
-  requestAnimationFrame(animate);
+  if (!isAnimating) return; // Skip animation if not visible
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  effect.render(ctx); // Render the animation
+  requestAnimationFrame(animate); // Request the next frame
 }
 
+// Start the animation loop
 animate();
