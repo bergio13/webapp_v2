@@ -660,12 +660,26 @@ tbody tr:hover {
   background-color: #6649b8;
 }
 
+.table-container {
+  width: 90vw;
+  overflow-x: auto;
+  background-color: transparent;
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
 .table-home {
-  width: 92vw;
+  /*width: 92vw;*/
   font-size: 20px;
   z-index: 0;
   color: white;
   border-collapse: collapse;
+  border-radius: 16px;
+  overflow: hidden;
+  width: 100%;
+  overflow-x: auto;
 }
 .table-home tbody tr:nth-child(even) {
   background-color: transparent;
@@ -964,15 +978,26 @@ tbody tr:hover {
   }
 }*/
 
-canvas {
-  background: -webkit-linear-gradient(
+.canvas_landing {
+  /*background: -webkit-linear-gradient(
     45deg,
     #141418,
     #6649b8,
     #141418
-  ); /* rgb(125, 232, 246) */
+  );  rgb(125, 232, 246) */
+  background: -webkit-linear-gradient(45deg, #2a2a37, #2b272d);
   background: linear-gradient(45deg, #2a2a37, #2b272d); /* rgb(125, 232, 246) */
-  position: absolute;
+  position: fixed;
+  z-index: -1;
+  animation: canvasAnimation 20s ease-in-out infinite;
+  width: 99.99%;
+  height: 99.99%;
+}
+
+.canvas_home {
+  background: -webkit-linear-gradient(45deg, #2a2a37, #232657);
+  background: linear-gradient(45deg, #2a2a37, #232657);
+  position: fixed;
   z-index: -1;
   animation: canvasAnimation 20s ease-in-out infinite;
   width: 99.99%;
