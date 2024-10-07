@@ -13,10 +13,10 @@ body {
   margin: 0;
   padding: 0;
   background: #2980b9;
-  background: -moz-linear-gradient(to right, #2980b9, #2c3e50);
+  /*background: -moz-linear-gradient(to right, #2980b9, #2c3e50);
   background: -webkit-linear-gradient(to right, #2980b9, #2c3e50);
   background: linear-gradient(to right, #2980b9, #2c3e50);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#2980b9", endColorstr="#2c3e50", GradientType=1);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#2980b9", endColorstr="#2c3e50", GradientType=1);*/
   color: black;
   /*height: 100vh;*/
   background-size: 100%;
@@ -30,12 +30,12 @@ body:before {
   width: 100%;
   z-index: -1;
   background: #2980b9;
-  background: -webkit-linear-gradient(
+  /*background: -webkit-linear-gradient(
     to right,
     #2980b9,
     #2c3e50
   ); /*linear-gradient(to bottom, #40c057 5%, #9775fa 95%);*/
-  background: linear-gradient(
+  /*background: linear-gradient(
     to right,
     #2980b9,
     #2c3e50
