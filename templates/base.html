@@ -26,13 +26,17 @@
 
   <body {% block body_attributes %}{% endblock %}>
     {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for category, message in messages %}
-      <li class="{{ category }}">{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
+    {% if messages %}
+    <div class="flash-container">
+        {% for category, message in messages %}
+            <div class="flash-message {{ category }}">
+                <span>{{ message }}</span>
+                <button class="close-btn">&times;</button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 {% endwith %}
 
     <nav class="navbar">
@@ -222,5 +226,33 @@
     {% block body %}
     {% block content %}{% endblock %}
     {% endblock %}
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const closeButtons = document.querySelectorAll('.flash-message .close-btn');
+  
+      closeButtons.forEach(button => {
+          button.addEventListener('click', function() {
+              const flashMessage = this.parentElement;
+              flashMessage.style.opacity = '0'; // Fade out effect
+              setTimeout(() => {
+                  flashMessage.remove(); // Remove the element after fading out
+              }, 300); // Match the transition duration in the CSS
+          });
+      });
+    });
+
+    setTimeout(() => {
+      const flashMessages = document.querySelectorAll('.flash-message');
+      flashMessages.forEach(flash => {
+          flash.style.opacity = '0'; // Fade out effect
+          setTimeout(() => {
+              flash.remove(); // Remove the element
+          }, 300); // Match the transition duration in the CSS
+      });
+  }, 3000); 
+
+    </script>
+  
   </body>
 </html>

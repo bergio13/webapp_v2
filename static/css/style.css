@@ -151,6 +151,63 @@ ul.add li {
     0 0 82px #05cc79, 0 0 92px #05cc79, 0 0 102px #05cc79, 0 0 151px #05cc79;
 }
 
+.flash-container {
+  position: fixed;
+  top: 2%;
+  left: 40%;
+  z-index: 1000;
+}
+
+.flash-message {
+  padding: 15px 20px;
+  background-color: #333;
+  color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  opacity: 0.95;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateY(-10px);
+  animation: slideDown 0.3s forwards;
+}
+
+.flash-message.success {
+  background-color: #3aab3e;
+}
+
+.flash-message.error {
+  background-color: #f44336;
+}
+
+.flash-message.info {
+  background-color: #2196f3;
+}
+
+.flash-message.warning {
+  background-color: #ff9800;
+}
+
+.flash-message .close-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  top: 5px;
+  right: 10px;
+  color: white;
+  cursor: pointer;
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .flashes {
   text-align: center;
   margin: 0;
