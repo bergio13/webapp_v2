@@ -227,15 +227,21 @@ ul.add li {
 /*----------------------------- Home styling ---------------------------------*/
 
 .btn-add-movie {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   color: white;
   padding: 10px 20px;
   text-decoration: none;
-  margin-left: auto;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .btn-add-movie:hover {
-  background-color: rgb(119, 8, 198);
+  background-color: rgb(33, 112, 248); /*rgb(119, 8, 198)*/
 }
 
 .btn-add-movie i {
@@ -926,9 +932,15 @@ tbody tr:hover {
 /* -----------------------------------Navbar styling----------------------------------------------------------------- */
 .navbar {
   position: fixed;
+  left: 0; /* Anchor to the left (for a left sidebar) */
+  bottom: 0; /* Anchor to the bottom, makes height 100% of viewport */
+  width: 5rem; /* Initial collapsed width */
   background-color: var(--bg-primary);
-  transition: 200ms ease;
-  z-index: 1;
+  transition: width 200ms ease;
+  z-index: 1000;
+  overflow-x: hidden; /* Hide horizontal overflow when collapsed */
+  display: flex; /* Use flex to align logo and nav-list */
+  flex-direction: column; /* Stack logo and nav-list vertically */
 }
 
 .navbar-nav {
@@ -939,6 +951,7 @@ tbody tr:hover {
   flex-direction: column;
   align-items: center;
   height: 100%;
+  flex-grow: 1; /* Allow the nav list to take up available space */
 }
 
 .nav-item {
@@ -956,7 +969,9 @@ tbody tr:hover {
   color: var(--text-primary);
   text-decoration: none;
   filter: grayscale(100%) opacity(0.7);
-  transition: var(--transition-speed);
+  transition: all var(--transition-speed) ease;
+  white-space: nowrap; /* Prevent text from wrapping when navbar expands */
+  overflow: hidden; /* Hide overflowing text when collapsed */
 }
 
 .nav-link:hover {
@@ -1051,8 +1066,8 @@ tbody tr:hover {
 }
 
 .canvas_home {
-  background: -webkit-linear-gradient(45deg, #4ba7b8, #232657);
-  background: linear-gradient(45deg, #4ba7b8, #232657);
+  /*background: -webkit-linear-gradient(45deg, #4ba7b8, #232657);
+  background: linear-gradient(45deg, #4ba7b8, #232657);*/
   position: fixed;
   z-index: -1;
   animation: canvasAnimation 20s ease-in-out infinite;
@@ -1667,9 +1682,16 @@ select option {
     left: 20vw;
   }
   .navbar {
+    top: auto;
+    left: 0; /* Anchor to the left (for a left sidebar) */
+    right: 0; /* Anchor to the right */
     bottom: 0;
     width: 100%;
     height: 5rem;
+    flex-direction: row; /* Layout items horizontally */
+    justify-content: space-around; /* Distribute items evenly */
+    align-items: center; /* Center items vertically */
+    padding-bottom: env(safe-area-inset-bottom, 0); /* For notched devices */
   }
 
   .logo {
@@ -1678,10 +1700,34 @@ select option {
 
   .navbar-nav {
     flex-direction: row;
+    height: auto; /* Auto height for horizontal list */
+    width: 100%; /* Fill navbar width */
+    justify-content: space-around; /* Distribute nav items evenly */
+    flex-grow: 0; /* Don't grow to fill space */
+  }
+
+  .nav-item {
+    width: auto; /* Allow items to size content */
+    flex-grow: 1; /* Each item takes equal available space */
+  }
+
+  .nav-item:last-child {
+    margin-top: 0; /* Remove auto margin from column layout */
+    margin-right: auto; /* Push last item right if needed, but space-around often negates this */
   }
 
   .nav-link {
     justify-content: center;
+    padding: 0;
+  }
+
+  .nav-link svg {
+    margin: 0; /* Remove margins around icon */
+  }
+
+  .link-text {
+    display: none; /* Explicitly hide text on small screens */
+    opacity: 0; /* Ensure opacity is 0 */
   }
 
   main {
@@ -1704,13 +1750,28 @@ select option {
     margin-bottom: 5rem;
   }
 
+  .table-container {
+    width: auto;
+    padding: 0;
+  }
+
   .table-home {
-    width: 10vw;
+    width: 98%;
     font-size: 10px;
+    display: block;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent cell content from wrapping */
+  }
+
+  .table-poster {
+    width: 10vw;
+    height: 8vh;
   }
 
   .main-container {
     margin-left: 0;
+    margin-bottom: 5rem;
+    padding-top: 1%;
   }
 
   .column {
@@ -1745,11 +1806,11 @@ select option {
   }
 
   h3 {
-    font-size: 6vw;
+    font-size: clamp(5vw, 8vw, 28px); /* Responsive font size with min/max */
     padding-bottom: 1%;
   }
   h1 {
-    font-size: 8vw;
+    font-size: clamp(6vw, 10vw, 34px); /* Responsive font size with min/max */
   }
 
   th,
@@ -1757,13 +1818,9 @@ select option {
     padding: 1.5vh 1vh;
   }
 
-  .table-poster {
-    width: 10vw;
-    height: 8vh;
-  }
-
   .header {
     margin-left: 0;
+    margin-top: 1rem;
   }
 
   .grid-container1 {
@@ -1786,6 +1843,9 @@ select option {
     width: 5rem;
     height: 100vh;
     top: 0;
+    left: 0; /* Position on the left */
+    bottom: 0;
+    flex-direction: column; /* Stack logo and nav vertically */
   }
 
   .navbar:hover {
