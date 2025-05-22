@@ -1291,7 +1291,7 @@ select option {
   ); /*linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
 }
 .material-icons-outlined {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   font-size: 35px;
   color: grey;
 }
