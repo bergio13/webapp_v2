@@ -33,28 +33,32 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
 <div class="list_list" style="display: none">
   <!-- Hide initially -->
   <!-- Filter and Add Movie Section -->
-  <div style="margin-left: 50%; height: 5%">
-    <a href="/add_movie" class="a_list"><i class="fa-solid fa-plus"></i></a>
-    <div class="dropdown" style="display: inline-block">
-      <button onclick="myFunction()" class="dropbtn">FILTER</button>
-      <div id="myDropdown" class="dropdown-content">
-        <input
-          type="text"
-          placeholder="Search.."
-          id="myInput"
-          onkeyup="filterFunction()"
-        />
-        <a href="/directors">Director</a>
-        <a href="/genres">Genre</a>
-        <a href="/years">Year</a>
-        <a href="/ratings">Rating</a>
+  <div class="filter-add-section">
+    <!-- Movies Watched Table -->
+    <h2 style="color: white" class="neonText">Watched List</h2>
+
+    <div class="buttons-container">
+      <a href="/add_movie" class="a_list add-movie-btn"
+        ><i class="fa-solid fa-plus"></i
+      ></a>
+      <div class="dropdown">
+        <button onclick="myFunction()" class="dropbtn">FILTER</button>
+        <div id="myDropdown" class="dropdown-content">
+          <input
+            type="text"
+            placeholder="Search.."
+            id="myInput"
+            onkeyup="filterFunction()"
+          />
+          <a href="/directors">Director</a>
+          <a href="/genres">Genre</a>
+          <a href="/years">Year</a>
+          <a href="/ratings">Rating</a>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Movies Watched Table -->
-  <h2 style="color: white" class="neonText">Watched List</h2>
-  <table style="width: 100%; border-collapse: collapse; margin-top: 2%">
+  <table class="table-lista1">
     <thead>
       <tr
         style="
@@ -133,10 +137,10 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
   </table>
 
   <p style="font-size: 12px; color: white; margin-top: 20px">
-    Credits: This product uses the TMDb API but is not endorsed or certified by
-    TMDb <br />
-    Legend: <i class="fa-solid fa-film"></i> = watched at the cinema,
+    <i class="fa-solid fa-film"></i> = watched at the cinema <br />
     <i class="fa-solid fa-repeat"></i> = rewatch
+    <!-- Credits: This product uses the TMDb API but is not endorsed or certified by
+    TMDb <br />  -->
   </p>
 </div>
 
@@ -150,6 +154,16 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
 <script>
   function confirmDeletion(movieName) {
     return confirm(`Are you sure you want to remove "${movieName}"?`);
+  }
+
+  window.onload = () => {
+    document.getElementById("preloader").style.display = "none";
+    document.querySelector(".list_list").style.display = "block";
+  };
+
+  function toggleButtonsContainer() {
+    const buttonsContainer = document.querySelector(".buttons-container");
+    buttonsContainer.classList.toggle("show-buttons");
   }
 
   window.onload = () => {

@@ -70,7 +70,7 @@ h1 {
   margin-left: 1%;
 }
 h2 {
-  margin: 0;
+  margin-bottom: 0;
 }
 
 h3 {
@@ -294,10 +294,25 @@ ul.add li {
       21px 21px #6181b0;
 } */
 
+.filter-add-section {
+  height: 5%;
+  display: flex;
+  justify-content: space-between; /* Puts space between title and buttons */
+  align-items: center; /* Vertically align items */
+  margin-bottom: 20px; /* Space below this section */
+  padding: 0 10px; /* Add some padding */
+}
+
 .list_list {
   padding-left: 1%;
   padding-right: 1%;
   margin-left: 5rem;
+}
+
+.table-lista1 {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2%;
 }
 
 .a_list {
@@ -1755,9 +1770,11 @@ select option {
     padding: 0;
   }
 
-  .table-home {
+  .table-home,
+  .table-lista1 {
     width: 98%;
     font-size: 10px;
+    padding: 1%;
     display: block;
     overflow-x: auto; /* Enable horizontal scrolling */
     white-space: nowrap; /* Prevent cell content from wrapping */
@@ -1828,6 +1845,12 @@ select option {
   }
   table {
     font-size: 9px;
+  }
+
+  .filter-add-section {
+    flex-direction: column; /* Stack items vertically */
+    height: auto; /* Allow height to adjust */
+    margin-bottom: 20px;
   }
 
   .list_list {
