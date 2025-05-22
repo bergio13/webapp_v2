@@ -1810,7 +1810,7 @@ select option {
     padding-bottom: 1%;
   }
   h1 {
-    font-size: clamp(6vw, 10vw, 32px); /* Responsive font size with min/max */
+    font-size: clamp(6vw, 10vw, 28px); /* Responsive font size with min/max */
   }
 
   th,
