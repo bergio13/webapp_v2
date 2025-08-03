@@ -9,3 +9,4 @@ flask-mail
 supabase
 python-dotenv
 huggingface_hub==0.34.3
+werkzeug==2.2.3
