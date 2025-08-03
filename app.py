@@ -4,12 +4,36 @@ from database import *
 import os
 import datetime
 import requests
+import re
 from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV, Season
 from flask_mail import Mail, Message
 import secrets
+import json
 from auth.auth import auth # Import the auth blueprint
 from auth.restore import restore # Import the restore blueprint
+from dotenv import load_dotenv  # Add this importort Flask, render_template, jsonify, request, flash, redirect, session
+from werkzeug.security import generate_password_hash, check_password_hash
+from database import *
+import os
+import datetime
+import requests
+from bs4 import BeautifulSoup
+from tmdbv3api import TMDb, Movie, TV, Season
+from flask_mail import Mail, Message
+import secrets
+import json
+from auth.auth import auth # Import the auth blueprint
+from auth.restore import restore # Import the restore blueprint
+from dotenv import load_dotenv  # Add this import
+from huggingface_hub import InferenceClient
+
+# Load environment variables from .env file
+load_dotenv()
+
+# ========================================
+# APP CONFIGURATION
+# ========================================
 
 tmdb = TMDb()
 tmdb.api_key = os.environ.get('TMDB_API_KEY')
@@ -17,7 +41,6 @@ tmdb.api_key = os.environ.get('TMDB_API_KEY')
 app = Flask(__name__)
 # Register the auth blueprint with the main app
 app.register_blueprint(auth)
-
 
 app.secret_key = os.urandom(24)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -30,30 +53,202 @@ app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 app.register_blueprint(restore)
 
+# ========================================
+# GLOBAL VARIABLES & CONSTANTS
+# ========================================
+
 year_now = datetime.date.today().year
 month_now = datetime.date.today().month
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 dict_months = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
 
-def get_movie_poster(movie_title):
-    # Replace spaces with underscores
-    movie_title = movie_title.replace(' ', '_')
-    # Construct URL
-    url = f'https://en.wikipedia.org/wiki/{movie_title}'
-    # Send GET request
-    response = requests.get(url)
-    # Parse HTML content
-    soup = BeautifulSoup(response.content, 'html.parser')
-    # Find poster image
-    img_tag = soup.find('a', {'class': 'image'})
-    # Return image URL
-    return str(img_tag)
+movie_genres = {
+    28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
+    99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
+    27: "Horror", 10402: "Musical", 9648: "Mystery", 10749: "Romance", 878: "Sci-Fi",
+    10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western"
+}
+
+tv_genres = {
+    10759: "Action & Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
+    99: "Documentary", 18: "Drama", 10751: "Family", 10762: "Kids", 9648: "Mystery",
+    10763: "News", 10764: "Reality", 10765: "Sci-Fi & Fantasy", 10766: "Soap",
+    10767: "Talk", 10768: "War & Politics", 37: "Western"
+}
 
 movie = Movie()
 tv = TV()
 season = Season()
 
-########################################### Main pages ################
+# ========================================
+# UTILITY FUNCTIONS
+# ========================================
+
+def clean_and_format(word):
+    """Clean and format movie titles"""
+    word = word.strip()
+    word = " ".join(word.split())
+    word = word.lower()
+    return word
+
+def clean_and_capitalize_name(name):
+    """Clean and capitalize names (directors, etc.)"""
+    cleaned_name = name.strip().lower()
+    capitalized_name = ' '.join(word.capitalize() for word in cleaned_name.split())
+    return capitalized_name
+
+def get_movie_poster(movie_title):
+    """Get movie poster from Wikipedia (fallback method)"""
+    movie_title = movie_title.replace(' ', '_')
+    url = f'https://en.wikipedia.org/wiki/{movie_title}'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    img_tag = soup.find('a', {'class': 'image'})
+    return str(img_tag)
+
+def get_user_watch_history_summary(user_id, percentage=50, max_cap=100):
+    """Get a formatted summary of user's recent watch history for AI analysis"""
+    try:
+        movies = get_movies(user_id)
+        if not movies:
+            return "No movies watched yet."
+        
+        # Sort by watch date and get recent ones
+        movies.sort(key=lambda x: x['v_date'], reverse=True)
+        
+        # Calculate how many movies to include based on percentage
+        total_movies = len(movies)
+        movies_to_include = min(int(total_movies * percentage / 100), max_cap)
+        movies_to_include = max(movies_to_include, 1)  # At least 1 movie
+        
+        recent_movies = movies[:movies_to_include]
+        
+        # Create a formatted summary
+        summary = f"Recent movies I've watched ({movies_to_include} out of {total_movies} total movies, {percentage}% of my collection):\n"
+        for i, movie in enumerate(recent_movies, 1):
+            rating_text = f"({movie['rating']}/10)" if movie['rating'] else "(unrated)"
+            summary += f"{i}. {movie['movie']} ({movie['p_year']}) - Director: {movie['director']} - Genre: {movie['genre']} - My Rating: {rating_text}\n"
+        
+        # Add some statistics
+        if len(movies) > 0:
+            avg_rating = sum(m['rating'] for m in movies if m['rating']) / len([m for m in movies if m['rating']])
+            genres = {}
+            for movie in recent_movies:
+                if movie['genre']:
+                    for genre in movie['genre'].split(', '):
+                        genres[genre.strip()] = genres.get(genre.strip(), 0) + 1
+            
+            top_genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)[:3]
+            summary += f"\nMy average rating: {avg_rating:.1f}/10\n"
+            summary += f"My most watched genres in this selection: {', '.join([g[0] for g in top_genres])}\n"
+        
+        return summary
+    except Exception as e:
+        print(f"Error getting watch history: {e}")
+        return "Unable to retrieve watch history."
+
+def get_ai_movie_recommendation(user_request, user_history):
+    """Get AI-powered movie recommendations using Hugging Face InferenceClient"""
+    try:
+        client = InferenceClient(
+            provider="together",
+            api_key=os.environ.get('HUGGINGFACE_API_KEY')
+        )
+        
+        # Create a comprehensive prompt for movie recommendations
+        prompt = f"""You are a movie recommendation expert. Based on the user's watch history and their request, provide 3-5 specific movie recommendations.
+
+User's Recent Watch History:
+{user_history}
+
+User's Request: {user_request}
+
+Please provide movie recommendations in the following format:
+1. **Movie Title (Year) - Director**
+   Genre: [genres]
+   Why I recommend it: [brief explanation based on their history and request]
+
+2. **Movie Title (Year) - Director**
+   Genre: [genres]
+   Why I recommend it: [brief explanation based on their history and request]
+
+[Continue for 3-5 movies]
+
+Keep recommendations diverse and consider the user's rating patterns and favorite genres. Explain why each movie fits their taste based on their watch history."""
+
+        messages = [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+
+        completion = client.chat.completions.create(
+            model="deepseek-ai/DeepSeek-V3", 
+            messages=messages, 
+            max_tokens=1000
+        )
+        
+        response_text = completion.choices[0].message.content
+        
+        # Convert markdown-style formatting to HTML for better display
+        formatted_response = format_ai_response_to_html(response_text)
+        
+        return formatted_response
+        
+    except Exception as e:
+        print(f"Error getting AI recommendations: {e}")
+        return f"<p>Sorry, I couldn't generate recommendations at the moment.</p><p><strong>Error:</strong> {str(e)}</p>"
+
+def format_ai_response_to_html(text):
+    """Convert AI response text to HTML with better formatting"""
+    
+    # Split the text into lines for processing
+    lines = text.split('\n')
+    html_lines = []
+    in_list = False
+    
+    for line in lines:
+        line = line.strip()
+        
+        # Check for numbered list items
+        if re.match(r'^\d+\.\s*\*\*(.*?)\*\*', line):
+            if not in_list:
+                html_lines.append('<ol>')
+                in_list = True
+            # Extract the movie title
+            title_match = re.match(r'^\d+\.\s*\*\*(.*?)\*\*', line)
+            if title_match:
+                html_lines.append(f'<li><strong>{title_match.group(1)}</strong>')
+        elif line.startswith('Genre:') or line.startswith('Why I recommend it:'):
+            # Handle metadata lines
+            line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line)
+            line = re.sub(r'\*(.*?)\*', r'<em>\1</em>', line)
+            html_lines.append(f'<p>{line}</p>')
+        elif line and not re.match(r'^\d+\.', line):
+            # Handle regular text lines
+            if in_list:
+                html_lines.append('</li>')
+                # Don't close the list yet, there might be more items
+            line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line)
+            line = re.sub(r'\*(.*?)\*', r'<em>\1</em>', line)
+            if line:
+                html_lines.append(f'<p>{line}</p>')
+        elif not line:
+            # Empty line - close list item if we're in a list
+            if in_list:
+                html_lines.append('</li>')
+    
+    # Close any open list at the end
+    if in_list:
+        html_lines.append('</li>')
+        html_lines.append('</ol>')
+    
+    return '\n'.join(html_lines)
+
+# ========================================
+# MAIN NAVIGATION ROUTES
+# ========================================
 
 @app.route('/home')
 def hello():
@@ -205,6 +400,10 @@ def show_years_friends(username):
         return redirect('/login')
     return render_template('_years.html', movies=movies, years=anni)
 
+# ========================================
+# STATISTICS & ANALYTICS ROUTES
+# ========================================
+
 @app.route('/ratings', methods=['GET'])
 def show_ratings():
     if 'loggedin' in session:
@@ -234,6 +433,10 @@ def show_ratings_friends(username):
     else:
         return redirect('/login')
     return render_template('_ratings.html', movies=movies, ratings=ratings)
+
+# ========================================
+# USER PROFILE & DATA ROUTES
+# ========================================
 
 @app.route("/users/<name>")
 def show_user_profile(name):
@@ -309,6 +512,10 @@ def profile_friend(username):
         return render_template('_profile.html', username= username, user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
     return redirect('/login')
 
+# ========================================
+# SOCIAL FEATURES (FRIENDS & DISCOVERY)
+# ========================================
+
 @app.route('/friends', methods=['GET', 'POST'])
 def search_friends():
     if 'loggedin' in session:
@@ -342,70 +549,37 @@ def follow():
     return redirect('/friends')
 
 
-@app.route('/discover')
+@app.route('/discover', methods=['GET', 'POST'])
 def discover():
-    if 'loggedin' in session:   
-        movies = get_highest_rating()                 
-        return render_template('explore.html', movies=movies, session=session)
-    return redirect('/login')
-
-####################### Add / edit / remove movies ################################
-movie_genres = {
-    28: "Action",
-    12: "Adventure",
-    16: "Animation",
-    35: "Comedy",
-    80: "Crime",
-    99: "Documentary",
-    18: "Drama",
-    10751: "Family",
-    14: "Fantasy",
-    36: "History",
-    27: "Horror",
-    10402: "Musical",
-    9648: "Mystery",
-    10749: "Romance",
-    878: "Sci-Fi",
-    10770: "TV Movie",
-    53: "Thriller",
-    10752: "War",
-    37: "Western"
-}
-
-tv_genres = {
-    10759: "Action & Adventure",
-    16: "Animation",
-    35: "Comedy",
-    80: "Crime",
-    99: "Documentary",
-    18: "Drama",
-    10751: "Family",
-    10762: "Kids",
-    9648: "Mystery",
-    10763: "News",
-    10764: "Reality",
-    10765: "Sci-Fi & Fantasy",
-    10766: "Soap",
-    10767: "Talk",
-    10768: "War & Politics",
-    37: "Western"
-}
-
-
-def clean_and_format(word):
-    word = word.strip()
-    word = " ".join(word.split())
-    word = word.lower()
-    return word
-
-def clean_and_capitalize_name(name):
-    # Remove leading and trailing spaces and convert to lowercase
-    cleaned_name = name.strip().lower()
+    if 'loggedin' not in session:
+        return redirect('/login')
     
-    # Capitalize the first letter of each word
-    capitalized_name = ' '.join(word.capitalize() for word in cleaned_name.split())
+    ai_response = None
+    user_request = ""
+    history_percentage = 50
     
-    return capitalized_name
+    if request.method == 'POST':
+        user_request = request.form.get('user_request', '').strip()
+        history_percentage = int(request.form.get('history_percentage', 50))
+        
+        if user_request:
+            # Get user's watch history with the specified percentage
+            user_history = get_user_watch_history_summary(session['id'], percentage=history_percentage)
+            
+            # Get AI recommendations
+            ai_response = get_ai_movie_recommendation(user_request, user_history)
+        else:
+            flash('Please enter a request for movie recommendations', 'error')
+    
+    return render_template('discover.html', 
+                         ai_response=ai_response, 
+                         user_request=user_request,
+                         history_percentage=history_percentage,
+                         session=session)
+
+# ========================================
+# MOVIE MANAGEMENT (ADD/EDIT/REMOVE)
+# ========================================
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
@@ -418,16 +592,21 @@ def add_movie():
                     parent_id = get_user_by_id(session['id'])
                     title = request.form["title"]
                     title = clean_and_format(title)
-                    director = request.form["director"]
-                    director = clean_and_capitalize_name(director)
+                    manual_director = request.form["director"].strip()
                     year = request.form["year"]
                     date = request.form["date"]
                     genre = ""
+                    director = ""
                     rating = request.form["rating"]
                     rewatch = request.form["rewatch"] # 0 false, 1 true
                     tv_show = request.form["tv"] # 0 if movie, 1 if tv show
                     which_season = request.form["season"]
                     cinema = request.form["cinema"]
+                    
+                    # Use manual director if provided, otherwise auto-fetch
+                    if manual_director:
+                        director = clean_and_capitalize_name(manual_director)
+                    
                     try:
                         if tv_show == '1':
                             res = tv.search(title)
@@ -442,6 +621,33 @@ def add_movie():
                                     genre_ids = result['genre_ids']
                                     genre = genre.join([tv_genres[genre_id] + ", " for genre_id in genre_ids])
                                     genre = genre[:-2]
+                                    
+                                    # Get TV show creator/director only if not manually provided
+                                    if not director:
+                                        try:
+                                            tv_details = tv.details(ids)
+                                            print(tv_details)
+                                            if hasattr(tv_details, 'created_by') and tv_details.created_by:
+                                                director = tv_details.created_by[0]['name']
+                                            else:
+                                                # Try to get credits for TV show
+                                                try:
+                                                    api_key = tmdb.api_key
+                                                    credits_url = f"https://api.themoviedb.org/3/tv/{ids}/credits?api_key={api_key}"
+                                                    credits_response = requests.get(credits_url)
+                                                    if credits_response.status_code == 200:
+                                                        credits_data = credits_response.json()
+                                                        for crew_member in credits_data.get('crew', []):
+                                                            if crew_member['job'] in ['Director', 'Creator', 'Executive Producer']:
+                                                                director = crew_member['name']
+                                                                break
+                                                except:
+                                                    pass
+                                                
+                                                if not director:
+                                                    director = "Various Directors"
+                                        except:
+                                            director = "Unknown"
                                     print(genre)
                                     break
                         else:
@@ -454,6 +660,35 @@ def add_movie():
                                     genre_ids = result['genre_ids']
                                     genre = genre.join([movie_genres[genre_id] + ", " for genre_id in genre_ids])
                                     genre = genre[:-2]
+                                    
+                                    # Get movie director only if not manually provided
+                                    if not director:
+                                        try:
+                                            movie_details = movie.details(result['id'])
+                                            # Try to get credits using the tmdbv3api
+                                            credits = movie_details.credits
+                                            if credits and 'crew' in credits:
+                                                for crew_member in credits['crew']:
+                                                    if crew_member['job'] == 'Director':
+                                                        director = crew_member['name']
+                                                        break
+                                        except:
+                                            # Fallback: try manual API call for credits
+                                            try:
+                                                api_key = tmdb.api_key
+                                                credits_url = f"https://api.themoviedb.org/3/movie/{result['id']}/credits?api_key={api_key}"
+                                                credits_response = requests.get(credits_url)
+                                                if credits_response.status_code == 200:
+                                                    credits_data = credits_response.json()
+                                                    for crew_member in credits_data.get('crew', []):
+                                                        if crew_member['job'] == 'Director':
+                                                            director = crew_member['name']
+                                                            break
+                                            except:
+                                                pass
+   
+                                        if not director:
+                                            director = "Unknown"
                                     break
                     except:
                         html = get_movie_poster(title)
@@ -519,7 +754,10 @@ def edit_movie():
             return redirect('/home')
     return redirect('/login')
 
-#################################################################################################
+# ========================================
+# APPLICATION ENTRY POINT
+# ========================================
+
 if __name__ == '__main__':
     app.run(debug=True)
     

@@ -1,0 +1,585 @@
+{% extends 'base.html' %} {% block title %}AI Movie Recommendations{% endblock
+%} {% block body_attributes %}class="discover_page"{% endblock %} {% block
+content %}
+
+<canvas class="canvas_discover" id="canvas"></canvas>
+<script src="static/js/particles.js"></script>
+
+<main>
+  <div class="discover-container">
+    <h1 style="color: white; text-align: center; margin-bottom: 30px">
+      🤖 Movie Recommendations
+    </h1>
+
+    <div class="chat-interface">
+      <!-- Request Form -->
+      <div class="request-section">
+        <form method="post" class="recommendation-form">
+          <div class="input-group">
+            <label
+              for="user_request"
+              style="
+                color: white;
+                font-size: 16px;
+                margin-bottom: 10px;
+                display: block;
+              "
+            >
+              Ask for movie recommendations based on your watch history:
+            </label>
+            <textarea
+              id="user_request"
+              name="user_request"
+              placeholder="e.g., 'I want something similar to my recent favorites but more action-packed' or 'Recommend me some good sci-fi movies' or 'I'm in the mood for something uplifting'"
+              rows="3"
+              style="
+                width: 100%;
+                padding: 15px;
+                border-radius: 10px;
+                border: 2px solid #ddd;
+                font-size: 16px;
+                resize: vertical;
+                background-color: #f9f9f9;
+              "
+              required
+            >
+{{ user_request }}</textarea
+            >
+          </div>
+
+          <div class="input-group">
+            <label
+              for="history_percentage"
+              style="
+                color: white;
+                font-size: 16px;
+                margin-bottom: 10px;
+                display: block;
+              "
+            >
+              How much of your recent watch history to include:
+              <span id="percentage-value">50%</span> (max 100 movies)
+            </label>
+            <input
+              type="range"
+              id="history_percentage"
+              name="history_percentage"
+              min="1"
+              max="100"
+              value="{{ history_percentage or 50 }}"
+              class="percentage-slider"
+              oninput="updatePercentageDisplay(this.value)"
+            />
+            <div class="slider-labels">
+              <span style="color: #ccc; font-size: 14px">1%</span>
+              <span style="color: #ccc; font-size: 14px">100%</span>
+            </div>
+          </div>
+          <button type="submit" class="ai-button" id="submit-button">
+            🎬 Get Recommendations
+          </button>
+        </form>
+      </div>
+
+      <!-- AI Response Section -->
+      {% if ai_response %}
+      <div class="response-section">
+        <div class="ai-recommendations">
+          <h3 style="color: #4ecdc4; margin-bottom: 20px">
+            Recommendations for you:
+          </h3>
+
+          <div class="ai-response-content">
+            <div class="formatted-recommendations">
+              {{ ai_response | safe }}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Tips Section -->
+      <div class="tips-section">
+        <h3 style="color: #ffd93d; margin-bottom: 15px">
+          💡 Tips for better recommendations:
+        </h3>
+        <ul style="color: white; margin-left: 20px">
+          <li>
+            Be specific about what you're looking for (mood, genre, style)
+          </li>
+          <li>
+            Mention if you want something similar to your recent favorites
+          </li>
+          <li>Ask for movies from specific time periods or countries</li>
+          <li>
+            Request recommendations based on your ratings (e.g., "like my 9/10
+            rated movies")
+          </li>
+          <li>
+            Mention if you want to explore new genres or stick to favorites
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+  .canvas_discover {
+    background: -webkit-linear-gradient(45deg, #2a2a37, #2b272d, #1a1a2e);
+    background: linear-gradient(45deg, #2a2a37, #2b272d, #1a1a2e);
+    position: fixed;
+    z-index: -1;
+    animation: canvasAnimation 20s ease-in-out infinite;
+    width: 99.99%;
+    height: 99.99%;
+    top: 0;
+    left: 0;
+  }
+
+  @keyframes canvasAnimation {
+    0% {
+      background: linear-gradient(45deg, #2a2a37, #2b272d, #1a1a2e);
+    }
+    25% {
+      background: linear-gradient(45deg, #1a1a2e, #2a2a37, #2b272d);
+    }
+    50% {
+      background: linear-gradient(45deg, #2b272d, #1a1a2e, #2a2a37);
+    }
+    75% {
+      background: linear-gradient(45deg, #2a2a37, #1a1a2e, #2b272d);
+    }
+    100% {
+      background: linear-gradient(45deg, #2a2a37, #2b272d, #1a1a2e);
+    }
+  }
+
+  .discover-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    position: relative;
+    z-index: 1;
+  }
+
+  .chat-interface {
+    background: rgba(20, 30, 48, 0.6);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(78, 205, 196, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .input-group {
+    margin-bottom: 25px;
+  }
+
+  .percentage-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 20px;
+    background: linear-gradient(to right, #4ecdc4, #44a08d);
+    outline: none;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+    -webkit-appearance: none;
+    margin: 10px 0;
+  }
+
+  .percentage-slider:hover {
+    opacity: 1;
+  }
+
+  .percentage-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #4ecdc4;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .percentage-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #4ecdc4;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+  }
+
+  .request-section {
+    margin-bottom: 30px;
+  }
+
+  .recommendation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .ai-button {
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-button:hover:not(:disabled) {
+    background: linear-gradient(45deg, #44a08d, #4ecdc4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+  }
+
+  .ai-button:disabled {
+    background: linear-gradient(45deg, #6c757d, #5a6268);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .ai-button.loading {
+    background: linear-gradient(45deg, #6c757d, #5a6268);
+    cursor: not-allowed;
+  }
+
+  .ai-button.loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s ease infinite;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes button-loading-spinner {
+    from {
+      transform: translate(-50%, -50%) rotate(0turn);
+    }
+    to {
+      transform: translate(-50%, -50%) rotate(1turn);
+    }
+  }
+
+  .response-section {
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 2px solid rgba(78, 205, 196, 0.3);
+  }
+
+  .recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+  }
+
+  .recommendation-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(78, 205, 196, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .recommendation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(78, 205, 196, 0.5);
+  }
+
+  .no-poster {
+    width: 100%;
+    height: 300px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .search-button {
+    display: inline-block;
+    background-color: #4ecdc4;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+  }
+
+  .search-button:hover {
+    background-color: #44a08d;
+    text-decoration: none;
+    color: white;
+  }
+
+  .error-message {
+    background-color: rgba(255, 107, 107, 0.1);
+    border: 1px solid #ff6b6b;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .tips-section {
+    background-color: rgba(255, 217, 61, 0.15);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 217, 61, 0.2);
+  }
+
+  .raw-response {
+    margin-top: 20px;
+  }
+
+  .ai-response-content {
+    margin-top: 20px;
+  }
+
+  .formatted-recommendations {
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 25px;
+    border-radius: 12px;
+    color: white;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.8;
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    max-height: 600px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .formatted-recommendations:hover {
+    border-color: rgba(78, 205, 196, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Enhanced text formatting for AI responses */
+  .formatted-recommendations h1,
+  .formatted-recommendations h2,
+  .formatted-recommendations h3 {
+    color: #4ecdc4;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-weight: bold;
+  }
+
+  .formatted-recommendations h1 {
+    font-size: 1.5em;
+    border-bottom: 2px solid rgba(78, 205, 196, 0.3);
+    padding-bottom: 10px;
+  }
+
+  .formatted-recommendations h2 {
+    font-size: 1.3em;
+  }
+
+  .formatted-recommendations h3 {
+    font-size: 1.1em;
+  }
+
+  .formatted-recommendations p {
+    margin-bottom: 15px;
+    text-align: justify;
+  }
+
+  .formatted-recommendations strong {
+    color: #ffd93d;
+    font-weight: 600;
+  }
+
+  .formatted-recommendations em {
+    color: #a8e6cf;
+    font-style: italic;
+  }
+
+  /* Style numbered lists (movie recommendations) */
+  .formatted-recommendations ol {
+    counter-reset: movie-counter;
+    list-style: none;
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  .formatted-recommendations ol li {
+    counter-increment: movie-counter;
+    margin-bottom: 25px;
+    padding: 20px;
+    padding-left: 35px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border-left: 4px solid #4ecdc4;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .formatted-recommendations ol li:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    transform: translateX(3px);
+    border-left-color: #5fd3cc;
+  }
+
+  .formatted-recommendations ol li::before {
+    content: counter(movie-counter);
+    position: absolute;
+    left: -15px;
+    top: 15px;
+    background-color: #4ecdc4;
+    color: #000;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 1;
+  }
+
+  /* Style movie titles and details */
+  .formatted-recommendations ol li > strong:first-child {
+    display: block;
+    font-size: 1.2em;
+    color: #ffffff;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+  }
+
+  /* Style genre and other metadata */
+  .formatted-recommendations ol li p {
+    margin: 8px 0;
+    font-size: 0.95em;
+  }
+
+  .formatted-recommendations ol li p:last-child {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: rgba(168, 230, 207, 0.08);
+    border-radius: 8px;
+    border-left: 3px solid #a8e6cf;
+    font-style: italic;
+  }
+
+  /* Style unordered lists */
+  .formatted-recommendations ul {
+    padding-left: 20px;
+  }
+
+  .formatted-recommendations ul li {
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .formatted-recommendations ul li::marker {
+    color: #4ecdc4;
+  }
+
+  /* Improve readability of text blocks */
+  .formatted-recommendations pre {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: "Courier New", monospace;
+    border: 1px solid rgba(78, 205, 196, 0.2);
+  }
+
+  /* Style any inline code */
+  .formatted-recommendations code {
+    background-color: rgba(78, 205, 196, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Courier New", monospace;
+    color: #ffffff;
+  }
+
+  /* Add some spacing for better readability */
+  .formatted-recommendations br {
+    line-height: 2.5;
+  }
+
+  @media (max-width: 768px) {
+    .recommendations-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .discover-container {
+      padding: 10px;
+    }
+
+    .chat-interface {
+      padding: 20px;
+    }
+  }
+</style>
+
+<script>
+  function updatePercentageDisplay(value) {
+    document.getElementById("percentage-value").textContent = value + "%";
+  }
+
+  // Initialize the display on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    const slider = document.getElementById("history_percentage");
+    updatePercentageDisplay(slider.value);
+
+    // Handle form submission with loading state
+    const form = document.querySelector('.recommendation-form');
+    const submitButton = document.getElementById('submit-button');
+    
+    form.addEventListener('submit', function(e) {
+      // Show loading state
+      submitButton.classList.add('loading');
+      submitButton.disabled = true;
+      submitButton.innerHTML = '🤖 Analyzing your taste...';
+      
+      // Optional: Add a timeout fallback in case something goes wrong
+      setTimeout(() => {
+        if (submitButton.classList.contains('loading')) {
+          submitButton.classList.remove('loading');
+          submitButton.disabled = false;
+          submitButton.innerHTML = '🎬 Get Recommendations';
+        }
+      }, 30000); // 30 second timeout
+    });
+  });
+</script>
+{% endblock %}

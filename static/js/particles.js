@@ -29,7 +29,7 @@ class Effect {
     this.width = width;
     this.height = height;
     this.particles = [];
-    this.numberOfParticles = 50;
+    this.numberOfParticles = 100;
     this.init();
   }
   init() {
