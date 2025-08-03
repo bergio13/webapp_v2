@@ -8,21 +8,6 @@ import re
 from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV, Season
 from flask_mail import Mail, Message
-import secrets
-import json
-from auth.auth import auth # Import the auth blueprint
-from auth.restore import restore # Import the restore blueprint
-from dotenv import load_dotenv  # Add this importort Flask, render_template, jsonify, request, flash, redirect, session
-from werkzeug.security import generate_password_hash, check_password_hash
-from database import *
-import os
-import datetime
-import requests
-from bs4 import BeautifulSoup
-from tmdbv3api import TMDb, Movie, TV, Season
-from flask_mail import Mail, Message
-import secrets
-import json
 from auth.auth import auth # Import the auth blueprint
 from auth.restore import restore # Import the restore blueprint
 from dotenv import load_dotenv  # Add this import
@@ -759,7 +744,10 @@ def edit_movie():
 # ========================================
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Use environment variable to control debug mode
+    # Set FLASK_DEBUG=1 for development, omit or set to 0 for production
+    debug_mode = os.environ.get('FLASK_DEBUG', '0') == '1'
+    app.run(debug=debug_mode)
     
     
 #@app.route('/lista_<year_selected>')

@@ -562,21 +562,21 @@ content %}
     updatePercentageDisplay(slider.value);
 
     // Handle form submission with loading state
-    const form = document.querySelector('.recommendation-form');
-    const submitButton = document.getElementById('submit-button');
-    
-    form.addEventListener('submit', function(e) {
+    const form = document.querySelector(".recommendation-form");
+    const submitButton = document.getElementById("submit-button");
+
+    form.addEventListener("submit", function (e) {
       // Show loading state
-      submitButton.classList.add('loading');
+      submitButton.classList.add("loading");
       submitButton.disabled = true;
-      submitButton.innerHTML = '🤖 Analyzing your taste...';
-      
+      submitButton.innerHTML = "🤖 Analyzing your taste...";
+
       // Optional: Add a timeout fallback in case something goes wrong
       setTimeout(() => {
-        if (submitButton.classList.contains('loading')) {
-          submitButton.classList.remove('loading');
+        if (submitButton.classList.contains("loading")) {
+          submitButton.classList.remove("loading");
           submitButton.disabled = false;
-          submitButton.innerHTML = '🎬 Get Recommendations';
+          submitButton.innerHTML = "🎬 Get Recommendations";
         }
       }, 30000); // 30 second timeout
     });
