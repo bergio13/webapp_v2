@@ -4,8 +4,8 @@ sqlalchemy
 pymysql
 requests
 bs4
-tmdbv3api
+tmdbv3api==1.7.7
 flask-mail
 supabase
 python-dotenv
-huggingface_hub
+huggingface_hub==0.34.3

@@ -10,7 +10,7 @@ from tmdbv3api import TMDb, Movie, TV, Season
 from flask_mail import Mail, Message
 from auth.auth import auth # Import the auth blueprint
 from auth.restore import restore # Import the restore blueprint
-from dotenv import load_dotenv  # Add this import
+from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
 
 # Load environment variables from .env file
