@@ -7,24 +7,14 @@ content %}
 
 <main>
   <div class="discover-container">
-    <h1 style="color: white; text-align: center; margin-bottom: 30px">
-      🤖 Movie Recommendations
-    </h1>
+    <h1 class="main-title-discover">🤖 Movie Recommendations</h1>
 
     <div class="chat-interface">
       <!-- Request Form -->
       <div class="request-section">
         <form method="post" class="recommendation-form">
           <div class="input-group">
-            <label
-              for="user_request"
-              style="
-                color: white;
-                font-size: 16px;
-                margin-bottom: 10px;
-                display: block;
-              "
-            >
+            <label for="user_request" class="form-label">
               Ask for movie recommendations based on your watch history:
             </label>
             <textarea
@@ -32,15 +22,7 @@ content %}
               name="user_request"
               placeholder="e.g., 'I want something similar to my recent favorites but more action-packed' or 'Recommend me some good sci-fi movies' or 'I'm in the mood for something uplifting'"
               rows="3"
-              style="
-                width: 100%;
-                padding: 15px;
-                border-radius: 10px;
-                border: 2px solid #ddd;
-                font-size: 16px;
-                resize: vertical;
-                background-color: #f9f9f9;
-              "
+              class="form-textarea"
               required
             >
 {{ user_request }}</textarea
@@ -48,15 +30,7 @@ content %}
           </div>
 
           <div class="input-group">
-            <label
-              for="history_percentage"
-              style="
-                color: white;
-                font-size: 16px;
-                margin-bottom: 10px;
-                display: block;
-              "
-            >
+            <label for="history_percentage" class="form-label">
               How much of your recent watch history to include:
               <span id="percentage-value">50%</span> (max 100 movies)
             </label>
@@ -71,8 +45,8 @@ content %}
               oninput="updatePercentageDisplay(this.value)"
             />
             <div class="slider-labels">
-              <span style="color: #ccc; font-size: 14px">1%</span>
-              <span style="color: #ccc; font-size: 14px">100%</span>
+              <span class="slider-label">1%</span>
+              <span class="slider-label">100%</span>
             </div>
           </div>
           <button type="submit" class="ai-button" id="submit-button">
@@ -85,9 +59,7 @@ content %}
       {% if ai_response %}
       <div class="response-section">
         <div class="ai-recommendations">
-          <h3 style="color: #4ecdc4; margin-bottom: 20px">
-            Recommendations for you:
-          </h3>
+          <h3 class="response-title">Recommendations for you:</h3>
 
           <div class="ai-response-content">
             <div class="formatted-recommendations">
@@ -100,10 +72,8 @@ content %}
 
       <!-- Tips Section -->
       <div class="tips-section">
-        <h3 style="color: #ffd93d; margin-bottom: 15px">
-          💡 Tips for better recommendations:
-        </h3>
-        <ul style="color: white; margin-left: 20px">
+        <h3 class="tips-title">💡 Tips for better recommendations:</h3>
+        <ul class="tips-list">
           <li>
             Be specific about what you're looking for (mood, genre, style)
           </li>
@@ -131,8 +101,8 @@ content %}
     position: fixed;
     z-index: -1;
     animation: canvasAnimation 20s ease-in-out infinite;
-    width: 99.99%;
-    height: 99.99%;
+    width: 100%;
+    height: 100vh;
     top: 0;
     left: 0;
   }
@@ -164,6 +134,15 @@ content %}
     backdrop-filter: blur(5px);
     position: relative;
     z-index: 1;
+    min-height: 100vh;
+  }
+
+  .main-title-discover {
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    font-weight: bold;
   }
 
   .chat-interface {
@@ -178,6 +157,27 @@ content %}
 
   .input-group {
     margin-bottom: 25px;
+  }
+
+  .form-label {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: block;
+    line-height: 1.4;
+  }
+
+  .form-textarea {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    font-size: 16px;
+    resize: vertical;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    min-height: 120px;
+    font-family: inherit;
   }
 
   .percentage-slider {
@@ -199,8 +199,8 @@ content %}
   .percentage-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: #4ecdc4;
     cursor: pointer;
@@ -209,8 +209,8 @@ content %}
   }
 
   .percentage-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: #4ecdc4;
     cursor: pointer;
@@ -222,6 +222,11 @@ content %}
     display: flex;
     justify-content: space-between;
     margin-top: 5px;
+  }
+
+  .slider-label {
+    color: #ccc;
+    font-size: 14px;
   }
 
   .request-section {
@@ -238,15 +243,17 @@ content %}
     background: linear-gradient(45deg, #4ecdc4, #44a08d);
     color: white;
     border: none;
-    padding: 15px 30px;
+    padding: 16px 32px;
     border-radius: 25px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    align-self: flex-start;
+    align-self: center;
     position: relative;
     overflow: hidden;
+    min-height: 56px;
+    min-width: 200px;
   }
 
   .ai-button:hover:not(:disabled) {
@@ -297,73 +304,10 @@ content %}
     border-top: 2px solid rgba(78, 205, 196, 0.3);
   }
 
-  .recommendations-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-    margin-top: 20px;
-  }
-
-  .recommendation-card {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid rgba(78, 205, 196, 0.2);
-    transition: all 0.3s ease;
-  }
-
-  .recommendation-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    border-color: rgba(78, 205, 196, 0.5);
-  }
-
-  .no-poster {
-    width: 100%;
-    height: 300px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .search-button {
-    display: inline-block;
-    background-color: #4ecdc4;
-    color: white;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    margin-top: 10px;
-    transition: background-color 0.3s ease;
-  }
-
-  .search-button:hover {
-    background-color: #44a08d;
-    text-decoration: none;
-    color: white;
-  }
-
-  .error-message {
-    background-color: rgba(255, 107, 107, 0.1);
-    border: 1px solid #ff6b6b;
-    border-radius: 8px;
-    padding: 20px;
-  }
-
-  .tips-section {
-    background-color: rgba(255, 217, 61, 0.15);
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 30px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 217, 61, 0.2);
-  }
-
-  .raw-response {
-    margin-top: 20px;
+  .response-title {
+    color: #4ecdc4;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
   }
 
   .ai-response-content {
@@ -389,7 +333,6 @@ content %}
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
   }
 
-  /* Enhanced text formatting for AI responses */
   .formatted-recommendations h1,
   .formatted-recommendations h2,
   .formatted-recommendations h3 {
@@ -428,7 +371,6 @@ content %}
     font-style: italic;
   }
 
-  /* Style numbered lists (movie recommendations) */
   .formatted-recommendations ol {
     counter-reset: movie-counter;
     list-style: none;
@@ -472,7 +414,6 @@ content %}
     z-index: 1;
   }
 
-  /* Style movie titles and details */
   .formatted-recommendations ol li > strong:first-child {
     display: block;
     font-size: 1.2em;
@@ -482,7 +423,6 @@ content %}
     border-bottom: 1px solid rgba(78, 205, 196, 0.2);
   }
 
-  /* Style genre and other metadata */
   .formatted-recommendations ol li p {
     margin: 8px 0;
     font-size: 0.95em;
@@ -497,7 +437,6 @@ content %}
     font-style: italic;
   }
 
-  /* Style unordered lists */
   .formatted-recommendations ul {
     padding-left: 20px;
   }
@@ -511,42 +450,219 @@ content %}
     color: #4ecdc4;
   }
 
-  /* Improve readability of text blocks */
-  .formatted-recommendations pre {
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 8px;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    font-family: "Courier New", monospace;
-    border: 1px solid rgba(78, 205, 196, 0.2);
+  .tips-section {
+    background-color: rgba(255, 217, 61, 0.15);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 217, 61, 0.2);
   }
 
-  /* Style any inline code */
-  .formatted-recommendations code {
-    background-color: rgba(78, 205, 196, 0.2);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: "Courier New", monospace;
-    color: #ffffff;
+  .tips-title {
+    color: #ffd93d;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
   }
 
-  /* Add some spacing for better readability */
-  .formatted-recommendations br {
-    line-height: 2.5;
+  .tips-list {
+    color: white;
+    margin-left: 20px;
+    line-height: 1.6;
   }
 
+  .tips-list li {
+    margin-bottom: 8px;
+  }
+
+  /* Mobile Responsive Styles */
   @media (max-width: 768px) {
-    .recommendations-grid {
-      grid-template-columns: 1fr;
+    .discover-container {
+      padding: 15px;
+      margin: 0;
+      margin-bottom: 5rem;
+      border-radius: 0;
+      min-height: 100vh;
     }
 
+    .main-title-discover {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      padding: 0 10px;
+    }
+
+    .chat-interface {
+      padding: 20px 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      font-size: 15px;
+      line-height: 1.3;
+    }
+
+    .form-textarea {
+      padding: 8px;
+      font-size: 16px; /* Prevents zoom on iOS */
+      min-height: 100px;
+      border-radius: 8px;
+    }
+
+    .ai-button {
+      width: 100%;
+      align-self: stretch;
+      padding: 18px 20px;
+      font-size: 16px;
+      min-height: 60px;
+    }
+
+    .percentage-slider::-webkit-slider-thumb {
+      width: 28px;
+      height: 28px;
+    }
+
+    .percentage-slider::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+    }
+
+    .response-section {
+      margin-top: 20px;
+      padding-top: 20px;
+    }
+
+    .response-title {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+    }
+
+    .formatted-recommendations {
+      padding: 15px;
+      max-height: 500px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .formatted-recommendations ol li {
+      padding: 15px;
+      padding-left: 25px;
+      margin-bottom: 20px;
+    }
+
+    .formatted-recommendations ol li::before {
+      width: 25px;
+      height: 25px;
+      left: -12px;
+      top: 12px;
+      font-size: 12px;
+    }
+
+    .formatted-recommendations ol li > strong:first-child {
+      font-size: 1.1em;
+    }
+
+    .tips-section {
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    .tips-title {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+
+    .tips-list {
+      margin-left: 15px;
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
     .discover-container {
       padding: 10px;
     }
 
+    .main-title-discover {
+      font-size: 1.6rem;
+      margin-bottom: 15px;
+    }
+
     .chat-interface {
-      padding: 20px;
+      padding: 15px 10px;
+    }
+
+    .form-label {
+      font-size: 14px;
+    }
+
+    .form-textarea {
+      padding: 3px;
+      min-height: 90px;
+    }
+
+    .formatted-recommendations {
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .formatted-recommendations ol li {
+      padding: 12px;
+      padding-left: 20px;
+    }
+
+    .formatted-recommendations ol li::before {
+      width: 22px;
+      height: 22px;
+      left: -11px;
+      font-size: 11px;
+    }
+
+    .tips-section {
+      padding: 12px;
+    }
+
+    .tips-list {
+      margin-left: 12px;
+      font-size: 13px;
+    }
+  }
+
+  /* Improve touch targets for mobile */
+  @media (max-width: 768px) {
+    .percentage-slider {
+      height: 12px;
+      margin: 15px 0;
+    }
+
+    .slider-labels {
+      margin-top: 8px;
+    }
+
+    .slider-label {
+      font-size: 13px;
+    }
+
+    /* Better spacing for mobile */
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .recommendation-form {
+      gap: 15px;
+    }
+  }
+
+  /* Fix viewport issues on mobile browsers */
+  @media (max-width: 768px) {
+    .canvas_discover {
+      height: 100vh;
+      height: -webkit-fill-available;
+    }
+
+    .discover-container {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
     }
   }
 </style>
@@ -556,30 +672,35 @@ content %}
     document.getElementById("percentage-value").textContent = value + "%";
   }
 
-  // Initialize the display on page load
   document.addEventListener("DOMContentLoaded", function () {
     const slider = document.getElementById("history_percentage");
     updatePercentageDisplay(slider.value);
 
-    // Handle form submission with loading state
     const form = document.querySelector(".recommendation-form");
     const submitButton = document.getElementById("submit-button");
 
     form.addEventListener("submit", function (e) {
-      // Show loading state
       submitButton.classList.add("loading");
       submitButton.disabled = true;
       submitButton.innerHTML = "🤖 Analyzing your taste...";
 
-      // Optional: Add a timeout fallback in case something goes wrong
       setTimeout(() => {
         if (submitButton.classList.contains("loading")) {
           submitButton.classList.remove("loading");
           submitButton.disabled = false;
           submitButton.innerHTML = "🎬 Get Recommendations";
         }
-      }, 30000); // 30 second timeout
+      }, 30000);
     });
+
+    // Prevent zoom on iOS when focusing inputs
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.content =
+          "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0";
+      }
+    }
   });
 </script>
 {% endblock %}
