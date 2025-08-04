@@ -15,7 +15,7 @@ content %}
         <form method="post" class="recommendation-form">
           <div class="input-group">
             <label for="user_request" class="form-label">
-              Ask for movie recommendations based on your watch history:
+              Ask for movie recommendations:
             </label>
             <textarea
               id="user_request"
@@ -72,7 +72,7 @@ content %}
 
       <!-- Tips Section -->
       <div class="tips-section">
-        <h3 class="tips-title">💡 Tips for better recommendations:</h3>
+        <h3 class="tips-title">💡 Tips for better recommendations</h3>
         <ul class="tips-list">
           <li>
             Be specific about what you're looking for (mood, genre, style)
@@ -682,7 +682,7 @@ content %}
     form.addEventListener("submit", function (e) {
       submitButton.classList.add("loading");
       submitButton.disabled = true;
-      submitButton.innerHTML = "🤖 Analyzing your taste...";
+      submitButton.innerHTML = "🤖 Analyzing...";
 
       setTimeout(() => {
         if (submitButton.classList.contains("loading")) {
