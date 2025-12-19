@@ -7,7 +7,19 @@ content %}
 
 <main>
   <div class="discover-container">
-    <h1 class="main-title-discover">AI Movie Recommendations</h1>
+    <div class="terminal-border">
+      <div class="ascii-art-top">
+╔══════════════════════════════════════════════════════════════════════════╗
+║  ███╗   ███╗ ██████╗ ██╗   ██╗██╗███████╗    ██████╗ ███████╗ ██████╗    ║
+║  ████╗ ████║██╔═══██╗██║   ██║██║██╔════╝    ██╔══██╗██╔════╝██╔════╝    ║
+║  ██╔████╔██║██║   ██║██║   ██║██║█████╗      ██████╔╝█████╗  ██║         ║
+║  ██║╚██╔╝██║██║   ██║╚██╗ ██╔╝██║██╔══╝      ██╔══██╗██╔══╝  ██║         ║
+║  ██║ ╚═╝ ██║╚██████╔╝ ╚████╔╝ ██║███████╗    ██║  ██║███████╗╚██████╗    ║
+║  ╚═╝     ╚═╝ ╚═════╝   ╚═══╝  ╚═╝╚══════╝    ╚═╝  ╚═╝╚══════╝ ╚═════╝    ║
+╚══════════════════════════════════════════════════════════════════════════╝
+      </div>
+      <h1 class="main-title-discover">[ AI MOVIE RECOMMENDATION SYSTEM v2.0 ]</h1>
+    </div>
 
     <div class="chat-interface">
       <!-- Request Form -->
@@ -15,7 +27,7 @@ content %}
         <form method="post" class="recommendation-form">
           <div class="input-group">
             <label for="user_request" class="form-label">
-              Ask for movie recommendations:
+              ENTER_QUERY:
             </label>
             <textarea
               id="user_request"
@@ -31,8 +43,8 @@ content %}
 
           <div class="input-group">
             <label for="history_percentage" class="form-label">
-              How much of your recent watch history to include:
-              <span id="percentage-value">50%</span> (max 100 movies)
+              HISTORY_BUFFER_SIZE:
+              <span id="percentage-value">50%</span> [MAX: 100 ENTRIES]
             </label>
             <input
               type="range"
@@ -50,7 +62,7 @@ content %}
             </div>
           </div>
           <button type="submit" class="ai-button" id="submit-button">
-            🎬 Get Recommendations
+            EXECUTE_RECOMMENDATION.exe
           </button>
         </form>
       </div>
@@ -59,7 +71,7 @@ content %}
       {% if ai_response %}
       <div class="response-section">
         <div class="ai-recommendations">
-          <h3 class="response-title">Recommendations for you</h3>
+          <h3 class="response-title">OUTPUT_RECOMMENDATIONS:</h3>
 
           <div class="ai-response-content">
             <div class="formatted-recommendations">
@@ -72,7 +84,7 @@ content %}
 
       <!-- Tips Section -->
       <div class="tips-section">
-        <h3 class="tips-title">💡 Tips for better recommendations</h3>
+        <h3 class="tips-title">> SYSTEM TIPS_</h3>
         <ul class="tips-list">
           <li>
             Be specific about what you're looking for (mood, genre, style)
@@ -89,69 +101,120 @@ content %}
             Mention if you want to explore new genres or stick to favorites
           </li>
         </ul>
-      </div>
     </div>
   </div>
 </main>
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+
+  :root {
+    --neon-cyan: rgb(0, 204, 255);
+    --neon-gold: gold;
+    --neon-purple: #7a4dc2;
+    --neon-purple-light: #b39ddb;
+    --bg-dark: #2a2a37;
+  }
+
   .canvas_discover {
-    background: -webkit-linear-gradient(45deg, #2a2a37, #2b272d, #1a1a2e);
-    background: linear-gradient(45deg, #2a2a37, #2b272d, #1a1a2e);
+    background: #0a0a0a;
     position: fixed;
     z-index: -1;
-    animation: canvasAnimation 20s ease-in-out infinite;
     width: 100%;
     height: 100vh;
     top: 0;
     left: 0;
   }
 
-  @keyframes canvasAnimation {
-    0% {
-      background: linear-gradient(45deg, #2a2a37, #2b272d, #1a1a2e);
-    }
-    25% {
-      background: linear-gradient(45deg, #1a1a2e, #2a2a37, #2b272d);
-    }
-    50% {
-      background: linear-gradient(45deg, #2b272d, #1a1a2e, #2a2a37);
-    }
-    75% {
-      background: linear-gradient(45deg, #2a2a37, #1a1a2e, #2b272d);
-    }
-    100% {
-      background: linear-gradient(45deg, #2a2a37, #2b272d, #1a1a2e);
-    }
+  .canvas_discover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 204, 255, 0.03) 0px,
+      rgba(0, 204, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    animation: scanlines 8s linear infinite;
+  }
+
+  @keyframes scanlines {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(10px); }
   }
 
   .discover-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(42, 42, 55, 0.9);
+    border: 2px solid rgba(122, 77, 194, 0.3);
     border-radius: 20px;
-    backdrop-filter: blur(5px);
+    box-shadow: 0 0 20px rgba(122, 77, 194, 0.2);
+    backdrop-filter: blur(10px);
     position: relative;
     z-index: 1;
     min-height: 100vh;
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+  }
+
+  .terminal-border {
+    border: 1px solid rgba(122, 77, 194, 0.3);
+    padding: 15px;
+    margin-bottom: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(122, 77, 194, 0.2);
+  }
+
+  .ascii-art-top {
+    color: var(--neon-purple-light);
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    line-height: 1.1;
+    white-space: pre;
+    overflow-x: auto;
+    text-shadow: 0 0 3px rgba(179, 157, 219, 0.5);
+    margin-bottom: 10px;
+    opacity: 0.9;
+    text-align: center;
+  }
+
+  .ascii-separator {
+    color: var(--neon-purple-light);
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    margin: 20px 0;
+    text-shadow: 0 0 3px rgba(179, 157, 219, 0.3);
+    opacity: 0.7;
   }
 
   .main-title-discover {
-    color: white;
+    color: var(--neon-purple-light);
     text-align: center;
     margin-bottom: 30px;
-    font-size: 2.5rem;
-    font-weight: bold;
+    font-size: 2rem;
+    font-weight: 400;
+    font-family: 'VT323', 'Courier New', monospace;
+    text-shadow: 0 0 10px rgba(179, 157, 219, 0.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
 
   .chat-interface {
     background: rgba(20, 30, 48, 0.6);
+    border: 1px solid rgba(122, 77, 194, 0.3);
     border-radius: 15px;
     padding: 30px;
     margin-bottom: 30px;
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(78, 205, 196, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 
@@ -160,31 +223,50 @@ content %}
   }
 
   .form-label {
-    color: white;
-    font-size: 16px;
+    color: var(--neon-purple-light);
+    font-size: 20px;
     margin-bottom: 10px;
     display: block;
     line-height: 1.4;
+    font-family: 'VT323', 'Courier New', monospace;
+    letter-spacing: 1px;
+  }
+
+  .form-label::before {
+    content: '> ';
+    color: var(--neon-purple-light);
   }
 
   .form-textarea {
     width: 100%;
     padding: 15px;
-    border-radius: 10px;
-    border: 2px solid #ddd;
-    font-size: 16px;
+    border: 1px solid rgba(0, 204, 255, 0.5);
+    border-radius: 4px;
+    font-size: 18px;
     resize: vertical;
-    background-color: #f9f9f9;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #e0e7ee;
     box-sizing: border-box;
     min-height: 120px;
-    font-family: inherit;
+    font-family: 'VT323', 'Courier New', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .form-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
   }
 
   .percentage-slider {
     width: 100%;
     height: 8px;
     border-radius: 20px;
-    background: linear-gradient(to right, #4ecdc4, #44a08d);
+    background: linear-gradient(to right, var(--neon-purple), var(--neon-cyan));
     outline: none;
     opacity: 0.8;
     transition: opacity 0.3s;
@@ -202,7 +284,7 @@ content %}
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #4ecdc4;
+    background: var(--neon-cyan);
     cursor: pointer;
     border: 2px solid #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -212,7 +294,7 @@ content %}
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #4ecdc4;
+    background: var(--neon-cyan);
     cursor: pointer;
     border: 2px solid #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -225,8 +307,9 @@ content %}
   }
 
   .slider-label {
-    color: #ccc;
-    font-size: 14px;
+    color: var(--neon-purple-light);
+    font-size: 16px;
+    font-family: 'VT323', 'Courier New', monospace;
   }
 
   .request-section {
@@ -240,13 +323,13 @@ content %}
   }
 
   .ai-button {
-    background: linear-gradient(45deg, #4ecdc4, #44a08d);
-    color: white;
-    border: none;
+    background: rgba(0, 204, 255, 0.1);
+    color: var(--neon-cyan);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 4px;
     padding: 16px 32px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 400;
     cursor: pointer;
     transition: all 0.3s ease;
     align-self: center;
@@ -254,16 +337,31 @@ content %}
     overflow: hidden;
     min-height: 56px;
     min-width: 200px;
+    font-family: 'VT323', 'Courier New', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .ai-button::before {
+    content: '[ ';
+    opacity: 0.8;
+  }
+
+  .ai-button::after {
+    content: ' ]';
+    opacity: 0.8;
   }
 
   .ai-button:hover:not(:disabled) {
-    background: linear-gradient(45deg, #44a08d, #4ecdc4);
+    background: rgba(0, 204, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 204, 255, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
   }
 
   .ai-button:disabled {
-    background: linear-gradient(45deg, #6c757d, #5a6268);
+    background: rgba(100, 100, 100, 0.2);
+    border-color: #6c757d;
+    color: #6c757d;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -301,13 +399,21 @@ content %}
   .response-section {
     margin-top: 30px;
     padding-top: 30px;
-    border-top: 2px solid rgba(78, 205, 196, 0.3);
+    border-top: 2px solid rgba(122, 77, 194, 0.3);
   }
 
   .response-title {
-    color: #4ecdc4;
+    color: var(--neon-cyan);
     margin-bottom: 20px;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
+    font-family: 'VT323', 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .response-title::before {
+    content: '> ';
+    color: var(--neon-purple-light);
   }
 
   .ai-response-content {
@@ -321,7 +427,7 @@ content %}
     color: white;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.8;
-    border: 1px solid rgba(78, 205, 196, 0.3);
+    border: 1px solid rgba(122, 77, 194, 0.3);
     max-height: 600px;
     overflow-y: auto;
     transition: all 0.3s ease;
@@ -329,14 +435,14 @@ content %}
   }
 
   .formatted-recommendations:hover {
-    border-color: rgba(78, 205, 196, 0.5);
+    border-color: rgba(122, 77, 194, 0.5);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
   }
 
   .formatted-recommendations h1,
   .formatted-recommendations h2,
   .formatted-recommendations h3 {
-    color: #4ecdc4;
+    color: var(--neon-purple-light);
     margin-top: 25px;
     margin-bottom: 15px;
     font-weight: bold;
@@ -344,7 +450,7 @@ content %}
 
   .formatted-recommendations h1 {
     font-size: 1.5em;
-    border-bottom: 2px solid rgba(78, 205, 196, 0.3);
+    border-bottom: 2px solid rgba(122, 77, 194, 0.3);
     padding-bottom: 10px;
   }
 
@@ -362,12 +468,12 @@ content %}
   }
 
   .formatted-recommendations strong {
-    color: #ffd93d;
+    color: var(--neon-gold);
     font-weight: 600;
   }
 
   .formatted-recommendations em {
-    color: #a8e6cf;
+    color: var(--neon-purple-light);
     font-style: italic;
   }
 
@@ -385,7 +491,7 @@ content %}
     padding-left: 35px;
     background-color: rgba(255, 255, 255, 0.03);
     border-radius: 10px;
-    border-left: 4px solid #4ecdc4;
+    border-left: 4px solid var(--neon-purple);
     position: relative;
     transition: all 0.3s ease;
   }
@@ -393,7 +499,7 @@ content %}
   .formatted-recommendations ol li:hover {
     background-color: rgba(255, 255, 255, 0.05);
     transform: translateX(3px);
-    border-left-color: #5fd3cc;
+    border-left-color: var(--neon-purple-light);
   }
 
   .formatted-recommendations ol li::before {
@@ -401,8 +507,8 @@ content %}
     position: absolute;
     left: -15px;
     top: 15px;
-    background-color: #4ecdc4;
-    color: #000;
+    background-color: var(--neon-purple);
+    color: #fff;
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -431,9 +537,9 @@ content %}
   .formatted-recommendations ol li p:last-child {
     margin-top: 15px;
     padding: 12px;
-    background-color: rgba(168, 230, 207, 0.08);
+    background-color: rgba(179, 157, 219, 0.08);
     border-radius: 8px;
-    border-left: 3px solid #a8e6cf;
+    border-left: 3px solid var(--neon-purple-light);
     font-style: italic;
   }
 
@@ -447,36 +553,64 @@ content %}
   }
 
   .formatted-recommendations ul li::marker {
-    color: #4ecdc4;
+    color: var(--neon-purple);
   }
 
   .tips-section {
-    background-color: rgba(255, 217, 61, 0.15);
+    background-color: rgba(122, 77, 194, 0.1);
     border-radius: 10px;
     padding: 20px;
     margin-top: 30px;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 217, 61, 0.2);
+    border: 1px solid rgba(179, 157, 219, 0.2);
   }
 
   .tips-title {
-    color: #ffd93d;
+    color: var(--neon-purple-light);
     margin-bottom: 15px;
-    font-size: 1.3rem;
+    font-size: 1.6rem;
+    font-family: 'VT323', 'Courier New', monospace;
+    letter-spacing: 2px;
   }
 
   .tips-list {
-    color: white;
-    margin-left: 20px;
-    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    margin-left: 10px;
+    line-height: 1.8;
+    list-style: none;
+    padding-left: 0;
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 18px;
   }
 
   .tips-list li {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    padding-left: 25px;
+    position: relative;
+  }
+
+  .tips-list li::before {
+    content: '>';
+    color: var(--neon-cyan);
+    position: absolute;
+    left: 0;
   }
 
   /* Mobile Responsive Styles */
   @media (max-width: 768px) {
+    .ascii-art-top {
+      display: none;
+    }
+
+    .ascii-separator {
+      font-size: 12px;
+      overflow: hidden;
+    }
+
+    .terminal-border {
+      padding: 10px;
+    }
+
     .discover-container {
       padding: 15px;
       margin: 0;
@@ -573,8 +707,12 @@ content %}
     }
 
     .tips-list {
-      margin-left: 15px;
+      margin-left: 5px;
       font-size: 14px;
+    }
+
+    .tips-list li {
+      padding-left: 18px;
     }
   }
 
@@ -682,7 +820,7 @@ content %}
     form.addEventListener("submit", function (e) {
       submitButton.classList.add("loading");
       submitButton.disabled = true;
-      submitButton.innerHTML = "🤖 Analyzing...";
+      submitButton.innerHTML = "[ PROCESSING... ]";
 
       setTimeout(() => {
         if (submitButton.classList.contains("loading")) {

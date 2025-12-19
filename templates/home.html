@@ -7,6 +7,191 @@
   crossorigin="anonymous"
 ></script>
 
+<!-- VT323 Terminal Font -->
+<link
+  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  /* Soft Ocean Color Palette */
+  :root {
+    --ocean-blue: #64b5f6;
+    --ocean-green: #81c784;
+    --ocean-grey: #b0bec5;
+    --ocean-dark: #1a2634;
+    --ocean-darker: #131c27;
+    --ocean-light: #e0e7ee;
+    --ocean-coral: #e57373;
+  }
+
+  .canvas_home {
+    background: linear-gradient(
+      135deg,
+      #1a2634 0%,
+      #1e3a4c 50%,
+      #1a2634 100%
+    ) !important;
+  }
+
+  .list_list {
+    background: rgba(26, 38, 52, 0.5) !important;
+    border: 1px solid rgba(100, 181, 246, 0.2) !important;
+    box-shadow: 0 0 30px rgba(100, 181, 246, 0.08) !important;
+  }
+
+  .ascii-header {
+    color: var(--ocean-blue);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 14px;
+    line-height: 1.1;
+    white-space: pre;
+    text-shadow: 0 0 5px rgba(100, 181, 246, 0.3);
+    margin-bottom: 10px;
+    margin-left: 1%;
+    opacity: 0.8;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-left: 1%;
+    margin-right: 2%;
+    margin-bottom: 1rem;
+  }
+
+  .header-row h1 {
+    color: var(--ocean-light) !important;
+  }
+
+  .header-row h1 span {
+    color: var(--ocean-blue) !important;
+  }
+
+  .table-home thead th {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.3rem;
+    color: var(--ocean-grey) !important;
+    letter-spacing: 1px;
+    background: transparent !important;
+  }
+
+  .table-home thead tr {
+    background: transparent !important;
+    background-image: none !important;
+    border-bottom: 2px solid rgba(100, 181, 246, 0.35) !important;
+  }
+
+  .table-home tbody tr {
+    border-bottom: 1px solid rgba(100, 181, 246, 0.12) !important;
+  }
+
+  .table-home tbody tr:last-child {
+    border-bottom: 2px solid rgba(100, 181, 246, 0.2) !important;
+  }
+
+  .table-home tbody tr:hover {
+    background-color: rgba(59, 154, 138, 0.35) !important;
+  }
+
+  .btn-add-movie-terminal {
+    font-family: "VT323", "Courier New", monospace !important;
+    font-size: 1.3rem;
+    background: rgba(129, 199, 132, 0.12) !important;
+    border: 2px solid var(--ocean-green) !important;
+    color: var(--ocean-green) !important;
+    border-radius: 4px !important;
+    padding: 12px 24px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .btn-add-movie-terminal:hover {
+    background: rgba(129, 199, 132, 0.22) !important;
+    box-shadow: 0 0 12px rgba(129, 199, 132, 0.25);
+  }
+
+  .legend-terminal {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 18px;
+    color: var(--ocean-light) !important;
+    letter-spacing: 1px;
+  }
+
+  .legend-terminal i {
+    color: var(--ocean-blue);
+  }
+
+  .table-home tbody td {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+    color: var(--ocean-light);
+  }
+
+  .table-home tbody td a {
+    font-family: "VT323", "Courier New", monospace;
+    color: white !important;
+    transition: all 0.2s ease;
+  }
+
+  .table-home tbody td a:hover {
+    color: var(--ocean-blue) !important;
+  }
+
+  .table-edit {
+    background: rgba(100, 181, 246, 0.12) !important;
+    border: 1px solid var(--ocean-blue) !important;
+    color: var(--ocean-blue) !important;
+    font-family: "VT323", "Courier New", monospace !important;
+    border-radius: 3px !important;
+    transition: all 0.2s ease;
+  }
+
+  .table-edit:hover {
+    background: rgba(100, 181, 246, 0.22) !important;
+  }
+
+  .table-button {
+    background: rgba(229, 115, 115, 0.12) !important;
+    border: 1px solid var(--ocean-coral) !important;
+    color: var(--ocean-coral) !important;
+    font-family: "VT323", "Courier New", monospace !important;
+    border-radius: 3px !important;
+    transition: all 0.2s ease;
+  }
+
+  .table-button:hover {
+    background: rgba(229, 115, 115, 0.25) !important;
+  }
+
+  .table-container {
+    border: 1px solid rgba(100, 181, 246, 0.1);
+    border-radius: 10px;
+    background: rgba(19, 28, 39, 0.25);
+  }
+
+  @media (max-width: 768px) {
+    .ascii-header {
+      display: none;
+    }
+    .header-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    h1 {
+      margin-top: 1rem;
+      font-size: 2.5rem;
+    }
+  }
+</style>
+
 <!-- JavaScript function for confirmation popup -->
 <script>
   function confirmDeletion(movieName) {
@@ -18,25 +203,28 @@
 <script src="static/js/script_home.js"></script>
 
 <div class="list_list">
-  <h1 style="display: inline-block; margin-bottom: 0; margin-top: 1rem">
-    Watched This Month
-  </h1>
+  <div class="ascii-header">═══════════════════════════════════════</div>
 
-  <!-- Add Movie Button -->
-  <a href="/add_movie" class="btn-add-movie">
-    <i class="fa-solid fa-plus"></i> ADD MOVIE/SHOW
-  </a>
+  <div class="header-row">
+    <h1 style="font-family: 'VT323', monospace; letter-spacing: 2px">
+      <span style="opacity: 0.8">//</span> Monthly Log
+    </h1>
+
+    <a href="/add_movie" class="btn-add-movie btn-add-movie-terminal">
+      [ + ADD ENTRY ]
+    </a>
+  </div>
 
   <div class="table-container">
     <table class="table-home" id="table-home">
       <thead>
         <tr style="text-align: left">
           <th style="padding: 10px"></th>
-          <th style="padding: 10px">Title</th>
+          <th style="padding: 10px">TITLE</th>
           <th style="padding: 1px"></th>
-          <th style="padding: 10px">Year</th>
-          <th style="padding: 10px">Director</th>
-          <th style="padding: 10px">Rating</th>
+          <th style="padding: 10px">YEAR</th>
+          <th style="padding: 10px">DIRECTOR</th>
+          <th style="padding: 10px">RATING</th>
           <th style="width: 7%; padding: 10px"></th>
           <th style="width: 5%; padding: 10px"></th>
         </tr>
@@ -62,7 +250,7 @@
             <a
               href="https://www.google.com/search?q={{movie['movie']}}"
               target="_blank"
-              style="color: inherit"
+              style="color: white"
             >
               {{movie['movie'].upper()}}
             </a>
@@ -121,12 +309,9 @@
       </tbody>
     </table>
 
-    <p style="font-size: 12px; color: white; margin-top: 20px; margin-left: 2%">
-      <i class="fa-solid fa-film"></i> = watched at the cinema <br />
-      <i class="fa-solid fa-repeat"></i> = rewatch
-      <!-- <br />
-       Credits: This product uses the TMDb API but is not endorsed or certified
-      by TMDb. -->
+    <p class="legend-terminal" style="margin-top: 20px; margin-left: 2%">
+      <i class="fa-solid fa-film"></i> Cinema &nbsp;&nbsp;
+      <i class="fa-solid fa-repeat"></i> Rewatch
     </p>
   </div>
 </div>

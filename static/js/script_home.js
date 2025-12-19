@@ -23,7 +23,7 @@ class Particle {
     this.maxLength = Math.random() * 450 + 50;
     this.angle = 0;
     this.timer = this.maxLength * 2; // Lifespan timer
-    this.colors = ["ghostwhite", "azure"];
+    this.colors = ["#3d5a6e", "#4a6d7c", "#2d4654", "#5a7d8a"];
     this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
   }
 
