@@ -2,6 +2,75 @@
 {% block content %}
 <script src="/static/js/grid.js"></script>
 
+<style>
+  .grid-container2 {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+  .grid-item2 {
+    width: 100%;
+    max-width: 100%;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+  .column-directors {
+    flex: 0 0 calc(20% - 10px);
+    min-width: 140px;
+    max-width: calc(20% - 10px);
+    padding: 12px 10px;
+    box-sizing: border-box;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+  .column-directors:hover {
+    background: rgba(176,46,46,0.8);
+    color: white;
+  }
+  .column-directors h4 {
+    margin: 0;
+    font-size: 14px;
+  }
+  .containerTab {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-top: 10px;
+  }
+  .containerTab table {
+    font-size: 13px;
+    table-layout: auto;
+    width: 100%;
+  }
+  .containerTab th, .containerTab td {
+    padding: 6px 8px;
+  }
+  @media (max-width: 768px) {
+    .column-directors {
+      flex: 0 0 calc(33.33% - 10px);
+      max-width: calc(33.33% - 10px);
+    }
+  }
+  @media (max-width: 480px) {
+    .column-directors {
+      flex: 0 0 calc(50% - 10px);
+      max-width: calc(50% - 10px);
+    }
+  }
+</style>
+
 <main class="filterby">
   <div class="grid-container2">
     <div class="grid-item2 item1">

@@ -57,13 +57,6 @@ body::-webkit-scrollbar-thumb {
 main {
   margin-left: 5rem;
   padding: 1rem;
-  max-width: calc(100vw - 5rem);
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-main.filterby {
-  max-width: calc(100vw - 5rem);
 }
 
 h1 {
@@ -371,10 +364,6 @@ ul.add li {
   padding-top: 0;
   padding-bottom: 0;
   text-align: center;
-}
-
-/* For grid-container (home page), item1 needs specific width */
-.grid-container .item1 {
   width: 98%;
 }
 
@@ -516,7 +505,7 @@ ul.add li {
   font-weight: bold;
 }
 
-.row-home {
+.row {
   margin-left: 10%;
 }
 
@@ -646,13 +635,11 @@ ul.add li {
 
 .containerTab {
   position: relative;
-  flex: 0 0 100%;
-  width: calc(100% - 20px);
-  max-width: calc(100% - 20px);
-  padding: 16px;
+  width: 100%;
+  padding: 0 16px;
   color: #ececec;
   display: none;
-  overflow-x: auto;
+  overflow: hidden;
   background-color: #1d2634;
   border-width: 1px;
   border-style: solid;
@@ -663,9 +650,6 @@ ul.add li {
     )
     1 100%;
   border-image-slice: 1;
-  border-radius: 8px;
-  margin-top: 10px;
-  box-sizing: border-box;
 }
 
 .containerTab_friends {
@@ -685,17 +669,6 @@ ul.add li {
     )
     1 100%;
   border-image-slice: 1;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-start;
-  max-width: 100%;
-  box-sizing: border-box;
-  margin-left: 0;
-  padding: 0;
 }
 
 .row::after {
@@ -720,19 +693,6 @@ table {
   margin-bottom: 1%;
   border-collapse: collapse;
   border-width: 1px;
-}
-
-.containerTab table {
-  font-size: 14px;
-  table-layout: fixed;
-}
-
-.containerTab th,
-.containerTab td {
-  padding: 8px 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .tabletr {
@@ -906,16 +866,13 @@ tbody tr:hover {
 
 .grid-container2 {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 0.2fr 3fr;
   grid-template-areas:
-    "header"
-    "main";
+    "header header header"
+    "main main main";
   height: 100%;
   background-color: transparent;
-  gap: 10px;
-  max-width: 100%;
-  overflow-x: hidden;
 }
 
 .grid-item2 {
