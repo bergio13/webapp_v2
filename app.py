@@ -8,6 +8,7 @@ import re
 from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV, Season
 from flask_mail import Mail, Message
+from flask_caching import Cache
 from auth.auth import auth # Import the auth blueprint
 from auth.restore import restore # Import the restore blueprint
 from dotenv import load_dotenv
@@ -37,6 +38,26 @@ app.config['MAIL_USE_SSL'] = True
 
 mail = Mail(app)
 app.register_blueprint(restore)
+
+# ========================================
+# CACHING CONFIGURATION
+# ========================================
+
+# Configure Flask-Caching
+app.config['CACHE_TYPE'] = 'SimpleCache'  # Use 'RedisCache' for production with Redis
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5 minutes default
+
+cache = Cache(app)
+
+def make_user_cache_key():
+    """Create a cache key based on the current user's session ID"""
+    user_id = session.get('id', 'anonymous')
+    return f"user_{user_id}_{request.path}"
+
+def clear_user_cache(user_id):
+    """Clear all cached data for a specific user (call after add/edit/remove movie)"""
+    # With SimpleCache, we clear everything. For Redis, you could be more selective
+    cache.clear()
 
 # ========================================
 # GLOBAL VARIABLES & CONSTANTS
@@ -252,6 +273,7 @@ def animation():
     return render_template('animation.html', session=session)
 
 @app.route('/lista')
+@cache.cached(timeout=120, key_prefix=make_user_cache_key)
 def lista():
     if 'loggedin' in session:
         try:
@@ -283,6 +305,7 @@ def lista_user(username):
 
 
 @app.route('/directors', methods=['GET'])
+@cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_directors():
     if 'loggedin' in session:
         try:
@@ -313,6 +336,7 @@ def show_directors_friends(username):
     return render_template('_directors.html', movies=movies, directors=directors)
 
 @app.route('/genres', methods=['GET'])
+@cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_genres():
     if 'loggedin' in session:
         try:
@@ -356,6 +380,7 @@ def show_genres_friends(username):
 
 
 @app.route('/years', methods=['GET'])
+@cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_years():
     if 'loggedin' in session:
         try:
@@ -390,6 +415,7 @@ def show_years_friends(username):
 # ========================================
 
 @app.route('/ratings', methods=['GET'])
+@cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_ratings():
     if 'loggedin' in session:
         try:
@@ -687,6 +713,7 @@ def add_movie():
                             poster = res[0]['poster_path']
                     print(title, director, year, date, genre, rating, rewatch, tv_show, session['id'])
                     insert_movies(title, director, genre, year, date, rating, rewatch, tv_show, poster, session['id'], cinema)
+                    clear_user_cache(session['id'])  # Clear cache after adding movie
                     flash('Movie added', category='success')
                 else:
                     flash('You need to be logged in to add a movie', category='error')
@@ -702,6 +729,7 @@ def remove_movie():
         if request.method == "POST":
             movie_id = request.form['movie_id']
             remove_movie_by_id(movie_id)
+            clear_user_cache(session['id'])  # Clear cache after removing movie
             flash('Movie removed', category='success')
             return redirect('/home')
     return redirect('/login')
@@ -735,6 +763,7 @@ def edit_movie():
                     res = movie.search(title)
                     poster = res[0]['poster_path']
             update_movie(movie_id, title, director, p_year, rating, poster)
+            clear_user_cache(session['id'])  # Clear cache after updating movie
             flash('Movie updated', category='success')
             return redirect('/home')
     return redirect('/login')

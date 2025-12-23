@@ -6,6 +6,7 @@ requests
 bs4
 tmdbv3api==1.7.7
 flask-mail
+flask-caching
 supabase
 python-dotenv
 huggingface_hub==0.34.3

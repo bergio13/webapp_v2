@@ -1,42 +1,263 @@
-{% extends 'base.html' %} {% block title %}Profile{% endblock %} {%block body%}
-{% block content%}
+{% extends 'base.html' %} {% block title %}{{username}}'s Profile{% endblock %}
+{%block body%} {% block content%}
+
+<!-- VT323 Terminal Font -->
+<link
+  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  /* ASCII Terminal Theme for Friend Profile - Teal/Cyan Colors */
+  :root {
+    --friend-teal: #26a69a;
+    --friend-teal-light: #80cbc4;
+    --friend-cyan: #00bcd4;
+    --friend-gold: #ffd54f;
+    --friend-grey: #b0bec5;
+    --friend-dark: #1a2f2f;
+    --friend-light: #e0f2f1;
+    --friend-card-bg: #1e3a3a;
+  }
+
+  .grid-container {
+    background: rgba(26, 47, 47, 0.98) !important;
+  }
+
+  .header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(38, 166, 154, 0.2);
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: auto !important;
+    min-height: 60px;
+    padding: 10px 30px !important;
+  }
+
+  .header-left,
+  .header-right {
+    display: flex;
+    align-items: center;
+  }
+
+  .header h1 {
+    font-family: "VT323", "Courier New", monospace !important;
+    font-size: 2rem !important;
+    color: var(--friend-teal-light) !important;
+    text-shadow: 0 0 8px rgba(128, 203, 196, 0.4);
+    letter-spacing: 2px;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .header h1 a {
+    color: var(--friend-gold) !important;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .header h1 a:hover {
+    color: var(--friend-cyan) !important;
+    text-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
+  }
+
+  .header-right .material-icons-outlined {
+    margin: 0 !important;
+    font-size: inherit !important;
+  }
+
+  .header-right a {
+    font-family: "VT323", monospace;
+    font-size: 1rem;
+    color: var(--friend-cyan) !important;
+    text-shadow: 0 0 8px rgba(0, 188, 212, 0.5);
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .header-right a:hover {
+    color: var(--friend-gold) !important;
+    text-shadow: 0 0 12px rgba(255, 213, 79, 0.6);
+  }
+
+  .ascii-profile-header {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 14px;
+    color: var(--friend-teal-light);
+    text-shadow: 0 0 5px rgba(128, 203, 196, 0.3);
+    white-space: pre;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  .main-cards .card {
+    background: rgba(30, 58, 58, 0.9) !important;
+    border: 1px solid rgba(38, 166, 154, 0.3) !important;
+    border-radius: 4px !important;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .main-cards .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--friend-cyan),
+      var(--friend-teal),
+      var(--friend-gold)
+    );
+    opacity: 0.6;
+  }
+
+  .main-cards .card h2 {
+    font-family: "VT323", "Courier New", monospace !important;
+    font-size: 1.2rem !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .main-cards .card h1 {
+    font-family: "VT323", "Courier New", monospace !important;
+    font-size: 2.5rem !important;
+    color: var(--friend-cyan) !important;
+    text-shadow: 0 0 10px rgba(0, 188, 212, 0.4);
+    text-align: left;
+    margin: 0;
+  }
+
+  .main-cards .card:nth-child(1) h1 {
+    color: var(--friend-cyan) !important;
+    text-shadow: 0 0 10px rgba(0, 188, 212, 0.4);
+  }
+
+  .main-cards .card:nth-child(2) h1 {
+    color: var(--friend-gold) !important;
+    text-shadow: 0 0 10px rgba(255, 213, 79, 0.4);
+  }
+
+  .main-cards .card:nth-child(3) h1 {
+    color: var(--friend-teal-light) !important;
+    text-shadow: 0 0 10px rgba(128, 203, 196, 0.4);
+  }
+
+  .main-cards .card:nth-child(4) h1 {
+    color: #4ade80 !important;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+  }
+
+  .charts-card {
+    background: rgba(30, 58, 58, 0.9) !important;
+    border: 1px solid rgba(38, 166, 154, 0.25) !important;
+    border-radius: 4px !important;
+  }
+
+  .chart-title {
+    font-family: "VT323", "Courier New", monospace !important;
+    font-size: 1.4rem !important;
+    color: var(--friend-teal-light) !important;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px rgba(128, 203, 196, 0.3);
+  }
+
+  .chart-title::before {
+    content: "// ";
+    color: var(--friend-teal);
+    opacity: 0.7;
+  }
+
+  /* Terminal cursor blink effect for stats */
+  @keyframes blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    51%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .stat-cursor::after {
+    content: "_";
+    animation: blink 1s infinite;
+    color: var(--friend-cyan);
+  }
+
+  @media (max-width: 768px) {
+    .ascii-profile-header {
+      display: none;
+    }
+    .header {
+      flex-direction: column;
+      gap: 10px;
+      padding: 15px !important;
+    }
+    .header h1 {
+      font-size: 1.6rem !important;
+    }
+    .main-cards .card h1 {
+      font-size: 2rem !important;
+    }
+  }
+</style>
+
 <div class="grid-container">
+  <!-- Hidden element for JS to get username -->
+  <span id="username" style="display: none">{{username}}</span>
+
   <header class="header">
     <div class="header-left">
-      <!-- <p class="material-icons-outlined" id="username">{{username}}</p> -->
-      <h3 id="username" class="prof_h">{{username}}</h3>
+      <h1>
+        <span style="color: #26a69a; opacity: 0.7">&gt;</span>
+        <a href="/list/{{username}}">{{username}}</a
+        ><span class="stat-cursor"></span>
+      </h1>
     </div>
     <div class="header-right">
-      <span class="material-icons-outlined"><a href="/logout">logout</a> </span>
+      <span class="material-icons-outlined">
+        <a href="/list/{{username}}">[ view list ]</a>
+      </span>
     </div>
   </header>
 
   <main class="main-container">
+    <div class="ascii-profile-header">
+      ╔═══ FRIEND_STATS.db :: viewing {{username}}'s profile ═══╝
+    </div>
+
     <div class="main-cards">
       <div class="card">
         <div class="card-inner">
-          <h2>Total</h2>
+          <h2>&gt; Total_</h2>
         </div>
         <h1>{{length}}</h1>
       </div>
 
       <div class="card">
         <div class="card-inner">
-          <h2>This month</h2>
+          <h2>&gt; This_Month_</h2>
         </div>
         <h1>{{lmonth}}</h1>
       </div>
 
       <div class="card">
         <div class="card-inner">
-          <h2>Favourite genre</h2>
+          <h2>&gt; Fav_Genre_</h2>
         </div>
         <h1>{{favorite_genre}}</h1>
       </div>
 
       <div class="card">
         <div class="card-inner">
-          <h2>Average rating</h2>
+          <h2>&gt; Avg_Rating_</h2>
         </div>
         <h1>{{avg_rating}}</h1>
       </div>
@@ -49,7 +270,7 @@
       </div>
 
       <div class="charts-card">
-        <h2 class="chart-title">Movies Watched Per Month</h2>
+        <h2 class="chart-title">Movies Per Month</h2>
         <div id="line-chart"></div>
       </div>
     </div>
@@ -58,8 +279,6 @@
       <h2 class="chart-title">Genres Distribution</h2>
       <div id="radar-chart"></div>
     </div>
-  </div>
-
   </main>
 </div>
 {% endblock %}

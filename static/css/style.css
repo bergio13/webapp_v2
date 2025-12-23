@@ -57,6 +57,13 @@ body::-webkit-scrollbar-thumb {
 main {
   margin-left: 5rem;
   padding: 1rem;
+  max-width: calc(100vw - 5rem);
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+main.filterby {
+  max-width: calc(100vw - 5rem);
 }
 
 h1 {
@@ -364,6 +371,10 @@ ul.add li {
   padding-top: 0;
   padding-bottom: 0;
   text-align: center;
+}
+
+/* For grid-container (home page), item1 needs specific width */
+.grid-container .item1 {
   width: 98%;
 }
 
@@ -505,7 +516,7 @@ ul.add li {
   font-weight: bold;
 }
 
-.row {
+.row-home {
   margin-left: 10%;
 }
 
@@ -635,11 +646,13 @@ ul.add li {
 
 .containerTab {
   position: relative;
-  width: 100%;
-  padding: 0 16px;
+  flex: 0 0 100%;
+  width: calc(100% - 20px);
+  max-width: calc(100% - 20px);
+  padding: 16px;
   color: #ececec;
   display: none;
-  overflow: hidden;
+  overflow-x: auto;
   background-color: #1d2634;
   border-width: 1px;
   border-style: solid;
@@ -650,6 +663,9 @@ ul.add li {
     )
     1 100%;
   border-image-slice: 1;
+  border-radius: 8px;
+  margin-top: 10px;
+  box-sizing: border-box;
 }
 
 .containerTab_friends {
@@ -669,6 +685,17 @@ ul.add li {
     )
     1 100%;
   border-image-slice: 1;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-left: 0;
+  padding: 0;
 }
 
 .row::after {
@@ -693,6 +720,19 @@ table {
   margin-bottom: 1%;
   border-collapse: collapse;
   border-width: 1px;
+}
+
+.containerTab table {
+  font-size: 14px;
+  table-layout: fixed;
+}
+
+.containerTab th,
+.containerTab td {
+  padding: 8px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tabletr {
@@ -866,13 +906,16 @@ tbody tr:hover {
 
 .grid-container2 {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 0.2fr 3fr;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    "header header header"
-    "main main main";
+    "header"
+    "main";
   height: 100%;
   background-color: transparent;
+  gap: 10px;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .grid-item2 {
@@ -880,16 +923,35 @@ tbody tr:hover {
   text-align: center;
   padding: 20px 0;
   font-size: 30px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.grid-item2.item1 {
+  grid-area: header;
+  width: 100%;
+}
+
+.grid-item2.item2 {
+  grid-area: main;
+  width: 100%;
 }
 
 .filtered {
   background: transparent;
   background-color: transparent;
+  max-width: 100%;
+  overflow-x: hidden;
+  width: 100%;
+  padding: 0;
 }
 
 .filterby {
   height: 100%;
   background: transparent;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .filterby:before {
@@ -914,30 +976,39 @@ tbody tr:hover {
 }
 
 .column-directors {
+  flex: 1 1 calc(25% - 8px);
+  max-width: calc(25% - 8px);
+  min-width: 120px;
+  padding: 12px 15px;
   text-align: center;
   font-size: medium;
   cursor: pointer;
   color: black;
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.1);
   transition: 200ms ease;
-  border-width: 1px;
-  margin: 0px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-sizing: border-box;
 }
+
 .column-directors:hover {
-  color: rgb(176, 46, 46);
+  color: white;
+  background-color: rgb(176, 46, 46);
 }
 
 .column1 {
-  float: left;
-  width: 15%;
-  padding: 46.5px 50px;
+  flex: 1 1 calc(16.666% - 8px);
+  max-width: calc(16.666% - 8px);
+  min-width: 100px;
+  padding: 25px 15px;
   text-align: center;
   cursor: pointer;
   color: black;
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.1);
   transition: 200ms ease;
-  border-width: 1px;
-  margin: 0px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
 .column1:hover {
@@ -1807,6 +1878,23 @@ select option {
 
   .row {
     margin-left: 3%;
+    gap: 8px;
+  }
+
+  .column1 {
+    flex: 0 0 calc(33.333% - 8px);
+    min-width: 80px;
+    padding: 15px 10px;
+  }
+
+  .column-directors {
+    flex: 0 0 calc(50% - 8px);
+    min-width: 100px;
+    padding: 10px 15px;
+  }
+
+  .containerTab {
+    padding: 10px;
   }
 
   .title {
