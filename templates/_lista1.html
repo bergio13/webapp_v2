@@ -1,6 +1,6 @@
-{% extends 'base.html' %} {% block title %} {{username}}'s Watched Movies{% endblock %}
-{% block body_attributes %} class="list_page"{% endblock %} {% block body %} {%
-block content %}
+{% extends 'base.html' %} {% block title %} {{username}}'s Watched Movies{%
+endblock %} {% block body_attributes %} class="list_page"{% endblock %} {% block
+body %} {% block content %}
 
 <!-- VT323 Terminal Font -->
 <link
@@ -322,21 +322,28 @@ block content %}
 
 <style>
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 </style>
 
 <!-- Main Content -->
 <div class="list_list" style="display: none">
   <div class="ascii-header">
-    ╔═══ FRIEND_LIST.db :: user: {{username}} :: entries: {{ movies|length }} ═══╝
+    ╔═══ FRIEND_LIST.db :: user: {{username}} :: entries: {{ movies|length }}
+    ═══╝
   </div>
 
   <!-- Filter Section -->
   <div class="filter-add-section">
     <h2 class="page-title">
-      <span>//</span> <a class="username-link" href="/profile/{{username}}">{{username}}</a>'s List
+      <span>//</span>
+      <a class="username-link" href="/profile/{{username}}">{{username}}</a>'s
+      List
     </h2>
 
     <div class="dropdown">
@@ -372,11 +379,10 @@ block content %}
         {% for movie in movies %}
         <tr>
           <td>
-            {{ movie['v_date'].strftime('%b %Y') }}
-            {% if movie['cinema'] | int == 1 %}
+            {{ movie['v_date'].strftime('%b %Y') }} {% if movie['cinema'] | int
+            == 1 %}
             <i class="fa-solid fa-film" style="font-size: 14px"></i>
-            {% endif %}
-            {% if movie['rewatch'] | int == 1 %}
+            {% endif %} {% if movie['rewatch'] | int == 1 %}
             <i class="fa-solid fa-repeat" style="font-size: 14px"></i>
             {% endif %}
           </td>
