@@ -28,6 +28,8 @@ block content %}
 
   .list_list {
     background: rgba(26, 47, 47, 0.95) !important;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .ascii-header {
@@ -118,12 +120,24 @@ block content %}
     color: var(--friend-light) !important;
   }
 
+  /* Table wrapper for horizontal scroll */
+  .table-wrapper {
+    display: block;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
   /* Table styling */
   .table-lista1 {
     border: 1px solid rgba(38, 166, 154, 0.15);
     border-radius: 8px;
-    overflow: hidden;
-    width: 100%;
+    overflow: visible;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
   }
@@ -208,18 +222,27 @@ block content %}
       font-size: 1rem !important;
       padding: 10px 16px !important;
     }
-    /* Table horizontal scroll wrapper */
+    .list_list {
+      padding: 10px !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      box-sizing: border-box !important;
+    }
     .table-wrapper {
-      overflow-x: auto;
+      display: block;
+      overflow-x: scroll !important;
       -webkit-overflow-scrolling: touch;
-      margin: 0 -10px;
-      padding: 0 10px;
-      width: calc(100% + 20px);
+      width: 100%;
+      max-width: calc(100vw - 20px);
+      padding-bottom: 15px;
+      box-sizing: border-box;
     }
     .table-lista1 {
-      min-width: 600px !important;
-      width: 100% !important;
       font-size: 0.9rem;
+      width: max-content;
+      min-width: 600px;
     }
     .table-lista1 thead th {
       font-size: 0.9rem;
@@ -229,6 +252,7 @@ block content %}
     .table-lista1 tbody td {
       font-size: 0.9rem;
       padding: 8px 6px;
+      white-space: nowrap;
     }
     .table-poster1 {
       width: 40px !important;
@@ -240,15 +264,21 @@ block content %}
       font-size: 1.4rem;
     }
     .list_list {
-      padding: 10px !important;
-      margin-left: 0 !important;
+      padding: 5px !important;
+      margin: 0 !important;
+      width: 100% !important;
+      max-width: 100vw !important;
     }
     .dropbtn {
       font-size: 0.95rem !important;
       padding: 6px 10px !important;
     }
+    .table-wrapper {
+      max-width: calc(100vw - 10px);
+      padding-bottom: 15px;
+    }
     .table-lista1 {
-      min-width: 550px !important;
+      min-width: 550px;
     }
     .table-lista1 thead th,
     .table-lista1 tbody td {
