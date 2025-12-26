@@ -5,11 +5,14 @@ import os
 import datetime
 import requests
 import re
+from functools import wraps
 from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV, Season
 from flask_mail import Mail, Message
 from flask_caching import Cache
 from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from auth.auth import auth # Import the auth blueprint
 from auth.restore import restore # Import the restore blueprint
 from dotenv import load_dotenv
@@ -33,6 +36,29 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY')
 
 # Enable CSRF protection for all forms
 csrf = CSRFProtect(app)
+
+# Rate limiting to prevent brute-force attacks
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+# ========================================
+# LOGIN REQUIRED DECORATOR
+# ========================================
+
+def login_required(f):
+    """Decorator to require login for routes"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'loggedin' not in session:
+            flash('Please log in to access this page', category='error')
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated_function
+
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'kinetowebapp@gmail.com'
@@ -277,19 +303,17 @@ def animation():
     return render_template('animation.html', session=session)
 
 @app.route('/lista')
+@login_required
 @cache.cached(timeout=120, key_prefix=make_user_cache_key)
 def lista():
-    if 'loggedin' in session:
-        try:
-            movies = get_movies(session['id'])
-            # sort movies in descendig order by v_date
-            movies.sort(key=lambda movie: movie["v_date"], reverse=True)
-        except Exception as e:
-            print(f"Error{e}")
-            movies = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        movies = get_movies(session['id'])
+        # sort movies in descendig order by v_date
+        movies.sort(key=lambda movie: movie["v_date"], reverse=True)
+    except Exception as e:
+        print(f"Error{e}")
+        movies = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
 
 @app.route('/list/<username>')
@@ -309,109 +333,97 @@ def lista_user(username):
 
 
 @app.route('/directors', methods=['GET'])
+@login_required
 @cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_directors():
-    if 'loggedin' in session:
-        try:
-            movies = get_movies_groupby_director(session['id'])
-            directors = get_directors(session['id'])
-        except:
-            movies = []
-            directors = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        movies = get_movies_groupby_director(session['id'])
+        directors = get_directors(session['id'])
+    except:
+        movies = []
+        directors = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('directors.html', movies=movies, directors=directors)
 
 @app.route('/directors/<username>', methods=['GET'])
+@login_required
 def show_directors_friends(username):
-    if 'loggedin' in session:
-        try:
-            id = get_user_id(username)
-            id = id[0]['id']
-            movies = get_movies_groupby_director(id)
-            directors = get_directors(id)
-        except:
-            movies = []
-            directors = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        id = get_user_id(username)
+        id = id[0]['id']
+        movies = get_movies_groupby_director(id)
+        directors = get_directors(id)
+    except:
+        movies = []
+        directors = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('_directors.html', movies=movies, directors=directors)
 
 @app.route('/genres', methods=['GET'])
+@login_required
 @cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_genres():
-    if 'loggedin' in session:
-        try:
-            movies = get_movies_groupby_genre(session['id'])
-            in_genres = ""
-            generi = get_genres(session['id'])
-            for genre in generi:
-                in_genres += genre['name'] + ', '
-            mid_genres = in_genres.split(', ')
-            final_genres = set([genre for genre in mid_genres if genre != ''])
-            print(final_genres)
-        except:
-            movies = []
-            generi = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        movies = get_movies_groupby_genre(session['id'])
+        in_genres = ""
+        generi = get_genres(session['id'])
+        for genre in generi:
+            in_genres += genre['name'] + ', '
+        mid_genres = in_genres.split(', ')
+        final_genres = set([genre for genre in mid_genres if genre != ''])
+        print(final_genres)
+    except:
+        movies = []
+        generi = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('genres.html', movies=movies, genres=final_genres)
 
 @app.route('/genres/<username>', methods=['GET'])
+@login_required
 def show_genres_friends(username):
-    if 'loggedin' in session:
-        try:
-            id = get_user_id(username)
-            id = id[0]['id']
-            movies = get_movies_groupby_genre(id)
-            in_genres = ""
-            generi = get_genres(id)
-            for genre in generi:
-                in_genres += genre['name'] + ', '
-            mid_genres = in_genres.split(', ')
-            final_genres = set([genre for genre in mid_genres if genre != ''])
-            print(final_genres)
-        except:
-            movies = []
-            generi = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        id = get_user_id(username)
+        id = id[0]['id']
+        movies = get_movies_groupby_genre(id)
+        in_genres = ""
+        generi = get_genres(id)
+        for genre in generi:
+            in_genres += genre['name'] + ', '
+        mid_genres = in_genres.split(', ')
+        final_genres = set([genre for genre in mid_genres if genre != ''])
+        print(final_genres)
+    except:
+        movies = []
+        generi = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('_genres.html', movies=movies, genres=final_genres)
 
 
 @app.route('/years', methods=['GET'])
+@login_required
 @cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_years():
-    if 'loggedin' in session:
-        try:
-            movies = get_movies_groupby_year(session['id'])
-            anni = get_years(session['id'])
-        except:
-            movies = []
-            anni = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        movies = get_movies_groupby_year(session['id'])
+        anni = get_years(session['id'])
+    except:
+        movies = []
+        anni = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('years.html', movies=movies, years=anni)
 
 @app.route('/years/<username>', methods=['GET'])
+@login_required
 def show_years_friends(username):
-    if 'loggedin' in session:
-        try:
-            id = get_user_id(username)
-            id = id[0]['id']
-            movies = get_movies_groupby_year(id)
-            anni = get_years(id)
-        except:
-            movies = []
-            anni = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        id = get_user_id(username)
+        id = id[0]['id']
+        movies = get_movies_groupby_year(id)
+        anni = get_years(id)
+    except:
+        movies = []
+        anni = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('_years.html', movies=movies, years=anni)
 
 # ========================================
@@ -419,34 +431,30 @@ def show_years_friends(username):
 # ========================================
 
 @app.route('/ratings', methods=['GET'])
+@login_required
 @cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_ratings():
-    if 'loggedin' in session:
-        try:
-            movies = get_movies_groupby_year(session['id'])
-            ratings = get_ratings(session['id'])
-        except:
-            movies = []
-            ratings = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        movies = get_movies_groupby_year(session['id'])
+        ratings = get_ratings(session['id'])
+    except:
+        movies = []
+        ratings = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('ratings.html', movies=movies, ratings=ratings)
 
 @app.route('/ratings/<username>', methods=['GET'])
+@login_required
 def show_ratings_friends(username):
-    if 'loggedin' in session:
-        try:
-            id = get_user_id(username)
-            id = id[0]['id']
-            movies = get_movies_groupby_year(id)
-            ratings = get_ratings(id)
-        except:
-            movies = []
-            ratings = []
-            flash('Something went wrong, please refresh the page', category='error')
-    else:
-        return redirect('/login')
+    try:
+        id = get_user_id(username)
+        id = id[0]['id']
+        movies = get_movies_groupby_year(id)
+        ratings = get_ratings(id)
+    except:
+        movies = []
+        ratings = []
+        flash('Something went wrong, please refresh the page', category='error')
     return render_template('_ratings.html', movies=movies, ratings=ratings)
 
 # ========================================
@@ -459,116 +467,110 @@ def show_user_profile(name):
     return jsonify(user)
 
 @app.route('/data')
+@login_required
 def list_about():
-    if 'loggedin' in session:
-        users = get_user_by_id(session['id'])
-        movies = get_movies(session['id'])
+    users = get_user_by_id(session['id'])
+    movies = get_movies(session['id'])
     return jsonify(movies)
 
 @app.route('/data/<username>')
+@login_required
 def list_about_friend(username):
-    if 'loggedin' in session:
-        users = get_user_id(username)
-        movies = get_movies(users[0]['id'])
+    users = get_user_id(username)
+    movies = get_movies(users[0]['id'])
     return jsonify(movies)
 
 @app.route('/profile')
+@login_required
 def profile():
-    if 'loggedin' in session:
-        users = get_user_by_id(session['id'])
-        try:
-            movies = get_movies(session['id'])
-            length = len(movies)
-            lenght_month = len(get_monthly_movies(session['id'], month_now))
-            rating = 0
-            genres = {}
-            for movie in movies:
-                rating += movie['rating']
-                genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
-                if movie['rating'] > 5:
-                    premium = (movie['rating'] - 5)/2
-                    genres[movie['genre']] += premium
-            print(genres)
-            favorite_genre = max(genres, key=genres.get)
-            
-            if length == 0:
-                avg_rating = 0
-                favorite_genre = 'No movies added'
-            else:
-                avg_rating = round(rating/length, 2)
-        except:
-            movies = []
-            flash('Something went wrong, please refresh the page', category='error')
-        return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
-    return redirect('/login')
+    users = get_user_by_id(session['id'])
+    try:
+        movies = get_movies(session['id'])
+        length = len(movies)
+        lenght_month = len(get_monthly_movies(session['id'], month_now))
+        rating = 0
+        genres = {}
+        for movie in movies:
+            rating += movie['rating']
+            genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
+            if movie['rating'] > 5:
+                premium = (movie['rating'] - 5)/2
+                genres[movie['genre']] += premium
+        print(genres)
+        favorite_genre = max(genres, key=genres.get)
+        
+        if length == 0:
+            avg_rating = 0
+            favorite_genre = 'No movies added'
+        else:
+            avg_rating = round(rating/length, 2)
+    except:
+        movies = []
+        flash('Something went wrong, please refresh the page', category='error')
+    return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
 
 @app.route('/profile/<username>')
+@login_required
 def profile_friend(username):
-    if 'loggedin' in session:
-        users = get_user_id(username)
-        try:
-            movies = get_movies(users[0]['id'])
-            length = len(movies)
-            lenght_month = len(get_monthly_movies(users[0]['id'], month_now))
-            rating = 0
-            genres = {}
-            for movie in movies:
-                rating += movie['rating']
-                genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
-                favorite_genre = max(genres, key=genres.get)
-            if length == 0:
-                avg_rating = 0
-                favorite_genre = 'No movies added'
-            else:
-                avg_rating = round(rating/length, 2)
-        except:
-            movies = []
-            flash('Something went wrong, please refresh the page', category='error')
-        return render_template('_profile.html', username= username, user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
-    return redirect('/login')
+    users = get_user_id(username)
+    try:
+        movies = get_movies(users[0]['id'])
+        length = len(movies)
+        lenght_month = len(get_monthly_movies(users[0]['id'], month_now))
+        rating = 0
+        genres = {}
+        for movie in movies:
+            rating += movie['rating']
+            genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
+            favorite_genre = max(genres, key=genres.get)
+        if length == 0:
+            avg_rating = 0
+            favorite_genre = 'No movies added'
+        else:
+            avg_rating = round(rating/length, 2)
+    except:
+        movies = []
+        flash('Something went wrong, please refresh the page', category='error')
+    return render_template('_profile.html', username= username, user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
 
 # ========================================
 # SOCIAL FEATURES (FRIENDS & DISCOVERY)
 # ========================================
 
 @app.route('/friends', methods=['GET', 'POST'])
+@login_required
 def search_friends():
-    if 'loggedin' in session:
-        friends = get_friends(session['id'])
-        if request.method == "POST":
-            name = request.form['name']
-            users = get_user_name(name)
-            if users == []:
-                flash('No user found', category='error')
-            else:
-                return render_template('friends.html', users=users, friends=friends, session=session) 
-        liked = []   
-        for friend in friends:
-            movies = get_movies(friend['user_id'])
-            for movie in movies:
-                if movie['rating'] >= 8 and datetime.date.today() - movie['v_date'] < datetime.timedelta(days=30):
-                    liked.append(movie)                  
-        return render_template('friends.html', friends=friends, liked=liked, session=session)
-    return redirect('/login')
+    friends = get_friends(session['id'])
+    if request.method == "POST":
+        name = request.form['name']
+        users = get_user_name(name)
+        if users == []:
+            flash('No user found', category='error')
+        else:
+            return render_template('friends.html', users=users, friends=friends, session=session) 
+    liked = []   
+    for friend in friends:
+        movies = get_movies(friend['user_id'])
+        for movie in movies:
+            if movie['rating'] >= 8 and datetime.date.today() - movie['v_date'] < datetime.timedelta(days=30):
+                liked.append(movie)                  
+    return render_template('friends.html', friends=friends, liked=liked, session=session)
 
 @app.route('/follow', methods=['GET', 'POST'])
+@login_required
 def follow():
     if request.method == "POST":
-        if 'loggedin' in session:
-            friend_id = request.form['user_id']
-            friend_username = request.form['username']
-            insert_friends(friend_id, friend_username, session['id'])
-            return redirect('/friends')
-        else:
-            return redirect('/login')
+        friend_id = request.form['user_id']
+        friend_username = request.form['username']
+        insert_friends(friend_id, friend_username, session['id'])
+        return redirect('/friends')
     return redirect('/friends')
 
 
 @app.route('/discover', methods=['GET', 'POST'])
+@login_required
+@limiter.limit("10 per minute")  # Rate limit AI recommendations
 def discover():
-    if 'loggedin' not in session:
-        return redirect('/login')
-    
     ai_response = None
     user_request = ""
     history_percentage = 50
@@ -597,165 +599,110 @@ def discover():
 # ========================================
 
 @app.route('/add_movie', methods=['GET', 'POST'])
+@login_required
+@limiter.limit("30 per hour")  # Rate limit movie additions
 def add_movie():
-    if 'loggedin' not in session:
-        return redirect('/login')
-    else:
-        if request.method == "POST":
-            try:
-                if 'loggedin' in session:
-                    parent_id = get_user_by_id(session['id'])
-                    title = request.form["title"]
-                    title = clean_and_format(title)
-                    manual_director = request.form["director"].strip()
-                    year = request.form["year"]
-                    date = request.form["date"]
-                    genre = ""
-                    director = ""
-                    rating = request.form["rating"]
-                    rewatch = request.form["rewatch"] # 0 false, 1 true
-                    tv_show = request.form["tv"] # 0 if movie, 1 if tv show
-                    which_season = request.form["season"]
-                    cinema = request.form["cinema"]
-                    
-                    # Use manual director if provided, otherwise auto-fetch
-                    if manual_director:
-                        director = clean_and_capitalize_name(manual_director)
-                    
-                    try:
-                        if tv_show == '1':
-                            res = tv.search(title)
-                            for i, result in enumerate(res):
-                                print(f"Result_{i}", result)
-                                if result['first_air_date'][:4] == str(year):
-                                    #print(result['first_air_date'][:4])
-                                    ids = result['id']
-                                    show_season = season.details(ids, which_season)
-                                    poster = "https://image.tmdb.org/t/p/w200" + show_season.poster_path
-                                    title = title + ', ' + show_season.name
-                                    genre_ids = result['genre_ids']
-                                    genre = genre.join([tv_genres[genre_id] + ", " for genre_id in genre_ids])
-                                    genre = genre[:-2]
-                                    
-                                    # Get TV show creator/director only if not manually provided
-                                    if not director:
-                                        try:
-                                            tv_details = tv.details(ids)
-                                            print(tv_details)
-                                            if hasattr(tv_details, 'created_by') and tv_details.created_by:
-                                                director = tv_details.created_by[0]['name']
-                                            else:
-                                                # Try to get credits for TV show
-                                                try:
-                                                    api_key = tmdb.api_key
-                                                    credits_url = f"https://api.themoviedb.org/3/tv/{ids}/credits?api_key={api_key}"
-                                                    credits_response = requests.get(credits_url)
-                                                    if credits_response.status_code == 200:
-                                                        credits_data = credits_response.json()
-                                                        for crew_member in credits_data.get('crew', []):
-                                                            if crew_member['job'] in ['Director', 'Creator', 'Executive Producer']:
-                                                                director = crew_member['name']
-                                                                break
-                                                except:
-                                                    pass
-                                                
-                                                if not director:
-                                                    director = "Various Directors"
-                                        except:
-                                            director = "Unknown"
-                                    print(genre)
-                                    break
-                        else:
-                            res = movie.search(title)
-                            for i, result in enumerate(res):
-                                print(f"Result_{i}", result)
-                                if result['release_date'][:4] == str(year):
-                                    #print(result['release_date'][:4])
-                                    poster = "https://image.tmdb.org/t/p/w200/" + result['poster_path']
-                                    genre_ids = result['genre_ids']
-                                    genre = genre.join([movie_genres[genre_id] + ", " for genre_id in genre_ids])
-                                    genre = genre[:-2]
-                                    
-                                    # Get movie director only if not manually provided
-                                    if not director:
-                                        try:
-                                            movie_details = movie.details(result['id'])
-                                            # Try to get credits using the tmdbv3api
-                                            credits = movie_details.credits
-                                            if credits and 'crew' in credits:
-                                                for crew_member in credits['crew']:
-                                                    if crew_member['job'] == 'Director':
-                                                        director = crew_member['name']
-                                                        break
-                                        except:
-                                            # Fallback: try manual API call for credits
-                                            try:
-                                                api_key = tmdb.api_key
-                                                credits_url = f"https://api.themoviedb.org/3/movie/{result['id']}/credits?api_key={api_key}"
-                                                credits_response = requests.get(credits_url)
-                                                if credits_response.status_code == 200:
-                                                    credits_data = credits_response.json()
-                                                    for crew_member in credits_data.get('crew', []):
-                                                        if crew_member['job'] == 'Director':
-                                                            director = crew_member['name']
-                                                            break
-                                            except:
-                                                pass
-   
-                                        if not director:
-                                            director = "Unknown"
-                                    break
-                    except:
-                        html = get_movie_poster(title)
-                        if html != 'None':
-                            soup = BeautifulSoup(html, 'html.parser')
-                            img_tag = soup.find('img')
-                            src_link = img_tag['src']   
-                            poster = src_link
-                        else: 
-                            res = movie.search(title)
-                            poster = res[0]['poster_path']
-                    print(title, director, year, date, genre, rating, rewatch, tv_show, session['id'])
-                    insert_movies(title, director, genre, year, date, rating, rewatch, tv_show, poster, session['id'], cinema)
-                    clear_user_cache(session['id'])  # Clear cache after adding movie
-                    flash('Movie added', category='success')
-                else:
-                    flash('You need to be logged in to add a movie', category='error')
-            except:
-                redirect('/add_movie')
-                flash('Something went wrong, please try again', category='error')
-                
-    return render_template('add_movie.html')
-
-@app.route('/remove_movie', methods=['GET', 'POST'])
-def remove_movie():
-    if 'loggedin' in session:
-        if request.method == "POST":
-            movie_id = request.form['movie_id']
-            remove_movie_by_id(movie_id)
-            clear_user_cache(session['id'])  # Clear cache after removing movie
-            flash('Movie removed', category='success')
-            return redirect('/home')
-    return redirect('/login')
-
-@app.route('/edit_movie', methods=['GET', 'POST'])
-def edit_movie():
-    if 'loggedin' in session:
-        if request.method == "GET":
-            return render_template('edit_movie.html')
-        else:
-            movie_id = request.form['movie_id']
-            title = request.form['movie']
-            director = request.form['director']
-            p_year = request.form['year']
-            rating = request.form['rating']
-            tv_show = request.form['tv']
+    if request.method == "POST":
+        try:
+            parent_id = get_user_by_id(session['id'])
+            title = request.form["title"]
+            title = clean_and_format(title)
+            manual_director = request.form["director"].strip()
+            year = request.form["year"]
+            date = request.form["date"]
+            genre = ""
+            director = ""
+            rating = request.form["rating"]
+            rewatch = request.form["rewatch"] # 0 false, 1 true
+            tv_show = request.form["tv"] # 0 if movie, 1 if tv show
+            which_season = request.form["season"]
+            cinema = request.form["cinema"]
+            
+            # Use manual director if provided, otherwise auto-fetch
+            if manual_director:
+                director = clean_and_capitalize_name(manual_director)
+            
             try:
                 if tv_show == '1':
                     res = tv.search(title)
+                    for i, result in enumerate(res):
+                        print(f"Result_{i}", result)
+                        if result['first_air_date'][:4] == str(year):
+                            ids = result['id']
+                            show_season = season.details(ids, which_season)
+                            poster = "https://image.tmdb.org/t/p/w200" + show_season.poster_path
+                            title = title + ', ' + show_season.name
+                            genre_ids = result['genre_ids']
+                            genre = genre.join([tv_genres[genre_id] + ", " for genre_id in genre_ids])
+                            genre = genre[:-2]
+                            
+                            # Get TV show creator/director only if not manually provided
+                            if not director:
+                                try:
+                                    tv_details = tv.details(ids)
+                                    print(tv_details)
+                                    if hasattr(tv_details, 'created_by') and tv_details.created_by:
+                                        director = tv_details.created_by[0]['name']
+                                    else:
+                                        # Try to get credits for TV show
+                                        try:
+                                            api_key = tmdb.api_key
+                                            credits_url = f"https://api.themoviedb.org/3/tv/{ids}/credits?api_key={api_key}"
+                                            credits_response = requests.get(credits_url)
+                                            if credits_response.status_code == 200:
+                                                credits_data = credits_response.json()
+                                                for crew_member in credits_data.get('crew', []):
+                                                    if crew_member['job'] in ['Director', 'Creator', 'Executive Producer']:
+                                                        director = crew_member['name']
+                                                        break
+                                        except:
+                                            pass
+                                        
+                                        if not director:
+                                            director = "Various Directors"
+                                except:
+                                    director = "Unknown"
+                            print(genre)
+                            break
                 else:
                     res = movie.search(title)
-                poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
+                    for i, result in enumerate(res):
+                        print(f"Result_{i}", result)
+                        if result['release_date'][:4] == str(year):
+                            poster = "https://image.tmdb.org/t/p/w200/" + result['poster_path']
+                            genre_ids = result['genre_ids']
+                            genre = genre.join([movie_genres[genre_id] + ", " for genre_id in genre_ids])
+                            genre = genre[:-2]
+                            
+                            # Get movie director only if not manually provided
+                            if not director:
+                                try:
+                                    movie_details = movie.details(result['id'])
+                                    # Try to get credits using the tmdbv3api
+                                    credits = movie_details.credits
+                                    if credits and 'crew' in credits:
+                                        for crew_member in credits['crew']:
+                                            if crew_member['job'] == 'Director':
+                                                director = crew_member['name']
+                                                break
+                                except:
+                                    # Fallback: try manual API call for credits
+                                    try:
+                                        api_key = tmdb.api_key
+                                        credits_url = f"https://api.themoviedb.org/3/movie/{result['id']}/credits?api_key={api_key}"
+                                        credits_response = requests.get(credits_url)
+                                        if credits_response.status_code == 200:
+                                            credits_data = credits_response.json()
+                                            for crew_member in credits_data.get('crew', []):
+                                                if crew_member['job'] == 'Director':
+                                                    director = crew_member['name']
+                                                    break
+                                    except:
+                                        pass
+
+                                if not director:
+                                    director = "Unknown"
+                            break
             except:
                 html = get_movie_poster(title)
                 if html != 'None':
@@ -766,11 +713,63 @@ def edit_movie():
                 else: 
                     res = movie.search(title)
                     poster = res[0]['poster_path']
-            update_movie(movie_id, title, director, p_year, rating, poster)
-            clear_user_cache(session['id'])  # Clear cache after updating movie
-            flash('Movie updated', category='success')
-            return redirect('/home')
-    return redirect('/login')
+            
+            print(title, director, year, date, genre, rating, rewatch, tv_show, session['id'])
+            insert_movies(title, director, genre, year, date, rating, rewatch, tv_show, poster, session['id'], cinema)
+            clear_user_cache(session['id'])  # Clear cache after adding movie
+            flash('Movie added', category='success')
+        except Exception as e:
+            print(f"Error adding movie: {e}")
+            flash('Something went wrong, please try again', category='error')
+            return redirect('/add_movie')
+                
+    return render_template('add_movie.html')
+
+@app.route('/remove_movie', methods=['GET', 'POST'])
+@login_required
+@limiter.limit("30 per hour")  # Rate limit movie removals
+def remove_movie():
+    if request.method == "POST":
+        movie_id = request.form['movie_id']
+        remove_movie_by_id(movie_id)
+        clear_user_cache(session['id'])  # Clear cache after removing movie
+        flash('Movie removed', category='success')
+        return redirect('/home')
+    return redirect('/home')
+
+@app.route('/edit_movie', methods=['GET', 'POST'])
+@login_required
+@limiter.limit("30 per hour")  # Rate limit movie edits
+def edit_movie():
+    if request.method == "GET":
+        return render_template('edit_movie.html')
+    else:
+        movie_id = request.form['movie_id']
+        title = request.form['movie']
+        director = request.form['director']
+        p_year = request.form['year']
+        rating = request.form['rating']
+        tv_show = request.form['tv']
+        try:
+            if tv_show == '1':
+                res = tv.search(title)
+            else:
+                res = movie.search(title)
+            poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
+        except:
+            html = get_movie_poster(title)
+            if html != 'None':
+                soup = BeautifulSoup(html, 'html.parser')
+                img_tag = soup.find('img')
+                src_link = img_tag['src']   
+                poster = src_link
+            else: 
+                res = movie.search(title)
+                poster = res[0]['poster_path']
+        update_movie(movie_id, title, director, p_year, rating, poster)
+        clear_user_cache(session['id'])  # Clear cache after updating movie
+        flash('Movie updated', category='success')
+        return redirect('/home')
 
 # ========================================
 # APPLICATION ENTRY POINT
