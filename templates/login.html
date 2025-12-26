@@ -1,10 +1,125 @@
 {% extends 'base.html' %} {% block title %}Login{% endblock %} {% block content
 %}
-<main>
+
+<!-- VT323 Terminal Font -->
+<link
+  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  .login-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 2rem;
+  }
+
+  .login-main h1 {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 3rem;
+    letter-spacing: 3px;
+    margin-bottom: 2rem;
+  }
+
+  .login-main form {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+  }
+
+  .login-main .field {
+    margin-bottom: 2rem;
+  }
+
+  .login-main .input {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.3rem;
+  }
+
+  .login-main .label {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.2rem;
+  }
+
+  .login-main .button {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    padding: 0.8rem 2rem;
+  }
+
+  .login-main .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .login-main .buttons p {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.1rem;
+    color: #b0bec5;
+    margin: 0;
+  }
+
+  .login-main .buttons a {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.1rem;
+  }
+
+  .login-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    align-items: center;
+    margin-top: 1rem;
+  }
+
+  @media (max-width: 600px) {
+    .login-main {
+      padding: 1rem;
+      min-height: 70vh;
+    }
+
+    .login-main h1 {
+      font-size: 2.2rem;
+    }
+
+    .login-main form {
+      max-width: 100%;
+      padding: 0 1rem;
+    }
+
+    .login-main .input,
+    .login-main .label {
+      font-size: 1.1rem;
+    }
+
+    .login-main .button {
+      width: 100%;
+      text-align: center;
+    }
+
+    .login-links {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.8rem;
+    }
+
+    .login-links p {
+      margin: 0;
+    }
+  }
+</style>
+
+<main class="login-main">
   <h1>Login</h1>
   <form method="post">
     <div class="field">
-      <input type="email" name="email" class="input" placeholder="" required />
+      <input type="email" name="email" class="input" placeholder=" " required />
       <label for="email" class="label">Email</label>
     </div>
     <div class="field">
@@ -12,27 +127,17 @@
         type="password"
         name="password"
         class="input"
-        placeholder=""
+        placeholder=" "
         required
       />
       <label for="password" class="label">Password</label>
     </div>
     <div class="buttons">
-      <button
-        type="submit"
-        class="button button-Login"
-        style="display: inline-block"
-      >
-        Login
-      </button>
-      <p style="display: inline-block; margin-left: 70px">
-        Don't have an account?
-      </p>
-      <a href="/register">Register</a>
-      <p style="display: inline-block; margin-left: 70px">
-        Forgot your password?
-      </p>
-      <a href="/passwordreset">Reset</a>
+      <button type="submit" class="button button-Login">Login</button>
+      <div class="login-links">
+        <p>Don't have an account? <a href="/register">Register</a></p>
+        <p>Forgot your password? <a href="/passwordreset">Reset</a></p>
+      </div>
     </div>
   </form>
 </main>
