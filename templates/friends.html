@@ -294,6 +294,7 @@ content %}
 
       <div class="search-section">
         <form method="post" class="f-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <span class="search-prefix">find_user:</span>
           <input
             type="text"
@@ -318,6 +319,7 @@ content %}
         {% if user.id not in friends|map(attribute="user_id")|list and user.id
         != session.id %}
         <form method="post" action="/follow" style="margin: 0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <input type="submit" value="[ FOLLOW ]" class="follow-btn" />
           <input type="hidden" name="username" value="{{ user.username }}" />
           <input type="hidden" name="user_id" value="{{ user.id }}" />

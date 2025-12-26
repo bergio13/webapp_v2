@@ -25,6 +25,7 @@ content %}
       <!-- Request Form -->
       <div class="request-section">
         <form method="post" class="recommendation-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <div class="input-group">
             <label for="user_request" class="form-label">
               ENTER_QUERY:

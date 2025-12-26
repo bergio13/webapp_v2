@@ -118,6 +118,7 @@
 <main class="login-main">
   <h1>Login</h1>
   <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="field">
       <input type="email" name="email" class="input" placeholder=" " required />
       <label for="email" class="label">Email</label>

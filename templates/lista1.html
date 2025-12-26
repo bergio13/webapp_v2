@@ -412,6 +412,11 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
               style="margin: 0"
               onsubmit="return confirmDeletion('{{ movie['movie'] }}')"
             >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
               <button type="submit" class="table-button-list">X</button>
               <input type="hidden" name="movie_id" value="{{movie['id']}}" />
             </form>

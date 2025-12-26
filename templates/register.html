@@ -118,6 +118,7 @@ content %}
 <main class="register-main">
   <h1>Register</h1>
   <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="field">
       <input
         type="text"

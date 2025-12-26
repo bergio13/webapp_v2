@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV, Season
 from flask_mail import Mail, Message
 from flask_caching import Cache
+from flask_wtf.csrf import CSRFProtect
 from auth.auth import auth # Import the auth blueprint
 from auth.restore import restore # Import the restore blueprint
 from dotenv import load_dotenv
@@ -28,7 +29,10 @@ app = Flask(__name__)
 # Register the auth blueprint with the main app
 app.register_blueprint(auth)
 
-app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get('FLASK_SECRET_KEY')
+
+# Enable CSRF protection for all forms
+csrf = CSRFProtect(app)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'kinetowebapp@gmail.com'

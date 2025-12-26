@@ -121,6 +121,11 @@
                 <td>{{movie['rating']}}</td>
                 <td>
                   <form action="/remove_movie" method="post">
+                    <input
+                      type="hidden"
+                      name="csrf_token"
+                      value="{{ csrf_token() }}"
+                    />
                     <button type="submit" class="table-button-list">X</button>
                     <input
                       type="hidden"
@@ -146,6 +151,11 @@
                 <td>{{movie['rating']}}</td>
                 <td>
                   <form action="/remove_movie" method="post">
+                    <input
+                      type="hidden"
+                      name="csrf_token"
+                      value="{{ csrf_token() }}"
+                    />
                     <button type="submit" class="table-button-list">X</button>
                     <input
                       type="hidden"
@@ -171,6 +181,11 @@
                 <td>{{movie['rating']}}</td>
                 <td>
                   <form action="/remove_movie" method="post">
+                    <input
+                      type="hidden"
+                      name="csrf_token"
+                      value="{{ csrf_token() }}"
+                    />
                     <button type="submit" class="table-button-list">X</button>
                     <input
                       type="hidden"

@@ -3,6 +3,7 @@
 
 <main>
   <form action="/edit_movie" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <input type="hidden" name="movie_id" value="movie_id" />
     <input type="text" name="movie" value="movie" />
     <input type="number" name="year" value="year" />

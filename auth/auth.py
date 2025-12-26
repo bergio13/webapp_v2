@@ -95,7 +95,7 @@ def register():
     
             # If validation passed, hash the password and insert the new user into the database
             try:
-                hashed_password = generate_password_hash(password, method='sha256')
+                hashed_password = generate_password_hash(password, method='scrypt')
                 insert_user(name, email, password=hashed_password)
                 flash('Your account has been created successfully!', category='success')
                 return redirect('/home')
