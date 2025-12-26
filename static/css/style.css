@@ -12,7 +12,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: var(--bg-primary);
+  background: var(--bg-primary); /* #2980b9 */
   color: black;
   background-size: 100%;
   background-repeat: no-repeat;

@@ -1,33 +1,225 @@
-{% extends 'base.html'%}{% block title %}Home{% endblock %} {%block body
-%}{%block content %}
+{% extends 'base.html' %} {% block title %}Edit Movie{% endblock %} {% block
+content %}
 
-<main>
+<!-- VT323 Terminal Font -->
+<link
+  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  .edit-movie-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 2rem;
+  }
+
+  .edit-movie-main h1 {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 2.5rem;
+    letter-spacing: 3px;
+    margin-bottom: 1.5rem;
+    color: #ffcc00;
+  }
+
+  .edit-movie-main form {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .edit-movie-main .field {
+    margin-bottom: 1.5rem;
+  }
+
+  .edit-movie-main .input,
+  .edit-movie-main .number {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.3rem;
+    outline: none;
+    border: none;
+    width: 100%;
+    padding: 0.5rem 0;
+    background: none;
+    color: white;
+  }
+
+  .edit-movie-main .input:valid,
+  .edit-movie-main .number:valid {
+    color: gold;
+  }
+
+  .edit-movie-main .label {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.2rem;
+    color: #b0bec5;
+  }
+
+  .edit-movie-main .field-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .edit-movie-main .button {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    padding: 0.8rem 2.5rem;
+    margin-top: 1rem;
+    background: #ffcc00;
+    color: #1a1a2e;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .edit-movie-main .button:hover {
+    background: #00ff00;
+    transform: scale(1.02);
+  }
+
+  .edit-movie-main .button-cancel {
+    background: transparent;
+    border: 2px solid #b0bec5;
+    color: #b0bec5;
+    margin-left: 1rem;
+  }
+
+  .edit-movie-main .button-cancel:hover {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+    background: transparent;
+  }
+
+  .terminal-prefix {
+    color: #ffcc00;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 600px) {
+    .edit-movie-main {
+      padding: 1rem;
+      min-height: 70vh;
+    }
+
+    .edit-movie-main h1 {
+      font-size: 2rem;
+    }
+
+    .edit-movie-main form {
+      max-width: 100%;
+      padding: 0 0.5rem;
+    }
+
+    .edit-movie-main .field-group {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .button-group {
+      flex-direction: column;
+    }
+
+    .edit-movie-main .button,
+    .edit-movie-main .button-cancel {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+</style>
+
+<main class="edit-movie-main">
+  <h1>[ EDIT_MOVIE ]</h1>
+
   <form action="/edit_movie" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-    <input type="hidden" name="movie_id" value="movie_id" />
-    <input type="text" name="movie" value="movie" />
-    <input type="number" name="year" value="year" />
-    <input type="text" name="director" value="director" />
-    <input type="number" name="rating" value="rating" />
-    <input type="hidden" name="tv" value="tv" />
-    <input type="submit" value="Submit" />
+    <input type="hidden" name="movie_id" id="movie_id" value="" />
+    <input type="hidden" name="tv" id="tv" value="" />
+
+    <!-- Title -->
+    <div class="field">
+      <input
+        type="text"
+        class="input"
+        id="movie"
+        name="movie"
+        placeholder=" "
+        required
+      />
+      <label for="movie" class="label">Title</label>
+    </div>
+
+    <!-- Year and Rating side by side -->
+    <div class="field-group">
+      <div class="field">
+        <input
+          type="number"
+          class="number"
+          id="year"
+          name="year"
+          placeholder=" "
+          max="2030"
+          min="1890"
+          required
+        />
+        <label for="year" class="label">Year</label>
+      </div>
+      <div class="field">
+        <input
+          type="number"
+          class="number"
+          id="rating"
+          name="rating"
+          placeholder=" "
+          max="10"
+          min="0"
+          required
+        />
+        <label for="rating" class="label">Rating (0-10)</label>
+      </div>
+    </div>
+
+    <!-- Director -->
+    <div class="field">
+      <input
+        type="text"
+        class="input"
+        id="director"
+        name="director"
+        placeholder=" "
+      />
+      <label for="director" class="label">Director</label>
+    </div>
+
+    <div class="button-group">
+      <button type="submit" class="button">[ SAVE ]</button>
+      <a href="/home" class="button button-cancel">[ CANCEL ]</a>
+    </div>
   </form>
 </main>
 
 <script>
+  // Populate form with URL parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get("movie_id");
-  const name = urlParams.get("movie");
-  const year = urlParams.get("year");
-  const director = urlParams.get("director");
-  const rating = urlParams.get("rating");
-  const tv_show = urlParams.get("tv");
-  document.getElementsByName("movie_id")[0].value = id;
-  document.getElementsByName("movie")[0].value = name;
-  document.getElementsByName("year")[0].value = year;
-  document.getElementsByName("director")[0].value = director;
-  document.getElementsByName("rating")[0].value = rating;
-  document.getElementsByName("tv")[0].value = tv_show;
+
+  document.getElementById("movie_id").value = urlParams.get("movie_id") || "";
+  document.getElementById("movie").value = urlParams.get("movie") || "";
+  document.getElementById("year").value = urlParams.get("year") || "";
+  document.getElementById("director").value = urlParams.get("director") || "";
+  document.getElementById("rating").value = urlParams.get("rating") || "";
+  document.getElementById("tv").value = urlParams.get("tv") || "0";
 </script>
 
-{% endblock %} {% endblock %}
+{% endblock %}

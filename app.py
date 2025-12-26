@@ -600,7 +600,7 @@ def discover():
 
 @app.route('/add_movie', methods=['GET', 'POST'])
 @login_required
-@limiter.limit("30 per hour")  # Rate limit movie additions
+@limiter.limit("100 per hour")  # Rate limit movie additions
 def add_movie():
     if request.method == "POST":
         try:

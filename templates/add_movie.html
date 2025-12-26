@@ -1,115 +1,216 @@
-{% extends 'base.html' %} {% block title %}Add Movies{% endblock %}
-
-{% block
+{% extends 'base.html' %} {% block title %}Add Movie{% endblock %} {% block
 content %}
 
-<main>
-  <form method="post">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    <div class="field field-add">
-      <label for="title">Title</label>
-      <input
-        type="text"
-        class="input"
-        id="title"
-        name="title"
-        placeholder=""
-        required
-      />
-    </div>
-    <div class="field-add">
-      <label for="year">Year</label>
-      <input
-        type="number"
-        class="number"
-        id="year"
-        name="year"
-        placeholder=""
-        max="2030"
-        min="1890"
-        required
-      />
-    </div>
-    <div class="field field-add">
-      <label for="director">Director (optional)</label>
-      <input
-        type="text"
-        class="input"
-        id="director"
-        name="director"
-        placeholder=""
+<!-- VT323 Terminal Font -->
+<link
+  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  rel="stylesheet"
+/>
 
-      />
+<style>
+  .add-movie-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 80vh;
+    padding: 2rem;
+    padding-top: 1rem;
+  }
+
+  .add-movie-main h1 {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 3rem;
+    letter-spacing: 3px;
+    color: yellow;
+
+  }
+
+  .add-movie-main form {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .add-movie-main .field {
+    margin-bottom: 1.5rem;
+  }
+
+  .add-movie-main .input,
+  .add-movie-main .number,
+  .add-movie-main .month {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.3rem;
+    outline: none;
+    border: none;
+    width: 100%;
+    padding: 0.5rem 0;
+    background: none;
+    color: white;
+  }
+
+  .add-movie-main .input:valid,
+  .add-movie-main .number:valid,
+  .add-movie-main .month:valid {
+    color: gold;
+  }
+
+  .add-movie-main .label {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.2rem;
+    color: #b0bec5;
+  }
+
+  .add-movie-main .field-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .add-movie-main .radio-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.2rem;
+    color: #b0bec5;
+    border-bottom: 2px dashed var(--text-primary);
+    padding-bottom: 0.8rem;
+  }
+
+  .add-movie-main .radio-group label {
+    min-width: 180px;
+  }
+
+  .add-movie-main .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: white;
+    cursor: pointer;
+  }
+
+  .add-movie-main .radio-option input[type="radio"] {
+    accent-color: #00ff00;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .add-movie-main .button {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    padding: 0.8rem 2rem;
+    margin-top: 1rem;
+    background: yellow;
+    color: #1a1a2e;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .add-movie-main .button:hover {
+    background: #00ff00;
+    transform: scale(1.02);
+  }
+
+  .add-movie-main .season-field {
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+    border-left: 3px solid #00ff00;
+  }
+
+  .terminal-prefix {
+    color: #00ff00;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 600px) {
+    .add-movie-main {
+      padding: 1rem;
+    }
+
+    .add-movie-main h1 {
+      font-size: 2rem;
+    }
+
+    .add-movie-main form {
+      max-width: 100%;
+      padding: 0 0.5rem;
+    }
+
+    .add-movie-main .field-group {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .add-movie-main .radio-group {
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .add-movie-main .radio-group label {
+      width: 100%;
+      min-width: unset;
+    }
+
+    .add-movie-main .button {
+      width: 100%;
+      margin-bottom: 6rem;
+    }
+  }
+</style>
+
+
+<main class="add-movie-main">
+  <h1>[ ADD_MOVIE ]</h1>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="field">
+      <input type="text" class="input" id="title" name="title" placeholder=" " required />
+      <label for="title" class="label">Title</label>
     </div>
-    
-    <!--<div class="field-add select">
-      <label for="genre">Genre</label>
-      <select id="genre" name="genre">
-        <option value="Action">Action</option>
-        <option value="Adventure">Adventure</option>
-        <option value="Animation">Animation</option>
-        <option value="Biography">Biography</option>
-        <option value="Comedy">Comedy</option>
-        <option value="Crime">Crime</option>
-        <option value="Documentary">Documentary</option>
-        <option value="Drama">Drama</option>
-        <option value="Fantasy">Fantasy</option>
-        <option value="Film-Noir">Noir</option>
-        <option value="History">History</option>
-        <option value="Horror">Horror</option>
-        <option value="Musical">Musical</option>
-        <option value="Romance">Romance</option>
-        <option value="Sci-Fi">Sci-Fi</option>
-        <option value="Sport">Sport</option>
-        <option value="Thriller">Thriller</option>
-        <option value="War">War</option>
-        <option value="Western">Western</option>
-      </select>
-    </div> -->
-    <div class="field-add">
-      <label for="date">When did you watch it?</label>
-      <input
-        type="date"
-        class="month"
-        id="date"
-        name="date"
-        placeholder=""
-        required
-      />
+    <div class="field">
+      <input type="number" class="input" id="year" name="year" placeholder=" " max="2030" min="1890" required />
+      <label for="year" class="label">Year</label>
     </div>
-    <div class="field-add">
-      <label for="Rating">Rating</label>
-      <input
-        type="number"
-        class="number"
-        id="rating"
-        name="rating"
-        placeholder=""
-        max="10"
-        min="0"
-        required
-      />
+    <div class="field">
+      <input type="number" class="input" id="rating" name="rating" placeholder=" " max="10" min="0" required />
+      <label for="rating" class="label">Rating (0-10)</label>
     </div>
-    <div class="field-add">
+    <div class="field">
+      <input type="text" class="input" id="director" name="director" placeholder=" " />
+      <label for="director" class="label">Director (optional)</label>
+    </div>
+    <div class="field">
+      <input type="date" class="input" id="date" name="date" required />
+      <label for="date" class="label">Watch Date</label>
+    </div>
+    <div class="radio-group">
       <label for="rewatch">Rewatch</label>
-      <input type="radio" class="radio" name="rewatch" id="rewatch_yes" value=1>Yes</input>
-      <input type="radio" class="radio" name="rewatch" id="rewatch_no" value=0 checked>No</input>
+      <input type="radio" class="radio-option" name="rewatch" id="rewatch_yes" value=1>Yes</input>
+      <input type="radio" class="radio-option" name="rewatch" id="rewatch_no" value=0 checked>No</input>
     </div>
-    <div class="field-add">
+    <div class="radio-group">
       <label for="tv">Tv show</label>
-      <input type="radio" class="radio" name="tv" id="tv_yes" onclick="showSeasonField()" value=1>Yes</input>
-      <input type="radio" class="radio" name="tv"  id="tv_no" checked onclick="hideSeasonField()" value=0 checked>No</input>
+      <input type="radio" class="radio-option" name="tv" id="tv_yes" onclick="showSeasonField()" value=1>Yes</input>
+      <input type="radio" class="radio-option" name="tv"  id="tv_no" checked onclick="hideSeasonField()" value=0 checked>No</input>
     </div>
-    <div class="field-add" id="seasonField" style="display: none;">
+    <div class="radio-group" id="seasonField" style="display: none;">
       <label for="season">Season</label>
       <input type="number" class="input" id="season" name="season" placeholder="Enter season number" />
     </div>
-    <div class="field-add">
+    <div class="radio-group">
       <label for="tv">Watched at the cinema?</label>
-      <input type="radio" class="radio" name="cinema" id="cinema_yes" value=1>Yes</input>
-      <input type="radio" class="radio" name="cinema"  id="cinema_no" value=0 checked>No</input>
+      <input type="radio" class="radio-option" name="cinema" id="cinema_yes" value=1>Yes</input>
+      <input type="radio" class="radio-option" name="cinema"  id="cinema_no" value=0 checked>No</input>
     </div>
-    <button type="submit" class="button">Submit</button>
+    <button type="submit" class="button">[ SUBMIT ]</button>
   </form>
   <script>
     function showSeasonField() {
