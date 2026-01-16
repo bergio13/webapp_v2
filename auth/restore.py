@@ -4,10 +4,35 @@ import secrets
 from datetime import datetime, timedelta
 from database import *
 from werkzeug.security import generate_password_hash
+from threading import Thread
+import time
 
 
 # Create a Password Reset Blueprint
-restore = Blueprint('restore', __name__)  
+restore = Blueprint('restore', __name__)
+
+def send_async_email(app, msg, recipient_email):
+    """Send email in background thread with timeout"""
+    with app.app_context():
+        try:
+            mail = app.extensions.get('mail')
+            if not mail:
+                print("ERROR: Mail extension not found in background thread")
+                return
+            
+            print(f"[Background Thread] Attempting to send email to {recipient_email}...")
+            start_time = time.time()
+            
+            mail.send(msg)
+            
+            elapsed = time.time() - start_time
+            print(f"[Background Thread] ✓ Email sent successfully to {recipient_email} in {elapsed:.2f}s")
+            
+        except Exception as e:
+            error_type = type(e).__name__
+            print(f"[Background Thread] ERROR sending email: {error_type}: {str(e)}")
+            import traceback
+            traceback.print_exc()  
 
 def generate_token():
     return secrets.token_hex(16)
@@ -38,57 +63,20 @@ def request_password_reset():
         msg.body = f"Click this link to reset your password: {reset_url}"
         msg.html = f"<p>Click <a href='{reset_url}'>here</a> to reset your password.</p><p>Or copy this link: {reset_url}</p><p>This link will expire in 24 hours.</p>"
         
-        # Use the app context to send the email
-        try:
-            from flask import current_app
-            mail = current_app.extensions.get('mail')
-            if not mail:
-                error_msg = "ERROR: Mail extension not found in app"
-                print(error_msg)
-                return jsonify({'error': 'Email service not configured'}), 500
-            
-            print(f"Attempting to send email to {user['email']}...")
-            print(f"SMTP Config: {current_app.config.get('MAIL_SERVER')}:{current_app.config.get('MAIL_PORT')}")
-            print(f"Using TLS: {current_app.config.get('MAIL_USE_TLS')}, SSL: {current_app.config.get('MAIL_USE_SSL')}")
-            
-            import socket
-            import time
-            start_time = time.time()
-            
-            mail.send(msg)
-            
-            elapsed = time.time() - start_time
-            print(f"✓ Password reset email sent successfully to {user['email']} in {elapsed:.2f}s")
-            
-        except socket.timeout as e:
-            error_msg = f"SMTP Timeout: Connection timed out after {current_app.config.get('MAIL_TIMEOUT', 'unknown')}s"
-            print(f"ERROR: {error_msg}")
-            print(f"Full error: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return jsonify({'error': 'Email server timeout. Please try again later.'}), 500
-        except socket.error as e:
-            error_msg = f"SMTP Socket Error: {str(e)}"
-            print(f"ERROR: {error_msg}")
-            import traceback
-            traceback.print_exc()
-            return jsonify({'error': 'Cannot connect to email server. Please contact support.'}), 500
-        except Exception as e:
-            error_type = type(e).__name__
-            error_msg = f"{error_type}: {str(e)}"
-            print(f"ERROR sending email: {error_msg}")
-            import traceback
-            traceback.print_exc()
-            
-            # Provide more helpful error messages
-            if 'authentication' in str(e).lower():
-                return jsonify({'error': 'Email authentication failed. Please contact support.'}), 500
-            elif 'refused' in str(e).lower():
-                return jsonify({'error': 'Email server refused connection. Please try again later.'}), 500
-            else:
-                return jsonify({'error': f'Failed to send email: {error_msg}'}), 500
-
-        return jsonify({'message': 'Password reset email sent, if you do not find it check your spam folder'})
+        # Send email in background thread to avoid blocking the request
+        print(f"Queueing password reset email to {user['email']}...")
+        print(f"SMTP Config: {current_app.config.get('MAIL_SERVER')}:{current_app.config.get('MAIL_PORT')}")
+        print(f"Using TLS: {current_app.config.get('MAIL_USE_TLS')}, SSL: {current_app.config.get('MAIL_USE_SSL')}")
+        
+        # Start background thread for email sending
+        thread = Thread(target=send_async_email, args=(current_app._get_current_object(), msg, user['email']))
+        thread.daemon = True
+        thread.start()
+        
+        print(f"Email queued successfully. Sending in background...")
+        
+        # Return immediately without waiting for email to send
+        return jsonify({'message': 'Password reset email is being sent. Please check your inbox (and spam folder) in a few moments.'})
     
     return render_template('passwordreset.html')
 

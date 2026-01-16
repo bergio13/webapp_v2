@@ -59,38 +59,55 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587  # Changed from 465 to 587 for better compatibility
-app.config['MAIL_USERNAME'] = 'kinetowebapp@gmail.com'
-app.config['MAIL_PASSWORD'] = os.environ.get('KINETO_MAIL_PASSWORD')
-app.config['MAIL_USE_TLS'] = True  # Changed to TLS instead of SSL
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_DEFAULT_SENDER'] = 'kinetowebapp@gmail.com'
+# ========================================
+# EMAIL CONFIGURATION
+# ========================================
+
+# Choose email provider based on environment variable
+EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'gmail')  # 'sendgrid' or 'gmail'
+
+if EMAIL_PROVIDER == 'sendgrid':
+    # SendGrid configuration (RECOMMENDED for production)
+    app.config['MAIL_SERVER'] = 'smtp.sendgrid.net'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USERNAME'] = 'apikey'  # literally the string "apikey"
+    app.config['MAIL_PASSWORD'] = os.environ.get('SENDGRID_API_KEY')
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USE_SSL'] = False
+    app.config['MAIL_DEFAULT_SENDER'] = 'kinetowebapp@gmail.com'
+    app.config['MAIL_TIMEOUT'] = 10  # Shorter timeout for SendGrid
+    
+    if not os.environ.get('SENDGRID_API_KEY'):
+        print("WARNING: SENDGRID_API_KEY environment variable not set!")
+    else:
+        print("✓ SendGrid email configuration loaded successfully")
+else:
+    # Gmail configuration (works locally, may timeout on Render)
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USERNAME'] = 'kinetowebapp@gmail.com'
+    app.config['MAIL_PASSWORD'] = os.environ.get('KINETO_MAIL_PASSWORD')
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USE_SSL'] = False
+    app.config['MAIL_DEFAULT_SENDER'] = 'kinetowebapp@gmail.com'
+    app.config['MAIL_TIMEOUT'] = 30
+    
+    if not os.environ.get('KINETO_MAIL_PASSWORD'):
+        print("WARNING: KINETO_MAIL_PASSWORD environment variable not set!")
+    else:
+        print("✓ Gmail configuration loaded successfully")
+
+# Common mail settings
 app.config['MAIL_MAX_EMAILS'] = None
 app.config['MAIL_ASCII_ATTACHMENTS'] = False
-app.config['MAIL_TIMEOUT'] = 30  # 30 second timeout
 
-# Verify mail configuration
-if not os.environ.get('KINETO_MAIL_PASSWORD'):
-    print("WARNING: KINETO_MAIL_PASSWORD environment variable not set!")
-else:
-    print("Mail configuration loaded successfully")
-    print(f"SMTP Server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
-    print(f"SMTP User: {app.config['MAIL_USERNAME']}")
-    print(f"TLS: {app.config['MAIL_USE_TLS']}, SSL: {app.config['MAIL_USE_SSL']}")
+print(f"Email Provider: {EMAIL_PROVIDER.upper()}")
+print(f"SMTP Server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
+print(f"SMTP User: {app.config['MAIL_USERNAME']}")
+print(f"TLS: {app.config['MAIL_USE_TLS']}, Timeout: {app.config['MAIL_TIMEOUT']}s")
 
 mail = Mail(app)
 app.register_blueprint(restore)
-
-# Test SMTP connection on startup (optional, only in debug mode)
-if os.environ.get('TEST_SMTP_ON_STARTUP') == '1':
-    try:
-        with mail.connect() as conn:
-            print("✓ SMTP connection test successful!")
-    except Exception as e:
-        print(f"✗ SMTP connection test failed: {str(e)}")
-        import traceback
-        traceback.print_exc()
 
 # ========================================
 # CACHING CONFIGURATION
