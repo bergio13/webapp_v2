@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, current_app, redirect, flash
-from flask_mail import Message, Mail
+from flask_mail import Message
 import secrets
 from datetime import datetime, timedelta
 from database import *
@@ -7,10 +7,7 @@ from werkzeug.security import generate_password_hash
 
 
 # Create a Password Reset Blueprint
-restore = Blueprint('restore', __name__)
-
-# Use the 'mail' object that should be defined in your main app file
-mail = Mail()  
+restore = Blueprint('restore', __name__)  
 
 def generate_token():
     return secrets.token_hex(16)
@@ -41,8 +38,20 @@ def request_password_reset():
         msg.body = f"Click this link to reset your password: {reset_url}"
         
         # Use the app context to send the email
-        with current_app.app_context():
+        try:
+            from flask import current_app
+            mail = current_app.extensions.get('mail')
+            if not mail:
+                print("ERROR: Mail extension not found in app")
+                return jsonify({'error': 'Email service not configured'}), 500
+            
             mail.send(msg)
+            print(f"Password reset email sent successfully to {user['email']}")
+        except Exception as e:
+            print(f"ERROR sending email: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': f'Failed to send email: {str(e)}'}), 500
 
         return jsonify({'message': 'Password reset email sent, if you do not find it check your spam folder'})
     

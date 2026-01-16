@@ -65,6 +65,13 @@ app.config['MAIL_USERNAME'] = 'kinetowebapp@gmail.com'
 app.config['MAIL_PASSWORD'] = os.environ.get('KINETO_MAIL_PASSWORD')
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_DEFAULT_SENDER'] = 'kinetowebapp@gmail.com'
+
+# Verify mail configuration
+if not os.environ.get('KINETO_MAIL_PASSWORD'):
+    print("WARNING: KINETO_MAIL_PASSWORD environment variable not set!")
+else:
+    print("Mail configuration loaded successfully")
 
 mail = Mail(app)
 app.register_blueprint(restore)
