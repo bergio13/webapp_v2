@@ -60,21 +60,37 @@ def login_required(f):
     return decorated_function
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
+app.config['MAIL_PORT'] = 587  # Changed from 465 to 587 for better compatibility
 app.config['MAIL_USERNAME'] = 'kinetowebapp@gmail.com'
 app.config['MAIL_PASSWORD'] = os.environ.get('KINETO_MAIL_PASSWORD')
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = True  # Changed to TLS instead of SSL
+app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_DEFAULT_SENDER'] = 'kinetowebapp@gmail.com'
+app.config['MAIL_MAX_EMAILS'] = None
+app.config['MAIL_ASCII_ATTACHMENTS'] = False
+app.config['MAIL_TIMEOUT'] = 30  # 30 second timeout
 
 # Verify mail configuration
 if not os.environ.get('KINETO_MAIL_PASSWORD'):
     print("WARNING: KINETO_MAIL_PASSWORD environment variable not set!")
 else:
     print("Mail configuration loaded successfully")
+    print(f"SMTP Server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
+    print(f"SMTP User: {app.config['MAIL_USERNAME']}")
+    print(f"TLS: {app.config['MAIL_USE_TLS']}, SSL: {app.config['MAIL_USE_SSL']}")
 
 mail = Mail(app)
 app.register_blueprint(restore)
+
+# Test SMTP connection on startup (optional, only in debug mode)
+if os.environ.get('TEST_SMTP_ON_STARTUP') == '1':
+    try:
+        with mail.connect() as conn:
+            print("✓ SMTP connection test successful!")
+    except Exception as e:
+        print(f"✗ SMTP connection test failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
 # ========================================
 # CACHING CONFIGURATION

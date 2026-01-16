@@ -36,22 +36,57 @@ def request_password_reset():
         reset_url = f"https://lista-film-v2.onrender.com/passwordreset/{token}"
         msg = Message('Reset Your Password', sender='kinetowebapp@gmail.com', recipients=[user['email']])
         msg.body = f"Click this link to reset your password: {reset_url}"
+        msg.html = f"<p>Click <a href='{reset_url}'>here</a> to reset your password.</p><p>Or copy this link: {reset_url}</p><p>This link will expire in 24 hours.</p>"
         
         # Use the app context to send the email
         try:
             from flask import current_app
             mail = current_app.extensions.get('mail')
             if not mail:
-                print("ERROR: Mail extension not found in app")
+                error_msg = "ERROR: Mail extension not found in app"
+                print(error_msg)
                 return jsonify({'error': 'Email service not configured'}), 500
             
+            print(f"Attempting to send email to {user['email']}...")
+            print(f"SMTP Config: {current_app.config.get('MAIL_SERVER')}:{current_app.config.get('MAIL_PORT')}")
+            print(f"Using TLS: {current_app.config.get('MAIL_USE_TLS')}, SSL: {current_app.config.get('MAIL_USE_SSL')}")
+            
+            import socket
+            import time
+            start_time = time.time()
+            
             mail.send(msg)
-            print(f"Password reset email sent successfully to {user['email']}")
-        except Exception as e:
-            print(f"ERROR sending email: {str(e)}")
+            
+            elapsed = time.time() - start_time
+            print(f"✓ Password reset email sent successfully to {user['email']} in {elapsed:.2f}s")
+            
+        except socket.timeout as e:
+            error_msg = f"SMTP Timeout: Connection timed out after {current_app.config.get('MAIL_TIMEOUT', 'unknown')}s"
+            print(f"ERROR: {error_msg}")
+            print(f"Full error: {str(e)}")
             import traceback
             traceback.print_exc()
-            return jsonify({'error': f'Failed to send email: {str(e)}'}), 500
+            return jsonify({'error': 'Email server timeout. Please try again later.'}), 500
+        except socket.error as e:
+            error_msg = f"SMTP Socket Error: {str(e)}"
+            print(f"ERROR: {error_msg}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': 'Cannot connect to email server. Please contact support.'}), 500
+        except Exception as e:
+            error_type = type(e).__name__
+            error_msg = f"{error_type}: {str(e)}"
+            print(f"ERROR sending email: {error_msg}")
+            import traceback
+            traceback.print_exc()
+            
+            # Provide more helpful error messages
+            if 'authentication' in str(e).lower():
+                return jsonify({'error': 'Email authentication failed. Please contact support.'}), 500
+            elif 'refused' in str(e).lower():
+                return jsonify({'error': 'Email server refused connection. Please try again later.'}), 500
+            else:
+                return jsonify({'error': f'Failed to send email: {error_msg}'}), 500
 
         return jsonify({'message': 'Password reset email sent, if you do not find it check your spam folder'})
     
