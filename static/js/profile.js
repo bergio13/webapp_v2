@@ -497,7 +497,10 @@ function renderHabitCountsChart(stats) {
 }
 
 function renderLastThreeYearsMonthlyChart(yearlySeries) {
-  const maxValue = Math.max(0, ...yearlySeries.flatMap((series) => series.data));
+  const maxValue = Math.max(
+    0,
+    ...yearlySeries.flatMap((series) => series.data),
+  );
   renderChart("#yearly-monthly-line-chart", {
     series: yearlySeries,
     chart: {
