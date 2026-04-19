@@ -1,844 +1,653 @@
-{% extends 'base.html' %} {% block title %}AI Movie Recommendations{% endblock
-%} {% block body_attributes %}class="discover_page"{% endblock %} {% block
-content %}
+{% extends 'base.html' %} {% block title %}Discover{% endblock %} {% block
+body_attributes %}class="discover_page"{% endblock %} {% block content %}
+<link
+  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  rel="stylesheet"
+/>
 
 <canvas class="canvas_discover" id="canvas"></canvas>
 <script src="static/js/particles.js"></script>
 
-<main>
-  <div class="discover-container">
-    <div class="terminal-border">
-      <div class="ascii-art-top">
-╔══════════════════════════════════════════════════════════════════════════╗
-║  ███╗   ███╗ ██████╗ ██╗   ██╗██╗███████╗    ██████╗ ███████╗ ██████╗    ║
-║  ████╗ ████║██╔═══██╗██║   ██║██║██╔════╝    ██╔══██╗██╔════╝██╔════╝    ║
-║  ██╔████╔██║██║   ██║██║   ██║██║█████╗      ██████╔╝█████╗  ██║         ║
-║  ██║╚██╔╝██║██║   ██║╚██╗ ██╔╝██║██╔══╝      ██╔══██╗██╔══╝  ██║         ║
-║  ██║ ╚═╝ ██║╚██████╔╝ ╚████╔╝ ██║███████╗    ██║  ██║███████╗╚██████╗    ║
-║  ╚═╝     ╚═╝ ╚═════╝   ╚═══╝  ╚═╝╚══════╝    ╚═╝  ╚═╝╚══════╝ ╚═════╝    ║
-╚══════════════════════════════════════════════════════════════════════════╝
+<main class="discover-main">
+  <div class="discover-wrap">
+    <header class="discover-header">
+      <div class="ascii-top">
+        ═══════════════════════════════════════════════
       </div>
-      <h1 class="main-title-discover">[ AI MOVIE RECOMMENDATION SYSTEM v2.0 ]</h1>
-    </div>
+      <h1><span>//</span> Discover</h1>
+    </header>
 
-    <div class="chat-interface">
-      <!-- Request Form -->
-      <div class="request-section">
+    <section class="discover-grid">
+      <div class="discover-card discover-form-card">
         <form method="post" class="recommendation-form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <div class="input-group">
-            <label for="user_request" class="form-label">
-              ENTER_QUERY:
-            </label>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <div class="form-group">
+            <label for="user_request" class="form-label"
+              >&gt; RECOMMENDATION_PROMPT</label
+            >
             <textarea
               id="user_request"
               name="user_request"
-              placeholder="e.g., 'I want something similar to my recent favorites but more action-packed' or 'Recommend me some good sci-fi movies' or 'I'm in the mood for something uplifting'"
-              rows="3"
               class="form-textarea"
+              rows="4"
+              placeholder="e.g. moody sci-fi, comforting thrillers, arthouse drama with strong direction"
               required
             >
 {{ user_request }}</textarea
             >
           </div>
 
-          <div class="input-group">
-            <label for="history_percentage" class="form-label">
-              HISTORY_BUFFER_SIZE:
-              <span id="percentage-value">50%</span> [MAX: 100 ENTRIES]
-            </label>
-            <input
-              type="range"
-              id="history_percentage"
-              name="history_percentage"
-              min="1"
-              max="100"
-              value="{{ history_percentage or 50 }}"
-              class="percentage-slider"
-              oninput="updatePercentageDisplay(this.value)"
-            />
-            <div class="slider-labels">
-              <span class="slider-label">1%</span>
-              <span class="slider-label">100%</span>
+          <div class="form-group">
+            <span class="form-label">&gt; RECOMMENDATION_MODE</span>
+            <div class="option-grid mode-grid">
+              {% for mode_key, mode_label in discover_mode_labels.items() %}
+              <label class="choice-card">
+                <input
+                  type="radio"
+                  name="recommendation_mode"
+                  value="{{ mode_key }}"
+                  {%
+                  if
+                  recommendation_mode=""
+                  ="mode_key"
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <span class="choice-title">{{ mode_label }}</span>
+              </label>
+              {% endfor %}
             </div>
           </div>
-          <button type="submit" class="ai-button" id="submit-button">
-            EXECUTE_RECOMMENDATION.exe
+
+          <div class="form-group">
+            <span class="form-label">&gt; HISTORY_LENS</span>
+            <div class="option-grid lens-grid">
+              {% for profile_key, profile_label in
+              discover_history_profile_labels.items() %}
+              <label class="choice-card">
+                <input
+                  type="radio"
+                  name="history_profile"
+                  value="{{ profile_key }}"
+                  {%
+                  if
+                  history_profile=""
+                  ="profile_key"
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <span class="choice-title">{{ profile_label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <span class="form-label">&gt; GENRE_PREFILTER (OPTIONAL)</span>
+            <div class="genre-chip-grid">
+              {% for genre in discover_available_genres %}
+              <label class="genre-chip">
+                <input
+                  type="checkbox"
+                  name="preferred_genres"
+                  value="{{ genre }}"
+                  {%
+                  if
+                  genre
+                  in
+                  selected_genres
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <span>{{ genre }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <button type="submit" class="recommend-button" id="submit-button">
+            [ GENERATE RECOMMENDATIONS ]
           </button>
         </form>
       </div>
 
-      <!-- AI Response Section -->
-      {% if ai_response %}
-      <div class="response-section">
-        <div class="ai-recommendations">
-          <h3 class="response-title">OUTPUT_RECOMMENDATIONS:</h3>
+      <aside class="discover-card discover-status-card">
+        <h2>Active Configuration</h2>
+        <p>
+          <span>Mode</span>
+          <strong
+            >{{ discover_mode_labels.get(recommendation_mode, 'Similar')
+            }}</strong
+          >
+        </p>
+        <p>
+          <span>History Lens</span>
+          <strong
+            >{{ discover_history_profile_labels.get(history_profile, 'Balanced
+            Mix') }}</strong
+          >
+        </p>
+        <p>
+          <span>Genre Filter</span>
+          <strong
+            >{% if selected_genres %}{{ selected_genres | join(', ') }}{% else
+            %}Any{% endif %}</strong
+          >
+        </p>
+        <p>
+          <span>Dedup Rule</span>
+          <strong>Exact title + year</strong>
+        </p>
+      </aside>
+    </section>
 
-          <div class="ai-response-content">
-            <div class="formatted-recommendations">
-              {{ ai_response | safe }}
-            </div>
-          </div>
-        </div>
+    {% if ai_response %}
+    <section class="discover-card response-card">
+      <div class="response-headline">
+        <h2>OUTPUT_RECOMMENDATIONS</h2>
+        <p>
+          Mode: {{ discover_mode_labels.get(recommendation_mode, 'Similar') }} |
+          History Lens: {{ discover_history_profile_labels.get(history_profile,
+          'Balanced Mix') }} | Genres: {% if selected_genres %}{{
+          selected_genres | join(', ') }}{% else %}Any{% endif %}
+        </p>
+        <p class="badge-legend">
+          <span class="already-watched-badge">Already watched</span>
+          marks strict title + year matches from your watched library.
+        </p>
       </div>
-      {% endif %}
 
-      <!-- Tips Section -->
-      <div class="tips-section">
-        <h3 class="tips-title">> SYSTEM TIPS_</h3>
-        <ul class="tips-list">
-          <li>
-            Be specific about what you're looking for (mood, genre, style)
-          </li>
-          <li>
-            Mention if you want something similar to your recent favorites
-          </li>
-          <li>Ask for movies from specific time periods or countries</li>
-          <li>
-            Request recommendations based on your ratings (e.g., "like my 9/10
-            rated movies")
-          </li>
-          <li>
-            Mention if you want to explore new genres or stick to favorites
-          </li>
-        </ul>
-    </div>
+      <div class="formatted-recommendations">{{ ai_response | safe }}</div>
+    </section>
+    {% endif %}
   </div>
 </main>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-
   :root {
-    --neon-cyan: rgb(0, 204, 255);
-    --neon-gold: gold;
-    --neon-purple: #7a4dc2;
-    --neon-purple-light: #b39ddb;
-    --bg-dark: #2a2a37;
+    --discover-bg: #181f2b;
+    --discover-bg-elev: #1f2a3a;
+    --discover-cyan: #64b5f6;
+    --discover-purple: #b39ddb;
+    --discover-green: #81c784;
+    --discover-gold: #ffd54f;
+    --discover-light: #e0e7ee;
+    --discover-muted: #b0bec5;
+    --discover-line: rgba(100, 181, 246, 0.22);
+  }
+
+  .discover_page::before {
+    background: linear-gradient(
+      135deg,
+      #1a2634 0%,
+      #1e3a4c 50%,
+      #1a2634 100%
+    ) !important;
   }
 
   .canvas_discover {
-    background: #0a0a0a;
     position: fixed;
-    z-index: -1;
+    inset: 0;
     width: 100%;
     height: 100vh;
-    top: 0;
-    left: 0;
+    z-index: -1;
+    background: transparent;
   }
 
-  .canvas_discover::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(0, 204, 255, 0.03) 0px,
-      rgba(0, 204, 255, 0.03) 1px,
-      transparent 1px,
-      transparent 2px
-    );
-    pointer-events: none;
-    animation: scanlines 8s linear infinite;
+  .discover-main {
+    margin-left: 5rem;
+    padding: 1rem;
   }
 
-  @keyframes scanlines {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(10px); }
-  }
-
-  .discover-container {
+  .discover-wrap {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
-    background: rgba(42, 42, 55, 0.9);
-    border: 2px solid rgba(122, 77, 194, 0.3);
-    border-radius: 20px;
-    box-shadow: 0 0 20px rgba(122, 77, 194, 0.2);
-    backdrop-filter: blur(10px);
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    font-family: 'Poppins', 'Segoe UI', sans-serif;
   }
 
-  .terminal-border {
-    border: 1px solid rgba(122, 77, 194, 0.3);
-    padding: 15px;
-    margin-bottom: 20px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(122, 77, 194, 0.2);
+  .discover-header {
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
   }
 
-  .ascii-art-top {
-    color: var(--neon-purple-light);
-    font-family: 'Courier New', monospace;
-    font-size: 9px;
-    line-height: 1.1;
-    white-space: pre;
-    overflow-x: auto;
-    text-shadow: 0 0 3px rgba(179, 157, 219, 0.5);
-    margin-bottom: 10px;
-    opacity: 0.9;
-    text-align: center;
+  .ascii-top {
+    color: var(--discover-cyan);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 14px;
+    opacity: 0.8;
+    letter-spacing: 0.8px;
   }
 
-  .ascii-separator {
-    color: var(--neon-purple-light);
-    font-family: 'Courier New', monospace;
-    text-align: center;
-    margin: 20px 0;
-    text-shadow: 0 0 3px rgba(179, 157, 219, 0.3);
-    opacity: 0.7;
-  }
-
-  .main-title-discover {
-    color: var(--neon-purple-light);
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 2rem;
-    font-weight: 400;
-    font-family: 'VT323', 'Courier New', monospace;
-    text-shadow: 0 0 10px rgba(179, 157, 219, 0.4);
+  .discover-header h1 {
+    font-family: "VT323", "Courier New", monospace;
     letter-spacing: 2px;
-    text-transform: uppercase;
+    color: var(--discover-light);
+    margin: 0.2rem 0 0;
+    font-size: 3rem;
   }
 
-  .chat-interface {
-    background: rgba(20, 30, 48, 0.6);
-    border: 1px solid rgba(122, 77, 194, 0.3);
-    border-radius: 15px;
-    padding: 30px;
-    margin-bottom: 30px;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  .discover-header h1 span {
+    color: var(--discover-cyan);
+    opacity: 0.8;
   }
 
-  .input-group {
-    margin-bottom: 25px;
+  .discover-header p {
+    margin: 0.2rem 0 0;
+    color: var(--discover-muted);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.25rem;
+    letter-spacing: 0.8px;
   }
 
-  .form-label {
-    color: var(--neon-purple-light);
-    font-size: 20px;
-    margin-bottom: 10px;
-    display: block;
-    line-height: 1.4;
-    font-family: 'VT323', 'Courier New', monospace;
+  .discover-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .discover-card {
+    border-radius: 12px;
+    background: rgba(19, 28, 39, 0.78);
+    border: 1px solid var(--discover-line);
+    box-shadow: 0 0 24px rgba(100, 181, 246, 0.08);
+    backdrop-filter: blur(7px);
+  }
+
+  .discover-form-card {
+    padding: 18px;
+  }
+
+  .discover-status-card {
+    padding: 16px;
+  }
+
+  .discover-status-card h2 {
+    margin: 0 0 12px;
+    color: var(--discover-purple);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.8rem;
+    font-weight: normal;
     letter-spacing: 1px;
   }
 
-  .form-label::before {
-    content: '> ';
-    color: var(--neon-purple-light);
-  }
-
-  .form-textarea {
-    width: 100%;
-    padding: 15px;
-    border: 1px solid rgba(0, 204, 255, 0.5);
-    border-radius: 4px;
-    font-size: 18px;
-    resize: vertical;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: #e0e7ee;
-    box-sizing: border-box;
-    min-height: 120px;
-    font-family: 'VT323', 'Courier New', monospace;
-    letter-spacing: 0.5px;
-  }
-
-  .form-textarea::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .form-textarea:focus {
-    outline: none;
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
-  }
-
-  .percentage-slider {
-    width: 100%;
-    height: 8px;
-    border-radius: 20px;
-    background: linear-gradient(to right, var(--neon-purple), var(--neon-cyan));
-    outline: none;
-    opacity: 0.8;
-    transition: opacity 0.3s;
-    -webkit-appearance: none;
-    margin: 10px 0;
-  }
-
-  .percentage-slider:hover {
-    opacity: 1;
-  }
-
-  .percentage-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--neon-cyan);
-    cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .percentage-slider::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--neon-cyan);
-    cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .slider-labels {
+  .discover-status-card p {
+    margin: 0;
+    padding: 9px 0;
+    border-bottom: 1px dashed rgba(100, 181, 246, 0.18);
     display: flex;
     justify-content: space-between;
-    margin-top: 5px;
+    align-items: baseline;
+    gap: 10px;
   }
 
-  .slider-label {
-    color: var(--neon-purple-light);
-    font-size: 16px;
-    font-family: 'VT323', 'Courier New', monospace;
+  .discover-status-card p:last-child {
+    border-bottom: none;
   }
 
-  .request-section {
-    margin-bottom: 30px;
+  .discover-status-card span {
+    color: var(--discover-muted);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.08rem;
+    letter-spacing: 0.7px;
+  }
+
+  .discover-status-card strong {
+    color: var(--discover-light);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.05rem;
+    text-align: right;
+    font-weight: normal;
   }
 
   .recommendation-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 
-  .ai-button {
-    background: rgba(0, 204, 255, 0.1);
-    color: var(--neon-cyan);
-    border: 1px solid var(--neon-cyan);
-    border-radius: 4px;
-    padding: 16px 32px;
-    font-size: 22px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    align-self: center;
-    position: relative;
-    overflow: hidden;
-    min-height: 56px;
-    min-width: 200px;
-    font-family: 'VT323', 'Courier New', monospace;
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-label {
+    color: var(--discover-purple);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.25rem;
     letter-spacing: 1px;
-    text-transform: uppercase;
   }
 
-  .ai-button::before {
-    content: '[ ';
-    opacity: 0.8;
+  .form-textarea {
+    width: 100%;
+    min-height: 120px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    resize: vertical;
+    border: 1px solid rgba(100, 181, 246, 0.3);
+    background: rgba(15, 22, 32, 0.86);
+    color: var(--discover-light);
+    padding: 12px;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.2rem;
+    letter-spacing: 0.6px;
+    line-height: 1.35;
   }
 
-  .ai-button::after {
-    content: ' ]';
-    opacity: 0.8;
+  .form-textarea::placeholder {
+    color: rgba(176, 190, 197, 0.85);
   }
 
-  .ai-button:hover:not(:disabled) {
-    background: rgba(0, 204, 255, 0.2);
-    box-shadow: 0 0 15px rgba(0, 204, 255, 0.3);
-    transform: translateY(-2px);
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--discover-cyan);
+    box-shadow: 0 0 12px rgba(100, 181, 246, 0.25);
   }
 
-  .ai-button:disabled {
-    background: rgba(100, 100, 100, 0.2);
-    border-color: #6c757d;
-    color: #6c757d;
+  .option-grid {
+    display: grid;
+    gap: 9px;
+  }
+
+  .mode-grid,
+  .lens-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .choice-card {
+    position: relative;
+    display: block;
+  }
+
+  .choice-card input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .choice-title {
+    display: block;
+    text-align: center;
+    border-radius: 7px;
+    border: 1px solid rgba(179, 157, 219, 0.35);
+    background: rgba(17, 25, 35, 0.85);
+    color: var(--discover-light);
+    padding: 8px;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.12rem;
+    letter-spacing: 0.7px;
+    transition: all 0.22s ease;
+    cursor: pointer;
+  }
+
+  .choice-card input:checked + .choice-title {
+    border-color: var(--discover-cyan);
+    background: rgba(100, 181, 246, 0.18);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(100, 181, 246, 0.2);
+  }
+
+  .choice-card:hover .choice-title {
+    border-color: rgba(100, 181, 246, 0.6);
+    transform: translateY(-1px);
+  }
+
+  .genre-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .genre-chip {
+    position: relative;
+  }
+
+  .genre-chip input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .genre-chip span {
+    display: inline-block;
+    border: 1px solid rgba(176, 190, 197, 0.3);
+    border-radius: 999px;
+    background: rgba(17, 25, 35, 0.82);
+    color: var(--discover-muted);
+    padding: 4px 10px;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.02rem;
+    letter-spacing: 0.6px;
+    transition: all 0.22s ease;
+    cursor: pointer;
+  }
+
+  .genre-chip input:checked + span {
+    border-color: var(--discover-green);
+    color: var(--discover-green);
+    background: rgba(129, 199, 132, 0.14);
+  }
+
+  .recommend-button {
+    align-self: flex-start;
+    border: 1px solid var(--discover-cyan);
+    border-radius: 7px;
+    background: rgba(100, 181, 246, 0.15);
+    color: var(--discover-cyan);
+    padding: 10px 18px;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.25rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .recommend-button:hover:not(:disabled) {
+    background: rgba(100, 181, 246, 0.25);
+    box-shadow: 0 0 14px rgba(100, 181, 246, 0.25);
+  }
+
+  .recommend-button:disabled {
+    opacity: 0.7;
     cursor: not-allowed;
-    transform: none;
+  }
+
+  .recommend-button.loading {
+    background: rgba(116, 131, 148, 0.22);
+    border-color: #8ea0b2;
+    color: #aebbc9;
     box-shadow: none;
   }
 
-  .ai-button.loading {
-    background: linear-gradient(45deg, #6c757d, #5a6268);
-    cursor: not-allowed;
+  .response-card {
+    margin-top: 16px;
+    padding: 16px;
   }
 
-  .ai-button.loading::after {
-    content: "";
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    margin: auto;
-    border: 2px solid transparent;
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: button-loading-spinner 1s ease infinite;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  .response-headline h2 {
+    margin: 0;
+    color: var(--discover-cyan);
+    font-family: "VT323", "Courier New", monospace;
+    letter-spacing: 1.5px;
+    font-size: 2rem;
+    font-weight: normal;
   }
 
-  @keyframes button-loading-spinner {
-    from {
-      transform: translate(-50%, -50%) rotate(0turn);
-    }
-    to {
-      transform: translate(-50%, -50%) rotate(1turn);
-    }
+  .response-headline p {
+    margin: 8px 0 0;
+    color: var(--discover-muted);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.12rem;
+    letter-spacing: 0.6px;
   }
 
-  .response-section {
-    margin-top: 30px;
-    padding-top: 30px;
-    border-top: 2px solid rgba(122, 77, 194, 0.3);
-  }
-
-  .response-title {
-    color: var(--neon-cyan);
-    margin-bottom: 20px;
-    font-size: 1.8rem;
-    font-family: 'VT323', 'Courier New', monospace;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .response-title::before {
-    content: '> ';
-    color: var(--neon-purple-light);
-  }
-
-  .ai-response-content {
-    margin-top: 20px;
+  .badge-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .formatted-recommendations {
-    background-color: rgba(0, 0, 0, 0.4);
-    padding: 25px;
-    border-radius: 12px;
-    color: white;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.8;
-    border: 1px solid rgba(122, 77, 194, 0.3);
-    max-height: 600px;
+    margin-top: 12px;
+    max-height: 620px;
     overflow-y: auto;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-  }
-
-  .formatted-recommendations:hover {
-    border-color: rgba(122, 77, 194, 0.5);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-  }
-
-  .formatted-recommendations h1,
-  .formatted-recommendations h2,
-  .formatted-recommendations h3 {
-    color: var(--neon-purple-light);
-    margin-top: 25px;
-    margin-bottom: 15px;
-    font-weight: bold;
-  }
-
-  .formatted-recommendations h1 {
-    font-size: 1.5em;
-    border-bottom: 2px solid rgba(122, 77, 194, 0.3);
-    padding-bottom: 10px;
-  }
-
-  .formatted-recommendations h2 {
-    font-size: 1.3em;
-  }
-
-  .formatted-recommendations h3 {
-    font-size: 1.1em;
-  }
-
-  .formatted-recommendations p {
-    margin-bottom: 15px;
-    text-align: justify;
+    background: rgba(11, 18, 27, 0.8);
+    border: 1px solid rgba(100, 181, 246, 0.22);
+    border-radius: 10px;
+    padding: 14px;
+    color: var(--discover-light);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.16rem;
+    line-height: 1.45;
   }
 
   .formatted-recommendations strong {
-    color: var(--neon-gold);
-    font-weight: 600;
+    color: #ffffff;
+    font-weight: normal;
   }
 
   .formatted-recommendations em {
-    color: var(--neon-purple-light);
-    font-style: italic;
+    color: var(--discover-purple);
   }
 
   .formatted-recommendations ol {
-    counter-reset: movie-counter;
     list-style: none;
+    counter-reset: discover-counter;
     padding-left: 0;
-    margin-left: 0;
+    margin: 0;
   }
 
   .formatted-recommendations ol li {
-    counter-increment: movie-counter;
-    margin-bottom: 25px;
-    padding: 20px;
-    padding-left: 35px;
-    background-color: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    border-left: 4px solid var(--neon-purple);
+    counter-increment: discover-counter;
+    margin-bottom: 12px;
+    border-left: 3px solid rgba(100, 181, 246, 0.48);
+    border-radius: 8px;
+    padding: 10px 10px 10px 14px;
+    background: rgba(20, 32, 46, 0.7);
     position: relative;
-    transition: all 0.3s ease;
-  }
-
-  .formatted-recommendations ol li:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    transform: translateX(3px);
-    border-left-color: var(--neon-purple-light);
   }
 
   .formatted-recommendations ol li::before {
-    content: counter(movie-counter);
+    content: counter(discover-counter);
     position: absolute;
-    left: -15px;
-    top: 15px;
-    background-color: var(--neon-purple);
+    top: -8px;
+    left: -8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--discover-cyan);
     color: #fff;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 0.9rem;
     font-weight: bold;
-    font-size: 14px;
-    z-index: 1;
   }
 
   .formatted-recommendations ol li > strong:first-child {
     display: block;
-    font-size: 1.2em;
-    color: #ffffff;
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(100, 181, 246, 0.2);
+    padding-bottom: 5px;
   }
 
   .formatted-recommendations ol li p {
-    margin: 8px 0;
-    font-size: 0.95em;
+    margin: 4px 0;
   }
 
   .formatted-recommendations ol li p:last-child {
-    margin-top: 15px;
-    padding: 12px;
-    background-color: rgba(179, 157, 219, 0.08);
-    border-radius: 8px;
-    border-left: 3px solid var(--neon-purple-light);
-    font-style: italic;
+    margin-top: 7px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(179, 157, 219, 0.14);
+    border-left: 2px solid rgba(179, 157, 219, 0.55);
   }
 
-  .formatted-recommendations ul {
-    padding-left: 20px;
+  .already-watched-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 213, 79, 0.7);
+    background: rgba(255, 213, 79, 0.14);
+    color: #ffea9f;
+    padding: 2px 8px;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 0.88rem;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
   }
 
-  .formatted-recommendations ul li {
-    margin-bottom: 8px;
-    position: relative;
-  }
-
-  .formatted-recommendations ul li::marker {
-    color: var(--neon-purple);
-  }
-
-  .tips-section {
-    background-color: rgba(122, 77, 194, 0.1);
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 30px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(179, 157, 219, 0.2);
-  }
-
-  .tips-title {
-    color: var(--neon-purple-light);
-    margin-bottom: 15px;
-    font-size: 1.6rem;
-    font-family: 'VT323', 'Courier New', monospace;
-    letter-spacing: 2px;
-  }
-
-  .tips-list {
-    color: rgba(255, 255, 255, 0.85);
-    margin-left: 10px;
-    line-height: 1.8;
-    list-style: none;
-    padding-left: 0;
-    font-family: 'VT323', 'Courier New', monospace;
-    font-size: 18px;
-  }
-
-  .tips-list li {
-    margin-bottom: 10px;
-    padding-left: 25px;
-    position: relative;
-  }
-
-  .tips-list li::before {
-    content: '>';
-    color: var(--neon-cyan);
-    position: absolute;
-    left: 0;
-  }
-
-  /* Mobile Responsive Styles */
-  @media (max-width: 768px) {
-    .ascii-art-top {
-      display: none;
+  @media (max-width: 980px) {
+    .discover-grid {
+      grid-template-columns: 1fr;
     }
 
-    .ascii-separator {
-      font-size: 12px;
-      overflow: hidden;
+    .discover-status-card {
+      order: -1;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .discover-main {
+      margin-left: 0;
+      padding: 0.8rem 0.6rem 5rem;
     }
 
-    .terminal-border {
-      padding: 10px;
+    .discover-header h1 {
+      font-size: 2.45rem;
     }
 
-    .discover-container {
-      padding: 15px;
-      margin: 0;
-      margin-bottom: 5rem;
-      border-radius: 0;
-      min-height: 100vh;
+    .discover-form-card,
+    .discover-status-card,
+    .response-card {
+      padding: 12px;
     }
 
-    .main-title-discover {
-      font-size: 1.8rem;
-      margin-bottom: 20px;
-      padding: 0 10px;
+    .mode-grid,
+    .lens-grid {
+      grid-template-columns: 1fr;
     }
 
-    .chat-interface {
-      padding: 20px 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-
-    .form-label {
-      font-size: 15px;
-      line-height: 1.3;
-    }
-
-    .form-textarea {
-      padding: 8px;
-      font-size: 16px; /* Prevents zoom on iOS */
-      min-height: 100px;
-      border-radius: 8px;
-    }
-
-    .ai-button {
+    .recommend-button {
       width: 100%;
-      align-self: stretch;
-      padding: 18px 20px;
-      font-size: 16px;
-      min-height: 60px;
-    }
-
-    .percentage-slider::-webkit-slider-thumb {
-      width: 28px;
-      height: 28px;
-    }
-
-    .percentage-slider::-moz-range-thumb {
-      width: 28px;
-      height: 28px;
-    }
-
-    .response-section {
-      margin-top: 20px;
-      padding-top: 20px;
-    }
-
-    .response-title {
-      font-size: 1.3rem;
-      margin-bottom: 15px;
+      text-align: center;
     }
 
     .formatted-recommendations {
-      padding: 15px;
       max-height: 500px;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .formatted-recommendations ol li {
-      padding: 15px;
-      padding-left: 25px;
-      margin-bottom: 20px;
-    }
-
-    .formatted-recommendations ol li::before {
-      width: 25px;
-      height: 25px;
-      left: -12px;
-      top: 12px;
-      font-size: 12px;
-    }
-
-    .formatted-recommendations ol li > strong:first-child {
-      font-size: 1.1em;
-    }
-
-    .tips-section {
-      padding: 15px;
-      margin-top: 20px;
-    }
-
-    .tips-title {
-      font-size: 1.2rem;
-      margin-bottom: 12px;
-    }
-
-    .tips-list {
-      margin-left: 5px;
-      font-size: 14px;
-    }
-
-    .tips-list li {
-      padding-left: 18px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .discover-container {
       padding: 10px;
     }
 
-    .main-title-discover {
-      font-size: 1.6rem;
-      margin-bottom: 15px;
-    }
-
-    .chat-interface {
-      padding: 15px 10px;
-    }
-
-    .form-label {
-      font-size: 14px;
-    }
-
-    .form-textarea {
-      padding: 3px;
-      min-height: 90px;
-    }
-
-    .formatted-recommendations {
-      padding: 12px;
-      font-size: 13px;
-    }
-
     .formatted-recommendations ol li {
-      padding: 12px;
-      padding-left: 20px;
-    }
-
-    .formatted-recommendations ol li::before {
-      width: 22px;
-      height: 22px;
-      left: -11px;
-      font-size: 11px;
-    }
-
-    .tips-section {
-      padding: 12px;
-    }
-
-    .tips-list {
-      margin-left: 12px;
-      font-size: 13px;
-    }
-  }
-
-  /* Improve touch targets for mobile */
-  @media (max-width: 768px) {
-    .percentage-slider {
-      height: 12px;
-      margin: 15px 0;
-    }
-
-    .slider-labels {
-      margin-top: 8px;
-    }
-
-    .slider-label {
-      font-size: 13px;
-    }
-
-    /* Better spacing for mobile */
-    .input-group {
-      margin-bottom: 20px;
-    }
-
-    .recommendation-form {
-      gap: 15px;
-    }
-  }
-
-  /* Fix viewport issues on mobile browsers */
-  @media (max-width: 768px) {
-    .canvas_discover {
-      height: 100vh;
-      height: -webkit-fill-available;
-    }
-
-    .discover-container {
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
+      padding: 8px 8px 8px 12px;
     }
   }
 </style>
 
 <script>
-  function updatePercentageDisplay(value) {
-    document.getElementById("percentage-value").textContent = value + "%";
-  }
-
   document.addEventListener("DOMContentLoaded", function () {
-    const slider = document.getElementById("history_percentage");
-    updatePercentageDisplay(slider.value);
-
     const form = document.querySelector(".recommendation-form");
     const submitButton = document.getElementById("submit-button");
 
-    form.addEventListener("submit", function (e) {
-      submitButton.classList.add("loading");
-      submitButton.disabled = true;
-      submitButton.innerHTML = "[ PROCESSING... ]";
+    if (form && submitButton) {
+      form.addEventListener("submit", function () {
+        submitButton.classList.add("loading");
+        submitButton.disabled = true;
+        submitButton.textContent = "[ GENERATING... ]";
 
-      setTimeout(() => {
-        if (submitButton.classList.contains("loading")) {
-          submitButton.classList.remove("loading");
-          submitButton.disabled = false;
-          submitButton.innerHTML = "🎬 Get Recommendations";
-        }
-      }, 30000);
-    });
-
-    // Prevent zoom on iOS when focusing inputs
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-      const viewport = document.querySelector('meta[name="viewport"]');
-      if (viewport) {
-        viewport.content =
-          "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0";
-      }
+        setTimeout(function () {
+          if (submitButton.classList.contains("loading")) {
+            submitButton.classList.remove("loading");
+            submitButton.disabled = false;
+            submitButton.textContent = "[ GENERATE RECOMMENDATIONS ]";
+          }
+        }, 30000);
+      });
     }
   });
 </script>

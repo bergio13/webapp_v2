@@ -157,6 +157,49 @@ season = Season()
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL_ID = "openrouter/free"
 
+DISCOVER_MODE_LABELS = {
+    "explore": "Explore",
+    "similar": "Similar",
+    "comfort": "Comfort",
+}
+
+DISCOVER_MODE_PROMPTS = {
+    "explore": "Prioritize discovery and variety. Suggest movies that can expand the user's usual taste while still being relevant.",
+    "similar": "Recommend movies strongly aligned with the user's existing favorites, genres, and rating patterns.",
+    "comfort": "Lean into comfort choices: familiar tones, trusted genres, and easy-to-love picks likely to be crowd-pleasing.",
+}
+
+DISCOVER_HISTORY_PROFILE_LABELS = {
+    "recent": "Recent Favorites",
+    "balanced": "Balanced Mix",
+    "all_time": "All-Time Profile",
+}
+
+DISCOVER_HISTORY_PROFILE_PROMPTS = {
+    "recent": "Use the user's most recent watch behavior as the strongest signal and emphasize current taste shifts.",
+    "balanced": "Blend recent behavior with long-term preferences so recommendations feel both relevant and varied.",
+    "all_time": "Use the full history footprint and prioritize recommendations that match enduring preferences.",
+}
+
+DISCOVER_AVAILABLE_GENRES = [
+    "Action",
+    "Adventure",
+    "Animation",
+    "Comedy",
+    "Crime",
+    "Documentary",
+    "Drama",
+    "Fantasy",
+    "History",
+    "Horror",
+    "Mystery",
+    "Romance",
+    "Sci-Fi",
+    "Thriller",
+    "War",
+    "Western",
+]
+
 # ========================================
 # UTILITY FUNCTIONS
 # ========================================
@@ -193,6 +236,47 @@ def split_genres(genre_value):
     if not genre_value:
         return []
     return [genre.strip() for genre in str(genre_value).split(',') if genre.strip()]
+
+def normalize_title_for_match(title):
+    """Normalize titles for deterministic strict matching."""
+    if not title:
+        return ""
+    return re.sub(r'\s+', ' ', str(title)).strip().lower()
+
+def parse_year(year_value):
+    """Parse a year value to int when possible."""
+    try:
+        return int(str(year_value).strip())
+    except (TypeError, ValueError):
+        return None
+
+def extract_title_year_from_heading(heading):
+    """Extract title and year from recommendation heading text."""
+    if not heading:
+        return None, None
+
+    match = re.match(r'^(.*?)\s*\((\d{4})\)', heading.strip())
+    if not match:
+        return None, None
+
+    return match.group(1).strip(), int(match.group(2))
+
+def get_watched_title_year_lookup(user_id):
+    """Build a strict (title, year) set for already watched movies."""
+    watched_lookup = set()
+    try:
+        movies = get_movies(user_id)
+    except Exception as e:
+        app.logger.exception("Failed to build watched lookup for user %s: %s", user_id, e)
+        return watched_lookup
+
+    for movie in movies:
+        normalized_title = normalize_title_for_match(movie.get('movie'))
+        year = parse_year(movie.get('p_year'))
+        if normalized_title and year:
+            watched_lookup.add((normalized_title, year))
+
+    return watched_lookup
 
 def get_default_profile_stats():
     """Return a default stats payload used by both profile views."""
@@ -273,42 +357,79 @@ def build_profile_stats(user_id):
 
     return profile_stats
 
-def get_user_watch_history_summary(user_id, percentage=50, max_cap=100):
-    """Get a formatted summary of user's recent watch history for AI analysis"""
+def get_user_watch_history_summary(user_id, history_profile='balanced', max_cap=120):
+    """Get a formatted summary of user's watch history for AI analysis based on a history lens profile."""
     try:
         movies = get_movies(user_id)
         if not movies:
             return "No movies watched yet."
-        
-        # Sort by watch date and get recent ones
+
+        profile = (history_profile or 'balanced').strip().lower()
+        if profile not in DISCOVER_HISTORY_PROFILE_LABELS:
+            profile = 'balanced'
+
+        # Sort by watch date so recency-sensitive profiles remain deterministic.
         movies.sort(key=lambda x: x['v_date'], reverse=True)
-        
-        # Calculate how many movies to include based on percentage
+
         total_movies = len(movies)
-        movies_to_include = min(int(total_movies * percentage / 100), max_cap)
-        movies_to_include = max(movies_to_include, 1)  # At least 1 movie
-        
-        recent_movies = movies[:movies_to_include]
-        
-        # Create a formatted summary
-        summary = f"Recent movies I've watched ({movies_to_include} out of {total_movies} total movies, {percentage}% of my collection):\n"
-        for i, movie in enumerate(recent_movies, 1):
+
+        recent_pool = movies[:40]
+        rated_movies = [movie for movie in movies if isinstance(movie.get('rating'), (int, float))]
+        top_rated_pool = sorted(rated_movies, key=lambda x: x.get('rating', 0), reverse=True)
+
+        selected_movies = []
+        selected_keys = set()
+
+        def append_unique(candidate):
+            key = (
+                normalize_title_for_match(candidate.get('movie')),
+                parse_year(candidate.get('p_year')),
+                candidate.get('v_date'),
+            )
+            if key in selected_keys:
+                return
+            selected_keys.add(key)
+            selected_movies.append(candidate)
+
+        if profile == 'recent':
+            for movie in recent_pool[:45]:
+                append_unique(movie)
+        elif profile == 'all_time':
+            for movie in movies[:max_cap]:
+                append_unique(movie)
+        else:
+            for movie in recent_pool[:30]:
+                append_unique(movie)
+            for movie in top_rated_pool[:35]:
+                append_unique(movie)
+            selected_movies = selected_movies[:70]
+
+        if not selected_movies:
+            selected_movies = movies[: min(total_movies, 20)]
+
+        lens_label = DISCOVER_HISTORY_PROFILE_LABELS.get(profile, 'Balanced Mix')
+        summary = f"Watch history lens: {lens_label} ({len(selected_movies)} picked from {total_movies} total entries):\n"
+        for i, movie in enumerate(selected_movies, 1):
             rating_text = f"({movie['rating']}/10)" if movie['rating'] else "(unrated)"
             summary += f"{i}. {movie['movie']} ({movie['p_year']}) - Director: {movie['director']} - Genre: {movie['genre']} - My Rating: {rating_text}\n"
-        
+
         # Add some statistics
-        if len(movies) > 0:
-            avg_rating = sum(m['rating'] for m in movies if m['rating']) / len([m for m in movies if m['rating']])
+        rated_selected_movies = [movie for movie in selected_movies if isinstance(movie.get('rating'), (int, float))]
+        if selected_movies:
+            avg_rating = 0
+            if rated_selected_movies:
+                avg_rating = sum(movie['rating'] for movie in rated_selected_movies) / len(rated_selected_movies)
             genres = {}
-            for movie in recent_movies:
+            for movie in selected_movies:
                 if movie['genre']:
                     for genre in movie['genre'].split(', '):
                         genres[genre.strip()] = genres.get(genre.strip(), 0) + 1
-            
+
             top_genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)[:3]
-            summary += f"\nMy average rating: {avg_rating:.1f}/10\n"
-            summary += f"My most watched genres in this selection: {', '.join([g[0] for g in top_genres])}\n"
-        
+            summary += f"\nAverage rating in this lens: {avg_rating:.1f}/10\n"
+            if top_genres:
+                summary += f"Most watched genres in this lens: {', '.join([genre[0] for genre in top_genres])}\n"
+
         return summary
     except Exception as e:
         print(f"Error getting watch history: {e}")
@@ -374,11 +495,37 @@ def _extract_openrouter_message_text(payload):
 
     return response_text
 
-def get_ai_movie_recommendation(user_request, user_history):
+def get_ai_movie_recommendation(
+    user_request,
+    user_history,
+    recommendation_mode='similar',
+    preferred_genres=None,
+    watched_lookup=None,
+    history_profile='balanced',
+):
     """Get AI-powered movie recommendations using OpenRouter."""
     api_key = os.environ.get('OPENROUTER_API_KEY')
     if not api_key:
         return "<p>Sorry, recommendation service is not configured.</p><p><strong>Error:</strong> OPENROUTER_API_KEY is not configured.</p>"
+
+    recommendation_mode = (recommendation_mode or 'similar').strip().lower()
+    if recommendation_mode not in DISCOVER_MODE_PROMPTS:
+        recommendation_mode = 'similar'
+
+    selected_genres = []
+    for genre in preferred_genres or []:
+        cleaned_genre = str(genre).strip()
+        if cleaned_genre and cleaned_genre in DISCOVER_AVAILABLE_GENRES and cleaned_genre not in selected_genres:
+            selected_genres.append(cleaned_genre)
+
+    mode_label = DISCOVER_MODE_LABELS.get(recommendation_mode, 'Similar')
+    mode_prompt = DISCOVER_MODE_PROMPTS[recommendation_mode]
+    genre_prompt = ', '.join(selected_genres) if selected_genres else 'No explicit genre pre-filter selected.'
+    history_profile = (history_profile or 'balanced').strip().lower()
+    if history_profile not in DISCOVER_HISTORY_PROFILE_PROMPTS:
+        history_profile = 'balanced'
+    history_label = DISCOVER_HISTORY_PROFILE_LABELS.get(history_profile, 'Balanced Mix')
+    history_prompt = DISCOVER_HISTORY_PROFILE_PROMPTS[history_profile]
 
     try:
         # Create a comprehensive prompt for movie recommendations
@@ -388,6 +535,12 @@ User's Recent Watch History:
 {user_history}
 
 User's Request: {user_request}
+
+Recommendation Mode: {mode_label}
+Mode Instructions: {mode_prompt}
+History Lens: {history_label}
+History Lens Instructions: {history_prompt}
+Preferred Genres: {genre_prompt}
 
 Please provide movie recommendations in the following format:
 1. **Movie Title (Year) - Director**
@@ -400,7 +553,10 @@ Please provide movie recommendations in the following format:
 
 [Continue for 3-5 movies]
 
-Keep recommendations diverse and consider the user's rating patterns and favorite genres. Explain why each movie fits their taste based on their watch history."""
+Keep recommendations diverse and consider the user's rating patterns and favorite genres.
+If preferred genres are provided, prioritize those genres in all recommendations.
+Avoid recommending exact title+year combinations already listed in watch history when possible.
+Explain why each movie fits their taste based on their watch history."""
 
         response = requests.post(
             OPENROUTER_API_URL,
@@ -423,7 +579,7 @@ Keep recommendations diverse and consider the user's rating patterns and favorit
         response_text = _extract_openrouter_message_text(payload)
         
         # Convert markdown-style formatting to HTML for better display
-        formatted_response = format_ai_response_to_html(response_text)
+        formatted_response = format_ai_response_to_html(response_text, watched_lookup=watched_lookup)
         
         return formatted_response
         
@@ -431,26 +587,42 @@ Keep recommendations diverse and consider the user's rating patterns and favorit
         app.logger.exception("Error getting AI recommendations from OpenRouter: %s", e)
         return f"<p>Sorry, I couldn't generate recommendations at the moment.</p><p><strong>Error:</strong> {str(e)}</p>"
 
-def format_ai_response_to_html(text):
+def format_ai_response_to_html(text, watched_lookup=None):
     """Convert AI response text to HTML with better formatting"""
-    
+
+    watched_lookup = watched_lookup or set()
+
     # Split the text into lines for processing
     lines = text.split('\n')
     html_lines = []
     in_list = False
-    
-    for line in lines:
-        line = line.strip()
-        
+    current_item_open = False
+
+    for raw_line in lines:
+        line = raw_line.strip()
+
         # Check for numbered list items
-        if re.match(r'^\d+\.\s*\*\*(.*?)\*\*', line):
+        title_match = re.match(r'^\d+\.\s*\*\*(.*?)\*\*', line)
+        if title_match:
             if not in_list:
                 html_lines.append('<ol>')
                 in_list = True
-            # Extract the movie title
-            title_match = re.match(r'^\d+\.\s*\*\*(.*?)\*\*', line)
-            if title_match:
-                html_lines.append(f'<li><strong>{title_match.group(1)}</strong>')
+
+            if current_item_open:
+                html_lines.append('</li>')
+
+            heading = title_match.group(1)
+            recommended_title, recommended_year = extract_title_year_from_heading(heading)
+            normalized_title = normalize_title_for_match(recommended_title)
+            show_dedup_badge = (
+                normalized_title
+                and recommended_year
+                and (normalized_title, recommended_year) in watched_lookup
+            )
+            dedup_badge = ' <span class="already-watched-badge">Already watched</span>' if show_dedup_badge else ''
+
+            html_lines.append(f'<li><strong>{heading}</strong>{dedup_badge}')
+            current_item_open = True
         elif line.startswith('Genre:') or line.startswith('Why I recommend it:'):
             # Handle metadata lines
             line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line)
@@ -458,21 +630,15 @@ def format_ai_response_to_html(text):
             html_lines.append(f'<p>{line}</p>')
         elif line and not re.match(r'^\d+\.', line):
             # Handle regular text lines
-            if in_list:
-                html_lines.append('</li>')
-                # Don't close the list yet, there might be more items
             line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line)
             line = re.sub(r'\*(.*?)\*', r'<em>\1</em>', line)
             if line:
                 html_lines.append(f'<p>{line}</p>')
-        elif not line:
-            # Empty line - close list item if we're in a list
-            if in_list:
-                html_lines.append('</li>')
     
     # Close any open list at the end
-    if in_list:
+    if current_item_open:
         html_lines.append('</li>')
+    if in_list:
         html_lines.append('</ol>')
     
     return '\n'.join(html_lines)
@@ -753,26 +919,55 @@ def follow():
 def discover():
     ai_response = None
     user_request = ""
-    history_percentage = 50
+    recommendation_mode = 'similar'
+    history_profile = 'balanced'
+    selected_genres = []
     
     if request.method == 'POST':
         user_request = request.form.get('user_request', '').strip()
-        history_percentage = int(request.form.get('history_percentage', 50))
-        
+        recommendation_mode = request.form.get('recommendation_mode', 'similar').strip().lower()
+        if recommendation_mode not in DISCOVER_MODE_PROMPTS:
+            recommendation_mode = 'similar'
+
+        history_profile = request.form.get('history_profile', 'balanced').strip().lower()
+        if history_profile not in DISCOVER_HISTORY_PROFILE_LABELS:
+            history_profile = 'balanced'
+
+        selected_genres = []
+        for genre in request.form.getlist('preferred_genres'):
+            cleaned_genre = genre.strip()
+            if cleaned_genre in DISCOVER_AVAILABLE_GENRES and cleaned_genre not in selected_genres:
+                selected_genres.append(cleaned_genre)
+
         if user_request:
-            # Get user's watch history with the specified percentage
-            user_history = get_user_watch_history_summary(session['id'], percentage=history_percentage)
+            # Get user's watch history using the selected lens profile.
+            user_history = get_user_watch_history_summary(session['id'], history_profile=history_profile)
+            watched_lookup = get_watched_title_year_lookup(session['id'])
             
             # Get AI recommendations
-            ai_response = get_ai_movie_recommendation(user_request, user_history)
+            ai_response = get_ai_movie_recommendation(
+                user_request,
+                user_history,
+                recommendation_mode=recommendation_mode,
+                preferred_genres=selected_genres,
+                watched_lookup=watched_lookup,
+                history_profile=history_profile,
+            )
         else:
             flash('Please enter a request for movie recommendations', 'error')
     
-    return render_template('discover.html', 
-                         ai_response=ai_response, 
-                         user_request=user_request,
-                         history_percentage=history_percentage,
-                         session=session)
+    return render_template(
+        'discover.html',
+        ai_response=ai_response,
+        user_request=user_request,
+        recommendation_mode=recommendation_mode,
+        history_profile=history_profile,
+        selected_genres=selected_genres,
+        discover_mode_labels=DISCOVER_MODE_LABELS,
+        discover_history_profile_labels=DISCOVER_HISTORY_PROFILE_LABELS,
+        discover_available_genres=DISCOVER_AVAILABLE_GENRES,
+        session=session,
+    )
 
 # ========================================
 # MOVIE MANAGEMENT (ADD/EDIT/REMOVE)
