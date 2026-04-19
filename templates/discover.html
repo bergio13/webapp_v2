@@ -47,7 +47,13 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="radio"
                   name="recommendation_mode"
                   value="{{ mode_key }}"
-                  {% if recommendation_mode == mode_key %}checked{% endif %}
+                  {%
+                  if
+                  recommendation_mode=""
+                  ="mode_key"
+                  %}checked{%
+                  endif
+                  %}
                 />
                 <span class="choice-title">{{ mode_label }}</span>
               </label>
@@ -65,7 +71,13 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="radio"
                   name="history_profile"
                   value="{{ profile_key }}"
-                  {% if history_profile == profile_key %}checked{% endif %}
+                  {%
+                  if
+                  history_profile=""
+                  ="profile_key"
+                  %}checked{%
+                  endif
+                  %}
                 />
                 <span class="choice-title">{{ profile_label }}</span>
               </label>
@@ -82,7 +94,14 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="checkbox"
                   name="preferred_genres"
                   value="{{ genre }}"
-                  {% if genre in selected_genres %}checked{% endif %}
+                  {%
+                  if
+                  genre
+                  in
+                  selected_genres
+                  %}checked{%
+                  endif
+                  %}
                 />
                 <span>{{ genre }}</span>
               </label>
