@@ -1,9 +1,15 @@
 import os
 import supabase
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 SUPABASE_URL = os.environ.get("SUPABASEURL")
 SUPABASE_KEY = os.environ.get("SUPABASEKEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise RuntimeError("Missing Supabase configuration: set SUPABASEURL and SUPABASEKEY.")
 
 client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
 

@@ -140,6 +140,11 @@
     text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
   }
 
+  .analytics-charts {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    margin-top: 18px;
+  }
+
   .charts-card {
     background: rgba(38, 48, 67, 0.9) !important;
     border: 1px solid rgba(122, 77, 194, 0.25) !important;
@@ -256,6 +261,28 @@
     <div class="charts-card">
       <h2 class="chart-title">Genres Distribution</h2>
       <div id="radar-chart"></div>
+    </div>
+
+    <div class="charts analytics-charts">
+      <div class="charts-card">
+        <h2 class="chart-title">TV Shows vs Movies (Monthly)</h2>
+        <div id="tv-vs-movies-chart"></div>
+      </div>
+
+      <div class="charts-card">
+        <h2 class="chart-title">Catalog Diversity</h2>
+        <div id="diversity-chart"></div>
+      </div>
+
+      <div class="charts-card">
+        <h2 class="chart-title">Rewatch vs Cinema (Counts)</h2>
+        <div id="habit-counts-chart"></div>
+      </div>
+
+      <div class="charts-card">
+        <h2 class="chart-title">Movies by Month (Last 3 Years)</h2>
+        <div id="yearly-monthly-line-chart"></div>
+      </div>
     </div>
   </main>
 </div>

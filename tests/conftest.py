@@ -53,6 +53,7 @@ def app_module(monkeypatch):
     monkeypatch.setenv("TMDB_API_KEY", "test-tmdb")
     monkeypatch.setenv("EMAIL_PROVIDER", "gmail")
     monkeypatch.setenv("KINETO_MAIL_PASSWORD", "test-mail-password")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-openrouter-key")
 
     import supabase
 
@@ -72,5 +73,6 @@ def app_module(monkeypatch):
 def client(app_module):
     app = app_module.app
     app.config["TESTING"] = True
+    app.config["WTF_CSRF_ENABLED"] = False
     with app.test_client() as test_client:
         yield test_client

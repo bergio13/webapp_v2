@@ -48,7 +48,7 @@ pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-At minimum you will need values for Supabase, TMDB, Flask secret key, and email password.
+At minimum you will need values for Supabase, TMDB, Flask secret key, email password, and OPENROUTER_API_KEY (for Discover recommendations).
 
 1. Run the app
 

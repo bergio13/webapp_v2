@@ -28,125 +28,152 @@ const genres = {
   Western: 0,
 };
 
-const months = {
-  0: 0,
-  1: 0,
-  2: 0,
-  3: 0,
-  4: 0,
-  5: 0,
-  6: 0,
-  7: 0,
-  8: 0,
-  9: 0,
-  10: 0,
-  11: 0,
-};
-
 const genreMappings = {
   "Action & Adventure": ["Action", "Adventure"],
   "Sci-Fi & Fantasy": ["Sci-Fi", "Fantasy"],
   "War & Politics": ["War", "Politics"],
 };
 
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
 let jsondata;
 
-async function getJson(url) {
-  let response = await fetch(url);
-  let data = await response.json();
-  return data;
+function toNumeric(value, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-async function main() {
-  const username = document.getElementById("username")?.textContent?.trim();
-  const endpoint = username ? `/data/${username}` : "/data";
-  jsondata = await getJson(endpoint);
+function isTruthyFlag(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value === 1;
+  }
+  if (typeof value === "string") {
+    const lowered = value.trim().toLowerCase();
+    return lowered === "1" || lowered === "true" || lowered === "yes";
+  }
+  return false;
+}
 
-  // Handle genres
-  for (let i = 0; i < jsondata.length; ++i) {
-    let movieGenres;
+function safeGenres(rawGenre) {
+  if (!rawGenre || typeof rawGenre !== "string") {
+    return [];
+  }
+  return rawGenre
+    .split(",")
+    .map((g) => g.trim())
+    .filter(Boolean);
+}
 
-    // Check if the genre field contains multiple genres
-    if (jsondata[i].genre.includes(",")) {
-      // Split multiple genres and trim whitespace
-      movieGenres = jsondata[i].genre.split(",").map((g) => g.trim());
-    } else {
-      // If there's only one genre, wrap it in an array
-      movieGenres = [jsondata[i].genre.trim()];
+async function getJson(url) {
+  const response = await fetch(url);
+  return response.json();
+}
+
+function renderChart(selector, options) {
+  const container = document.querySelector(selector);
+  if (!container) {
+    return;
+  }
+  new ApexCharts(container, options).render();
+}
+
+function extractAdvancedStats(movies) {
+  const uniqueDirectors = new Set();
+  const uniqueGenres = new Set();
+  const tvByMonth = Array(12).fill(0);
+  const movieByMonth = Array(12).fill(0);
+
+  let rewatchCount = 0;
+  let cinemaCount = 0;
+
+  for (const movie of movies) {
+    const director = (movie.director || "").toString().trim();
+    if (director) {
+      uniqueDirectors.add(director);
     }
 
-    // Increment the count for each genre, accounting for composite genres
-    for (const genre of movieGenres) {
+    for (const genre of safeGenres(movie.genre)) {
       if (genreMappings[genre]) {
-        // If the genre is composite (e.g., "Action & Adventure"), split and count both
-        for (const g of genreMappings[genre]) {
-          if (genres[g] !== undefined) {
-            genres[g] += 1;
-          }
+        for (const mappedGenre of genreMappings[genre]) {
+          uniqueGenres.add(mappedGenre);
         }
-      } else if (genres[genre] !== undefined) {
-        // If it's a direct match with predefined genres, increment the count
-        genres[genre] += 1;
       } else {
-        console.log(`Genre not found: ${genre}`); // Optionally log unmatched genres
+        uniqueGenres.add(genre);
+      }
+    }
+
+    if (isTruthyFlag(movie.rewatch)) {
+      rewatchCount += 1;
+    }
+    if (isTruthyFlag(movie.cinema)) {
+      cinemaCount += 1;
+    }
+
+    const watchedDate = new Date(movie.v_date);
+    if (!Number.isNaN(watchedDate.getTime())) {
+      const monthIndex = watchedDate.getMonth();
+      if (isTruthyFlag(movie.tv_show)) {
+        tvByMonth[monthIndex] += 1;
+      } else {
+        movieByMonth[monthIndex] += 1;
       }
     }
   }
 
-  // Handle months
-  for (var i = 0; i < jsondata.length; ++i) {
-    const date = new Date(jsondata[i].v_date);
-    const month = date.getMonth();
-    months[month] += 1;
-    month_keys = Object.keys(months);
-    month_values = Object.values(months);
+  return {
+    uniqueDirectors: uniqueDirectors.size,
+    uniqueGenres: uniqueGenres.size,
+    rewatchCount,
+    cinemaCount,
+    tvByMonth,
+    movieByMonth,
+  };
+}
+
+function buildLastThreeYearsSeries(movies) {
+  const currentYear = new Date().getFullYear();
+  const targetYears = [currentYear - 2, currentYear - 1, currentYear];
+  const countsByYear = Object.fromEntries(
+    targetYears.map((year) => [year, Array(12).fill(0)]),
+  );
+
+  for (const movie of movies) {
+    const watchedDate = new Date(movie.v_date);
+    if (Number.isNaN(watchedDate.getTime())) {
+      continue;
+    }
+
+    const year = watchedDate.getFullYear();
+    const month = watchedDate.getMonth();
+    if (countsByYear[year]) {
+      countsByYear[year][month] += 1;
+    }
   }
 
-  //TOP 6 GENRES
-  const top6 = Object.entries(genres)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 6);
-  const top6Keys = top6.map(([n]) => n);
-  const top6Values = top6.map(([, v]) => v);
+  return targetYears.map((year) => ({
+    name: String(year),
+    data: countsByYear[year],
+  }));
+}
 
-  //TOP 10 GENRES
-  const top10 = Object.entries(genres)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10);
-
-  const top10Keys = top10.map(([n]) => n);
-  const top10Values = top10.map(([, v]) => v);
-
-  //RADAR CHART
-  var options = {
-    series: [
-      {
-        name: "Genres",
-        data: top10Values,
-      },
-    ],
-    chart: {
-      height: 350,
-      type: "radar",
-    },
-    colors: ["#FF5733"],
-
-    xaxis: {
-      categories: top10Keys,
-    },
-    yaxis: {
-      tickAmount: 5, // Adjusts the number of concentric circles
-    },
-  };
-
-  var radarChart = new ApexCharts(
-    document.querySelector("#radar-chart"),
-    options,
-  );
-  radarChart.render();
-
-  //BAR CHART
-  var barChartOptions = {
+function renderTopGenresBar(top6Keys, top6Values) {
+  renderChart("#bar-chart", {
     series: [
       {
         name: "Genres",
@@ -161,11 +188,11 @@ async function main() {
       bar: {
         borderRadius: 10,
         dataLabels: {
-          position: "top", // top, center, bottom
+          position: "top",
         },
       },
     },
-    colors: ["#7217D6"], // Set a single color for all bars
+    colors: ["#7217D6"],
     dataLabels: {
       enabled: true,
       offsetY: -20,
@@ -174,7 +201,6 @@ async function main() {
         colors: ["#fff"],
       },
     },
-
     xaxis: {
       categories: top6Keys,
       position: "top",
@@ -189,18 +215,6 @@ async function main() {
       axisTicks: {
         show: false,
       },
-      /*crosshairs: {
-        fill: {
-          type: "gradient",
-          gradient: {
-            colorFrom: "#D8E3F0",
-            colorTo: "#BED1E6",
-            stops: [0, 100],
-            opacityFrom: 0.2,
-            opacityTo: 0.4,
-          },
-        },
-      },*/
       tooltip: {
         enabled: true,
       },
@@ -225,25 +239,16 @@ async function main() {
         color: "#fff",
       },
     },
-  };
+  });
+}
 
-  var barChart = new ApexCharts(
-    document.querySelector("#bar-chart"),
-    barChartOptions,
-  );
-  barChart.render();
-
-  //LINE CHART
-  var lineChartOptions = {
+function renderMonthlyMoviesLine(monthValues) {
+  renderChart("#line-chart", {
     series: [
       {
         name: "Monthly Watched Movies",
-        data: month_values,
+        data: monthValues,
       },
-      /*{
-        name: "Low - 2013",
-        data: [12, 11, 14, 18, 17, 13, 13],
-      },*/
     ],
     chart: {
       height: 350,
@@ -260,7 +265,7 @@ async function main() {
         show: false,
       },
     },
-    colors: ["#C47B16", "#1846D6"],
+    colors: ["#C47B16"],
     dataLabels: {
       enabled: true,
     },
@@ -271,20 +276,7 @@ async function main() {
       size: 1,
     },
     xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      categories: MONTH_LABELS,
       title: {
         text: "Month",
         style: {
@@ -310,7 +302,7 @@ async function main() {
         },
       },
       min: 0,
-      max: Math.max(...month_values) + 5,
+      max: Math.max(...monthValues, 0) + 5,
     },
     legend: {
       position: "top",
@@ -322,13 +314,289 @@ async function main() {
         useSeriesColors: true,
       },
     },
-  };
+  });
+}
 
-  var lineChart = new ApexCharts(
-    document.querySelector("#line-chart"),
-    lineChartOptions,
-  );
-  lineChart.render();
+function renderGenresRadar(top10Keys, top10Values) {
+  renderChart("#radar-chart", {
+    series: [
+      {
+        name: "Genres",
+        data: top10Values,
+      },
+    ],
+    chart: {
+      height: 350,
+      type: "radar",
+    },
+    colors: ["#FF5733"],
+    xaxis: {
+      categories: top10Keys,
+    },
+    yaxis: {
+      tickAmount: 5,
+    },
+  });
+}
+
+function renderTvVsMoviesChart(stats) {
+  renderChart("#tv-vs-movies-chart", {
+    series: [
+      {
+        name: "Movies",
+        data: stats.movieByMonth,
+      },
+      {
+        name: "TV Shows",
+        data: stats.tvByMonth,
+      },
+    ],
+    chart: {
+      type: "bar",
+      height: 320,
+      stacked: true,
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 6,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      width: 1,
+      colors: ["#1d2634"],
+    },
+    colors: ["#7c3aed", "#14b8a6"],
+    xaxis: {
+      categories: MONTH_LABELS,
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+    },
+    legend: {
+      labels: {
+        colors: "#9aa0ac",
+      },
+    },
+    tooltip: {
+      theme: "dark",
+    },
+  });
+}
+
+function renderDiversityChart(stats) {
+  renderChart("#diversity-chart", {
+    series: [
+      {
+        name: "Count",
+        data: [stats.uniqueDirectors, stats.uniqueGenres],
+      },
+    ],
+    chart: {
+      type: "bar",
+      height: 320,
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        borderRadius: 6,
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      style: {
+        colors: ["#ffffff"],
+      },
+    },
+    colors: ["#38bdf8"],
+    xaxis: {
+      categories: ["Unique Directors", "Unique Genres"],
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+    },
+    tooltip: {
+      theme: "dark",
+    },
+  });
+}
+
+function renderHabitCountsChart(stats) {
+  renderChart("#habit-counts-chart", {
+    series: [
+      {
+        name: "Count",
+        data: [stats.rewatchCount, stats.cinemaCount],
+      },
+    ],
+    chart: {
+      type: "bar",
+      height: 320,
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        borderRadius: 6,
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      style: {
+        colors: ["#ffffff"],
+      },
+    },
+    colors: ["#f59e0b"],
+    xaxis: {
+      categories: ["Rewatch Count", "Cinema Visits"],
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+    },
+    tooltip: {
+      theme: "dark",
+    },
+  });
+}
+
+function renderLastThreeYearsMonthlyChart(yearlySeries) {
+  const maxValue = Math.max(0, ...yearlySeries.flatMap((series) => series.data));
+  renderChart("#yearly-monthly-line-chart", {
+    series: yearlySeries,
+    chart: {
+      height: 320,
+      type: "line",
+      toolbar: {
+        show: false,
+      },
+    },
+    stroke: {
+      curve: "smooth",
+      width: 3,
+    },
+    markers: {
+      size: 3,
+    },
+    colors: ["#38bdf8", "#f59e0b", "#22c55e"],
+    xaxis: {
+      categories: MONTH_LABELS,
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+    },
+    yaxis: {
+      min: 0,
+      max: maxValue + 2,
+      labels: {
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
+      title: {
+        text: "Watched titles",
+        style: {
+          color: "#9aa0ac",
+        },
+      },
+    },
+    legend: {
+      labels: {
+        colors: "#9aa0ac",
+      },
+    },
+    tooltip: {
+      theme: "dark",
+    },
+  });
+}
+
+async function main() {
+  const username = document.getElementById("username")?.textContent?.trim();
+  const endpoint = username ? `/data/${username}` : "/data";
+  jsondata = await getJson(endpoint);
+
+  const genreCounts = { ...genres };
+  const monthCounts = Array(12).fill(0);
+
+  for (const movie of jsondata) {
+    for (const genre of safeGenres(movie.genre)) {
+      if (genreMappings[genre]) {
+        for (const mappedGenre of genreMappings[genre]) {
+          if (genreCounts[mappedGenre] !== undefined) {
+            genreCounts[mappedGenre] += 1;
+          }
+        }
+      } else if (genreCounts[genre] !== undefined) {
+        genreCounts[genre] += 1;
+      }
+    }
+
+    const date = new Date(movie.v_date);
+    if (!Number.isNaN(date.getTime())) {
+      monthCounts[date.getMonth()] += 1;
+    }
+  }
+
+  const top6 = Object.entries(genreCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 6);
+  const top6Keys = top6.map(([name]) => name);
+  const top6Values = top6.map(([, value]) => value);
+
+  const top10 = Object.entries(genreCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
+  const top10Keys = top10.map(([name]) => name);
+  const top10Values = top10.map(([, value]) => value);
+
+  renderTopGenresBar(top6Keys, top6Values);
+  renderMonthlyMoviesLine(monthCounts);
+  renderGenresRadar(top10Keys, top10Values);
+
+  const advancedStats = extractAdvancedStats(jsondata);
+  renderTvVsMoviesChart(advancedStats);
+  renderDiversityChart(advancedStats);
+  renderHabitCountsChart(advancedStats);
+  renderLastThreeYearsMonthlyChart(buildLastThreeYearsSeries(jsondata));
 }
 
 main();

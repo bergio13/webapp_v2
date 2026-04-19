@@ -1,8 +1,6 @@
 from flask import Flask, render_template, jsonify, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import *
 import os
-import datetime
 import requests
 import re
 from functools import wraps
@@ -16,10 +14,12 @@ from flask_limiter.util import get_remote_address
 from auth.auth import auth # Import the auth blueprint
 from auth.restore import restore # Import the restore blueprint
 from dotenv import load_dotenv
-from huggingface_hub import InferenceClient
 
-# Load environment variables from .env file
+# Load environment variables from .env before importing database module.
 load_dotenv()
+
+from database import *
+import datetime
 
 # ========================================
 # APP CONFIGURATION
@@ -154,6 +154,9 @@ movie = Movie()
 tv = TV()
 season = Season()
 
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_MODEL_ID = "openrouter/free"
+
 # ========================================
 # UTILITY FUNCTIONS
 # ========================================
@@ -184,6 +187,91 @@ def get_movie_poster(movie_title):
     soup = BeautifulSoup(response.content, 'html.parser')
     img_tag = soup.find('a', {'class': 'image'})
     return str(img_tag)
+
+def split_genres(genre_value):
+    """Split comma-separated genre values into normalized genre names."""
+    if not genre_value:
+        return []
+    return [genre.strip() for genre in str(genre_value).split(',') if genre.strip()]
+
+def get_default_profile_stats():
+    """Return a default stats payload used by both profile views."""
+    return {
+        'movies': [],
+        'length': 0,
+        'length_month': 0,
+        'avg_rating': 0,
+        'favorite_genre': 'No movies added',
+        'rewatch_rate': 0,
+        'cinema_count': 0,
+        'unique_directors': 0,
+        'unique_genres': 0,
+        'avg_movies_per_month': 0,
+        'ratings_distribution': {
+            'high': 0,
+            'mid': 0,
+            'low': 0,
+        },
+    }
+
+def build_profile_stats(user_id):
+    """Build profile statistics for a user with defensive handling for empty or partial data."""
+    profile_stats = get_default_profile_stats()
+
+    _, month_now = get_current_year_month()
+    movies = get_movies(user_id)
+
+    profile_stats['movies'] = movies
+    profile_stats['length'] = len(movies)
+    profile_stats['length_month'] = len(get_monthly_movies(user_id, month_now))
+
+    ratings = []
+    genre_scores = {}
+    unique_genres = set()
+    unique_directors = set()
+    active_months = set()
+    rewatch_count = 0
+    cinema_count = 0
+
+    for movie in movies:
+        rating = movie.get('rating')
+        if isinstance(rating, (int, float)):
+            ratings.append(float(rating))
+
+        if movie.get('rewatch'):
+            rewatch_count += 1
+
+        if movie.get('cinema'):
+            cinema_count += 1
+
+        director = str(movie.get('director') or '').strip()
+        if director:
+            unique_directors.add(director)
+
+        watched_date = movie.get('v_date')
+        if isinstance(watched_date, datetime.date):
+            active_months.add((watched_date.year, watched_date.month))
+
+        for genre in split_genres(movie.get('genre')):
+            unique_genres.add(genre)
+            genre_scores[genre] = genre_scores.get(genre, 0) + 1
+            if isinstance(rating, (int, float)) and rating > 5:
+                genre_scores[genre] += (rating - 5) / 2
+
+    profile_stats['favorite_genre'] = max(genre_scores, key=genre_scores.get) if genre_scores else 'No movies added'
+    profile_stats['avg_rating'] = round(sum(ratings) / len(ratings), 2) if ratings else 0
+    profile_stats['rewatch_rate'] = round((rewatch_count / profile_stats['length']) * 100, 1) if profile_stats['length'] else 0
+    profile_stats['cinema_count'] = cinema_count
+    profile_stats['unique_directors'] = len(unique_directors)
+    profile_stats['unique_genres'] = len(unique_genres)
+    profile_stats['avg_movies_per_month'] = round(profile_stats['length'] / len(active_months), 2) if active_months else 0
+    profile_stats['ratings_distribution'] = {
+        'high': sum(1 for rating in ratings if rating >= 8),
+        'mid': sum(1 for rating in ratings if 5 <= rating <= 7),
+        'low': sum(1 for rating in ratings if rating < 5),
+    }
+
+    return profile_stats
 
 def get_user_watch_history_summary(user_id, percentage=50, max_cap=100):
     """Get a formatted summary of user's recent watch history for AI analysis"""
@@ -226,14 +314,73 @@ def get_user_watch_history_summary(user_id, percentage=50, max_cap=100):
         print(f"Error getting watch history: {e}")
         return "Unable to retrieve watch history."
 
+def _extract_text_from_openrouter_content(content):
+    """Extract plain text from OpenRouter content variants (string/list/dict)."""
+    if content is None:
+        return None
+
+    if isinstance(content, str):
+        cleaned = content.strip()
+        return cleaned if cleaned else None
+
+    if isinstance(content, dict):
+        for key in ("text", "output_text", "content", "value"):
+            value = content.get(key)
+            extracted = _extract_text_from_openrouter_content(value)
+            if extracted:
+                return extracted
+        return None
+
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            extracted = _extract_text_from_openrouter_content(item)
+            if extracted:
+                parts.append(extracted)
+        return "\n".join(parts).strip() if parts else None
+
+    return None
+
+def _extract_openrouter_message_text(payload):
+    """Extract assistant text from OpenRouter payload and raise meaningful errors on invalid payloads."""
+    error_payload = payload.get("error")
+    if error_payload:
+        if isinstance(error_payload, dict):
+            message = error_payload.get("message") or error_payload.get("code") or str(error_payload)
+        else:
+            message = str(error_payload)
+        raise ValueError(f"OpenRouter error: {message}")
+
+    choices = payload.get("choices") or []
+    if not choices:
+        raise ValueError("OpenRouter response missing choices")
+
+    choice = choices[0] or {}
+    message = choice.get("message") or {}
+
+    response_text = _extract_text_from_openrouter_content(message.get("content"))
+    if not response_text:
+        response_text = _extract_text_from_openrouter_content(choice.get("text"))
+    if not response_text:
+        response_text = _extract_text_from_openrouter_content(message.get("reasoning"))
+    if not response_text:
+        response_text = _extract_text_from_openrouter_content(payload.get("output"))
+
+    if not response_text:
+        finish_reason = choice.get("finish_reason")
+        if finish_reason:
+            raise ValueError(f"OpenRouter returned empty content (finish_reason={finish_reason})")
+        raise ValueError("OpenRouter response missing message content")
+
+    return response_text
+
 def get_ai_movie_recommendation(user_request, user_history):
-    """Get AI-powered movie recommendations using Hugging Face InferenceClient"""
+    """Get AI-powered movie recommendations using OpenRouter."""
+    api_key = os.environ.get('OPENROUTER_API_KEY')
+    if not api_key:
+        return "<p>Sorry, recommendation service is not configured.</p><p><strong>Error:</strong> OPENROUTER_API_KEY is not configured.</p>"
+
     try:
-        client = InferenceClient(
-            provider="together",
-            api_key=os.environ.get('HUGGINGFACE_API_KEY')
-        )
-        
         # Create a comprehensive prompt for movie recommendations
         prompt = f"""You are a movie recommendation expert. Based on the user's watch history and their request, provide 3-5 specific movie recommendations.
 
@@ -255,20 +402,25 @@ Please provide movie recommendations in the following format:
 
 Keep recommendations diverse and consider the user's rating patterns and favorite genres. Explain why each movie fits their taste based on their watch history."""
 
-        messages = [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-
-        completion = client.chat.completions.create(
-            model="deepseek-ai/DeepSeek-V3", 
-            messages=messages, 
-            max_tokens=1000
+        response = requests.post(
+            OPENROUTER_API_URL,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": os.environ.get('APP_BASE_URL', 'http://localhost:5000'),
+                "X-Title": "Kineto",
+            },
+            json={
+                "model": OPENROUTER_MODEL_ID,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 1000,
+            },
+            timeout=30,
         )
-        
-        response_text = completion.choices[0].message.content
+        response.raise_for_status()
+
+        payload = response.json()
+        response_text = _extract_openrouter_message_text(payload)
         
         # Convert markdown-style formatting to HTML for better display
         formatted_response = format_ai_response_to_html(response_text)
@@ -276,7 +428,7 @@ Keep recommendations diverse and consider the user's rating patterns and favorit
         return formatted_response
         
     except Exception as e:
-        print(f"Error getting AI recommendations: {e}")
+        app.logger.exception("Error getting AI recommendations from OpenRouter: %s", e)
         return f"<p>Sorry, I couldn't generate recommendations at the moment.</p><p><strong>Error:</strong> {str(e)}</p>"
 
 def format_ai_response_to_html(text):
@@ -541,62 +693,25 @@ def list_about_friend(username):
 @login_required
 def profile():
     users = get_user_by_id(session['id'])
-    movies = []
-    length = 0
-    length_month = 0
-    avg_rating = 0
-    favorite_genre = 'No movies added'
+    profile_stats = get_default_profile_stats()
     try:
-        _, month_now = get_current_year_month()
-        movies = get_movies(session['id'])
-        length = len(movies)
-        length_month = len(get_monthly_movies(session['id'], month_now))
-        rating = 0
-        genres = {}
-        for movie in movies:
-            rating += movie['rating']
-            genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
-            if movie['rating'] > 5:
-                premium = (movie['rating'] - 5)/2
-                genres[movie['genre']] += premium
-        print(genres)
-        favorite_genre = max(genres, key=genres.get) if genres else 'No movies added'
-        
-        if length > 0:
-            avg_rating = round(rating/length, 2)
+        profile_stats = build_profile_stats(session['id'])
     except Exception as e:
         app.logger.exception("Failed to load profile page: %s", e)
-        movies = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('profile.html', user=users[0], movies=movies, length=length, length_month=length_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
+    return render_template('profile.html', user=users[0], **profile_stats)
 
 @app.route('/profile/<username>')
 @login_required
 def profile_friend(username):
     users = get_user_id(username)
-    movies = []
-    length = 0
-    length_month = 0
-    avg_rating = 0
-    favorite_genre = 'No movies added'
+    profile_stats = get_default_profile_stats()
     try:
-        _, month_now = get_current_year_month()
-        movies = get_movies(users[0]['id'])
-        length = len(movies)
-        length_month = len(get_monthly_movies(users[0]['id'], month_now))
-        rating = 0
-        genres = {}
-        for movie in movies:
-            rating += movie['rating']
-            genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
-        favorite_genre = max(genres, key=genres.get) if genres else 'No movies added'
-        if length > 0:
-            avg_rating = round(rating/length, 2)
+        profile_stats = build_profile_stats(users[0]['id'])
     except Exception as e:
         app.logger.exception("Failed to load friend profile page for %s: %s", username, e)
-        movies = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_profile.html', username=username, user=users[0], movies=movies, length=length, length_month=length_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
+    return render_template('_profile.html', username=username, user=users[0], **profile_stats)
 
 # ========================================
 # SOCIAL FEATURES (FRIENDS & DISCOVERY)
