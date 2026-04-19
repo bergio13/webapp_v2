@@ -133,8 +133,6 @@ def clear_user_cache(user_id):
 # GLOBAL VARIABLES & CONSTANTS
 # ========================================
 
-year_now = datetime.date.today().year
-month_now = datetime.date.today().month
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 dict_months = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
 
@@ -172,6 +170,11 @@ def clean_and_capitalize_name(name):
     cleaned_name = name.strip().lower()
     capitalized_name = ' '.join(word.capitalize() for word in cleaned_name.split())
     return capitalized_name
+
+def get_current_year_month():
+    """Return current year and month computed at request time."""
+    today = datetime.date.today()
+    return today.year, today.month
 
 def get_movie_poster(movie_title):
     """Get movie poster from Wikipedia (fallback method)"""
@@ -330,6 +333,7 @@ def format_ai_response_to_html(text):
 def hello():
     if 'loggedin' in session:
         try:
+            _, month_now = get_current_year_month()
             movies = get_monthly_movies(session['id'], month_now)
         except:
             movies = []
@@ -348,6 +352,7 @@ def animation():
 def lista():
     try:
         movies = get_movies(session['id'])
+        year_now, _ = get_current_year_month()
         # sort movies in descendig order by v_date
         movies.sort(key=lambda movie: movie["v_date"], reverse=True)
     except Exception as e:
@@ -364,6 +369,7 @@ def lista_user(username):
     print(id)
     try:
         movies = get_movies(id)
+        year_now, _ = get_current_year_month()
         movies.sort(key=lambda movie: movie["v_date"], reverse=True)
     except Exception as e:
         print(f"Error{e}")
@@ -525,6 +531,7 @@ def list_about_friend(username):
 def profile():
     users = get_user_by_id(session['id'])
     try:
+        _, month_now = get_current_year_month()
         movies = get_movies(session['id'])
         length = len(movies)
         lenght_month = len(get_monthly_movies(session['id'], month_now))
@@ -554,6 +561,7 @@ def profile():
 def profile_friend(username):
     users = get_user_id(username)
     try:
+        _, month_now = get_current_year_month()
         movies = get_movies(users[0]['id'])
         length = len(movies)
         lenght_month = len(get_monthly_movies(users[0]['id'], month_now))
