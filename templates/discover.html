@@ -47,13 +47,7 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="radio"
                   name="recommendation_mode"
                   value="{{ mode_key }}"
-                  {%
-                  if
-                  recommendation_mode=""
-                  ="mode_key"
-                  %}checked{%
-                  endif
-                  %}
+                  {% if recommendation_mode == mode_key %}checked{% endif %}
                 />
                 <span class="choice-title">{{ mode_label }}</span>
               </label>
@@ -71,13 +65,7 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="radio"
                   name="history_profile"
                   value="{{ profile_key }}"
-                  {%
-                  if
-                  history_profile=""
-                  ="profile_key"
-                  %}checked{%
-                  endif
-                  %}
+                  {% if history_profile == profile_key %}checked{% endif %}
                 />
                 <span class="choice-title">{{ profile_label }}</span>
               </label>
@@ -94,14 +82,7 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="checkbox"
                   name="preferred_genres"
                   value="{{ genre }}"
-                  {%
-                  if
-                  genre
-                  in
-                  selected_genres
-                  %}checked{%
-                  endif
-                  %}
+                  {% if genre in selected_genres %}checked{% endif %}
                 />
                 <span>{{ genre }}</span>
               </label>
@@ -371,6 +352,10 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
 
   .choice-title {
     display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
     text-align: center;
     border-radius: 7px;
     border: 1px solid rgba(179, 157, 219, 0.35);
@@ -413,7 +398,9 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
   }
 
   .genre-chip span {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
     border: 1px solid rgba(176, 190, 197, 0.3);
     border-radius: 999px;
     background: rgba(17, 25, 35, 0.82);
@@ -592,7 +579,7 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
     }
   }
 
-  @media (max-width: 760px) {
+  @media (max-width: 600px) {
     .discover-main {
       margin-left: 0;
       padding: 0.8rem 0.6rem 5rem;
