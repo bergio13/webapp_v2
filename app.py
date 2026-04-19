@@ -335,7 +335,8 @@ def hello():
         try:
             _, month_now = get_current_year_month()
             movies = get_monthly_movies(session['id'], month_now)
-        except:
+        except Exception as e:
+            app.logger.exception("Failed to load home monthly movies: %s", e)
             movies = []
             flash('Something went wrong, please refresh the page', category='error')
     else:
@@ -350,13 +351,13 @@ def animation():
 @login_required
 @cache.cached(timeout=120, key_prefix=make_user_cache_key)
 def lista():
+    year_now, _ = get_current_year_month()
     try:
         movies = get_movies(session['id'])
-        year_now, _ = get_current_year_month()
         # sort movies in descendig order by v_date
         movies.sort(key=lambda movie: movie["v_date"], reverse=True)
     except Exception as e:
-        print(f"Error{e}")
+        app.logger.exception("Failed to load user list: %s", e)
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
     return render_template('lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
@@ -367,12 +368,12 @@ def lista_user(username):
     print(user)
     id = user[0]['id']
     print(id)
+    year_now, _ = get_current_year_month()
     try:
         movies = get_movies(id)
-        year_now, _ = get_current_year_month()
         movies.sort(key=lambda movie: movie["v_date"], reverse=True)
     except Exception as e:
-        print(f"Error{e}")
+        app.logger.exception("Failed to load friend list for %s: %s", username, e)
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
     return render_template('_lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months, username=username)
@@ -385,7 +386,8 @@ def show_directors():
     try:
         movies = get_movies_groupby_director(session['id'])
         directors = get_directors(session['id'])
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load directors page: %s", e)
         movies = []
         directors = []
         flash('Something went wrong, please refresh the page', category='error')
@@ -399,7 +401,8 @@ def show_directors_friends(username):
         id = id[0]['id']
         movies = get_movies_groupby_director(id)
         directors = get_directors(id)
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load friend directors page for %s: %s", username, e)
         movies = []
         directors = []
         flash('Something went wrong, please refresh the page', category='error')
@@ -409,6 +412,7 @@ def show_directors_friends(username):
 @login_required
 @cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_genres():
+    final_genres = set()
     try:
         movies = get_movies_groupby_genre(session['id'])
         in_genres = ""
@@ -418,7 +422,8 @@ def show_genres():
         mid_genres = in_genres.split(', ')
         final_genres = set([genre for genre in mid_genres if genre != ''])
         print(final_genres)
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load genres page: %s", e)
         movies = []
         generi = []
         flash('Something went wrong, please refresh the page', category='error')
@@ -427,6 +432,7 @@ def show_genres():
 @app.route('/genres/<username>', methods=['GET'])
 @login_required
 def show_genres_friends(username):
+    final_genres = set()
     try:
         id = get_user_id(username)
         id = id[0]['id']
@@ -438,7 +444,8 @@ def show_genres_friends(username):
         mid_genres = in_genres.split(', ')
         final_genres = set([genre for genre in mid_genres if genre != ''])
         print(final_genres)
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load friend genres page for %s: %s", username, e)
         movies = []
         generi = []
         flash('Something went wrong, please refresh the page', category='error')
@@ -452,7 +459,8 @@ def show_years():
     try:
         movies = get_movies_groupby_year(session['id'])
         anni = get_years(session['id'])
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load years page: %s", e)
         movies = []
         anni = []
         flash('Something went wrong, please refresh the page', category='error')
@@ -466,7 +474,8 @@ def show_years_friends(username):
         id = id[0]['id']
         movies = get_movies_groupby_year(id)
         anni = get_years(id)
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load friend years page for %s: %s", username, e)
         movies = []
         anni = []
         flash('Something went wrong, please refresh the page', category='error')
@@ -483,7 +492,8 @@ def show_ratings():
     try:
         movies = get_movies_groupby_year(session['id'])
         ratings = get_ratings(session['id'])
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load ratings page: %s", e)
         movies = []
         ratings = []
         flash('Something went wrong, please refresh the page', category='error')
@@ -497,7 +507,8 @@ def show_ratings_friends(username):
         id = id[0]['id']
         movies = get_movies_groupby_year(id)
         ratings = get_ratings(id)
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load friend ratings page for %s: %s", username, e)
         movies = []
         ratings = []
         flash('Something went wrong, please refresh the page', category='error')
@@ -530,11 +541,16 @@ def list_about_friend(username):
 @login_required
 def profile():
     users = get_user_by_id(session['id'])
+    movies = []
+    length = 0
+    length_month = 0
+    avg_rating = 0
+    favorite_genre = 'No movies added'
     try:
         _, month_now = get_current_year_month()
         movies = get_movies(session['id'])
         length = len(movies)
-        lenght_month = len(get_monthly_movies(session['id'], month_now))
+        length_month = len(get_monthly_movies(session['id'], month_now))
         rating = 0
         genres = {}
         for movie in movies:
@@ -544,42 +560,43 @@ def profile():
                 premium = (movie['rating'] - 5)/2
                 genres[movie['genre']] += premium
         print(genres)
-        favorite_genre = max(genres, key=genres.get)
+        favorite_genre = max(genres, key=genres.get) if genres else 'No movies added'
         
-        if length == 0:
-            avg_rating = 0
-            favorite_genre = 'No movies added'
-        else:
+        if length > 0:
             avg_rating = round(rating/length, 2)
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load profile page: %s", e)
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('profile.html', user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
+    return render_template('profile.html', user=users[0], movies=movies, length=length, length_month=length_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
 
 @app.route('/profile/<username>')
 @login_required
 def profile_friend(username):
     users = get_user_id(username)
+    movies = []
+    length = 0
+    length_month = 0
+    avg_rating = 0
+    favorite_genre = 'No movies added'
     try:
         _, month_now = get_current_year_month()
         movies = get_movies(users[0]['id'])
         length = len(movies)
-        lenght_month = len(get_monthly_movies(users[0]['id'], month_now))
+        length_month = len(get_monthly_movies(users[0]['id'], month_now))
         rating = 0
         genres = {}
         for movie in movies:
             rating += movie['rating']
             genres[movie['genre']] = genres.get(movie['genre'], 0) + 1
-            favorite_genre = max(genres, key=genres.get)
-        if length == 0:
-            avg_rating = 0
-            favorite_genre = 'No movies added'
-        else:
+        favorite_genre = max(genres, key=genres.get) if genres else 'No movies added'
+        if length > 0:
             avg_rating = round(rating/length, 2)
-    except:
+    except Exception as e:
+        app.logger.exception("Failed to load friend profile page for %s: %s", username, e)
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_profile.html', username= username, user=users[0], movies=movies, length = length, lmonth=lenght_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
+    return render_template('_profile.html', username=username, user=users[0], movies=movies, length=length, length_month=length_month, avg_rating=avg_rating, favorite_genre=favorite_genre)
 
 # ========================================
 # SOCIAL FEATURES (FRIENDS & DISCOVERY)

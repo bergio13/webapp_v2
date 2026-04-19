@@ -128,3 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 SENDGRID_SETUP.md
+
+# Local-only archive for deprecated assets/templates
+old-local/
+
+.github/

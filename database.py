@@ -1,6 +1,6 @@
 import os
 import supabase
-from datetime import datetime, timedelta
+from datetime import datetime
 
 SUPABASE_URL = os.environ.get("SUPABASEURL")
 SUPABASE_KEY = os.environ.get("SUPABASEKEY")
@@ -125,8 +125,12 @@ def get_movies(parent_id):
 
 
 def get_monthly_movies(parent_id, month):
-    start_date = datetime(year=datetime.now().year, month=month, day=1)
-    end_date = start_date + timedelta(days=31)  # Assuming 31 days maximum for a month
+    current_year = datetime.now().year
+    start_date = datetime(year=current_year, month=month, day=1)
+    if month == 12:
+        end_date = datetime(year=current_year + 1, month=1, day=1)
+    else:
+        end_date = datetime(year=current_year, month=month + 1, day=1)
 
     # Execute the query
     response = client.table('lista') \
@@ -327,8 +331,16 @@ def get_ratings(parent_id):
     return lista_dicts
 
 def get_highest_rating():
-    start_date = datetime(year=datetime.now().year, month=datetime.now().month - 1, day=1)
-    end_date = start_date + timedelta(days=62)  # Assuming 31 days maximum for a month
+    now = datetime.now()
+    if now.month == 1:
+        start_date = datetime(year=now.year - 1, month=12, day=1)
+    else:
+        start_date = datetime(year=now.year, month=now.month - 1, day=1)
+
+    if now.month == 12:
+        end_date = datetime(year=now.year + 1, month=1, day=1)
+    else:
+        end_date = datetime(year=now.year, month=now.month + 1, day=1)
     # Execute the query
     data = client.table('lista') \
         .select('movie', 'director', 'p_year', 'poster') \

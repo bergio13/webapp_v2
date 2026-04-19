@@ -84,7 +84,7 @@ def request_password_reset():
 def reset_password(token):
     if request.method == 'POST':
         password = request.form['password']
-        hash = generate_password_hash(password, method='sha256')
+        hashed_password = generate_password_hash(password, method='scrypt')
         if not password:
             return jsonify({'error': 'Password is required'}), 400
     
@@ -102,7 +102,7 @@ def reset_password(token):
     
         # Update the user's password
         user_id = reset_token.get('user_id')
-        update_user_password(user_id, hash)
+        update_user_password(user_id, hashed_password)
         delete_token(token)
         flash('Password has been reset successfully!', category='success')
         return redirect('/home')

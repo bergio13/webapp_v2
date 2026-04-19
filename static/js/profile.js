@@ -58,7 +58,9 @@ async function getJson(url) {
 }
 
 async function main() {
-  jsondata = await getJson("/data");
+  const username = document.getElementById("username")?.textContent?.trim();
+  const endpoint = username ? `/data/${username}` : "/data";
+  jsondata = await getJson(endpoint);
 
   // Handle genres
   for (let i = 0; i < jsondata.length; ++i) {
