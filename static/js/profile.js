@@ -141,7 +141,7 @@ async function main() {
 
   var radarChart = new ApexCharts(
     document.querySelector("#radar-chart"),
-    options
+    options,
   );
   radarChart.render();
 
@@ -229,7 +229,7 @@ async function main() {
 
   var barChart = new ApexCharts(
     document.querySelector("#bar-chart"),
-    barChartOptions
+    barChartOptions,
   );
   barChart.render();
 
@@ -326,7 +326,7 @@ async function main() {
 
   var lineChart = new ApexCharts(
     document.querySelector("#line-chart"),
-    lineChartOptions
+    lineChartOptions,
   );
   lineChart.render();
 }
