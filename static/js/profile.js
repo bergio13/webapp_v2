@@ -49,6 +49,12 @@ const MONTH_LABELS = [
   "Dec",
 ];
 
+const IS_COMPACT_VIEWPORT = window.matchMedia("(max-width: 600px)").matches;
+
+function chartHeight(desktopHeight, mobileHeight = 260) {
+  return IS_COMPACT_VIEWPORT ? mobileHeight : desktopHeight;
+}
+
 let jsondata;
 
 function toNumeric(value, fallback = 0) {
@@ -181,7 +187,7 @@ function renderTopGenresBar(top6Keys, top6Values) {
       },
     ],
     chart: {
-      height: 350,
+      height: chartHeight(350, 280),
       type: "bar",
     },
     plotOptions: {
@@ -197,7 +203,7 @@ function renderTopGenresBar(top6Keys, top6Values) {
       enabled: true,
       offsetY: -20,
       style: {
-        fontSize: "12px",
+        fontSize: IS_COMPACT_VIEWPORT ? "10px" : "12px",
         colors: ["#fff"],
       },
     },
@@ -205,7 +211,10 @@ function renderTopGenresBar(top6Keys, top6Values) {
       categories: top6Keys,
       position: "top",
       labels: {
+        rotate: IS_COMPACT_VIEWPORT ? -38 : 0,
+        trim: true,
         style: {
+          fontSize: IS_COMPACT_VIEWPORT ? "10px" : "12px",
           colors: "#fff",
         },
       },
@@ -233,7 +242,7 @@ function renderTopGenresBar(top6Keys, top6Values) {
     title: {
       text: "Your 6 Most Watched Genres",
       floating: true,
-      offsetY: 330,
+      offsetY: IS_COMPACT_VIEWPORT ? 255 : 330,
       align: "center",
       style: {
         color: "#fff",
@@ -251,7 +260,7 @@ function renderMonthlyMoviesLine(monthValues) {
       },
     ],
     chart: {
-      height: 350,
+      height: chartHeight(350, 280),
       type: "line",
       dropShadow: {
         enabled: true,
@@ -277,15 +286,16 @@ function renderMonthlyMoviesLine(monthValues) {
     },
     xaxis: {
       categories: MONTH_LABELS,
+      labels: {
+        rotate: IS_COMPACT_VIEWPORT ? -45 : 0,
+        style: {
+          colors: "#9aa0ac",
+        },
+      },
       title: {
         text: "Month",
         style: {
           color: "#9aa0ac",
-        },
-      },
-      labels: {
-        style: {
-          colors: "#9aa0ac",
         },
       },
     },
@@ -305,11 +315,11 @@ function renderMonthlyMoviesLine(monthValues) {
       max: Math.max(...monthValues, 0) + 5,
     },
     legend: {
-      position: "top",
-      horizontalAlign: "right",
-      floating: true,
-      offsetY: -25,
-      offsetX: -5,
+      position: IS_COMPACT_VIEWPORT ? "bottom" : "top",
+      horizontalAlign: IS_COMPACT_VIEWPORT ? "center" : "right",
+      floating: !IS_COMPACT_VIEWPORT,
+      offsetY: IS_COMPACT_VIEWPORT ? 0 : -25,
+      offsetX: IS_COMPACT_VIEWPORT ? 0 : -5,
       labels: {
         useSeriesColors: true,
       },
@@ -326,7 +336,7 @@ function renderGenresRadar(top10Keys, top10Values) {
       },
     ],
     chart: {
-      height: 350,
+      height: chartHeight(350, 280),
       type: "radar",
     },
     colors: ["#FF5733"],
@@ -353,7 +363,7 @@ function renderTvVsMoviesChart(stats) {
     ],
     chart: {
       type: "bar",
-      height: 320,
+      height: chartHeight(320, 260),
       stacked: true,
       toolbar: {
         show: false,
@@ -408,7 +418,7 @@ function renderDiversityChart(stats) {
     ],
     chart: {
       type: "bar",
-      height: 320,
+      height: chartHeight(320, 260),
       toolbar: {
         show: false,
       },
@@ -457,7 +467,7 @@ function renderHabitCountsChart(stats) {
     ],
     chart: {
       type: "bar",
-      height: 320,
+      height: chartHeight(320, 260),
       toolbar: {
         show: false,
       },
@@ -504,7 +514,7 @@ function renderLastThreeYearsMonthlyChart(yearlySeries) {
   renderChart("#yearly-monthly-line-chart", {
     series: yearlySeries,
     chart: {
-      height: 320,
+      height: chartHeight(320, 260),
       type: "line",
       toolbar: {
         show: false,

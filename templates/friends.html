@@ -268,11 +268,23 @@ content %}
   @media (max-width: 600px) {
     .friends-header-row {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: stretch;
       gap: 15px;
+      padding: 0;
+    }
+    .search-section {
+      width: 100%;
+    }
+    .f-form {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
     }
     .search {
-      width: 150px;
+      width: 100%;
+      min-width: 0;
     }
     .search-prefix {
       font-size: 1rem;
@@ -282,6 +294,52 @@ content %}
     .search-button {
       font-size: 1rem;
       padding: 8px 10px !important;
+    }
+    .search-result-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 12px 0;
+    }
+    .follow-btn {
+      min-height: 44px;
+      padding: 8px 16px;
+    }
+    .friends-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .friend-card {
+      padding: 14px;
+    }
+    .friend-avatar {
+      width: 52px;
+      height: 52px;
+      font-size: 1.5rem;
+    }
+    .carta-list {
+      padding: 0.9rem 0.3rem 1rem;
+      gap: 10px;
+    }
+    .carta {
+      width: 160px;
+      min-width: 160px;
+      height: 270px;
+    }
+    .carta:not(:first-child) {
+      margin-left: 0;
+    }
+    .carta:hover,
+    .carta:hover ~ .carta {
+      transform: none;
+    }
+    .img-carta {
+      width: 78%;
+      height: 180px;
+      margin-left: 11%;
+    }
+    .img-carta-back {
+      display: none;
     }
   }
 </style>

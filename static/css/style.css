@@ -7,6 +7,9 @@
   --bg-primary: #23232e;
   --bg-secondary: #141418;
   --transition-speed: 600ms;
+  --layout-sidebar-offset: 5rem;
+  --layout-mobile-bottom-nav: 5rem;
+  --layout-mobile-gutter: 0.75rem;
 }
 
 body {
@@ -38,7 +41,7 @@ body:before {
 }
 
 body::-webkit-scrollbar {
-  width: 0.25rem;
+  width: 0.5rem;
 }
 
 body::-webkit-scrollbar-track {
@@ -50,7 +53,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 main {
-  margin-left: 5rem;
+  margin-left: var(--layout-sidebar-offset);
   padding: 1rem;
 }
 
@@ -148,8 +151,10 @@ ul.add li {
 
 .flash-container {
   position: fixed;
-  top: 2%;
-  left: 40%;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 460px);
   z-index: 1000;
 }
 
@@ -164,6 +169,7 @@ ul.add li {
   transition: opacity 0.3s ease, transform 0.3s ease;
   transform: translateY(-10px);
   animation: slideDown 0.3s forwards;
+  box-sizing: border-box;
 }
 
 .flash-message.success {
@@ -301,7 +307,7 @@ ul.add li {
 .list_list {
   padding-left: 1%;
   padding-right: 1%;
-  margin-left: 5rem;
+  margin-left: var(--layout-sidebar-offset);
 }
 
 .table-lista1 {
@@ -440,7 +446,9 @@ ul.add li {
 .dropdown-content {
   display: none;
   position: absolute;
-  margin-left: -145% /*-75%*/;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-left: 0;
   background-color: var(--text-tertiary);
   min-width: 230px;
   border: 1px solid #000000;
@@ -448,7 +456,9 @@ ul.add li {
 }
 
 .drop-friend {
-  margin-left: -115%;
+  left: 0;
+  transform: none;
+  margin-left: 0;
 }
 
 /* Links inside the dropdown */
@@ -734,12 +744,14 @@ tbody tr:hover {
 }
 
 .table-container {
-  width: 90vw;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   background-color: transparent;
   backdrop-filter: blur(10px);
   padding: 20px;
   border-radius: 10px;
+  box-sizing: border-box;
 }
 
 .table-home {
@@ -1320,7 +1332,7 @@ select option {
 }
 
 .header {
-  margin-left: 5rem;
+  margin-left: var(--layout-sidebar-offset);
   grid-area: header;
   height: 50px;
   display: flex;
@@ -1332,7 +1344,7 @@ select option {
 
 .main-container {
   grid-area: main;
-  margin-left: 5rem;
+  margin-left: var(--layout-sidebar-offset);
   overflow-y: auto;
   padding: 20px 20px;
   color: rgb(255, 255, 255, 0.95);
@@ -1451,7 +1463,7 @@ select option {
 
 .header-friends {
   margin-top: 1rem;
-  margin-left: 5rem;
+  margin-left: var(--layout-sidebar-offset);
   grid-area: header;
   height: 50px;
   display: flex;
@@ -1469,7 +1481,7 @@ select option {
 }
 
 .main-friends {
-  margin-left: 6rem;
+  margin-left: calc(var(--layout-sidebar-offset) + 1rem);
 }
 
 .friends-list {
@@ -1716,6 +1728,10 @@ select option {
 
 /*----------------------------------------------------- Small screens--------------------------------------------------------- */
 @media only screen and (max-width: 600px) {
+  :root {
+    --layout-sidebar-offset: 0rem;
+  }
+
   .animation_title {
     left: 20vw;
   }
@@ -1769,7 +1785,24 @@ select option {
   }
 
   main {
-    margin: 0;
+    margin-left: var(--layout-sidebar-offset);
+    padding: var(--layout-mobile-gutter);
+    padding-bottom: calc(
+      var(--layout-mobile-bottom-nav) + env(safe-area-inset-bottom, 0) +
+        var(--layout-mobile-gutter)
+    );
+  }
+
+  .flash-container {
+    top: auto;
+    bottom: calc(
+      var(--layout-mobile-bottom-nav) + env(safe-area-inset-bottom, 0) +
+        var(--layout-mobile-gutter)
+    );
+    left: var(--layout-mobile-gutter);
+    right: var(--layout-mobile-gutter);
+    width: auto;
+    transform: none;
   }
 
   .main-cards {
@@ -1784,8 +1817,11 @@ select option {
   }
 
   form {
-    margin-left: 3%;
-    margin-bottom: 5rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: calc(var(--layout-mobile-bottom-nav) + 1rem);
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .table-container {
@@ -1825,7 +1861,10 @@ select option {
   }
 
   .drop-friend {
-    margin-left: -260%;
+    left: 0;
+    right: auto;
+    transform: none;
+    margin-left: 0;
   }
 
   .row {
@@ -1894,9 +1933,18 @@ select option {
   }
 
   .list_list {
-    margin-left: 1%;
+    margin-left: 0;
     margin-bottom: 6rem;
-    margin-right: 1%;
+    margin-right: 0;
+  }
+
+  .header-friends {
+    margin-left: 0;
+  }
+
+  .main-friends {
+    margin-left: 0;
+    margin-bottom: calc(var(--layout-mobile-bottom-nav) + 1rem);
   }
 }
 

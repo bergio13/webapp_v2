@@ -49,6 +49,13 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
     margin-bottom: 1rem;
   }
 
+  .buttons-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
   .page-title {
     font-family: "VT323", "Courier New", monospace !important;
     font-size: 2rem;
@@ -211,17 +218,17 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
     }
     .filter-add-section {
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       gap: 12px;
     }
     .buttons-container {
       display: flex;
       flex-direction: row !important;
-      flex-wrap: nowrap !important;
+      flex-wrap: wrap !important;
       gap: 10px;
       justify-content: center;
       align-items: center;
-      width: auto;
+      width: 100%;
     }
     .add-movie-btn {
       font-size: 1.1rem;
@@ -229,30 +236,39 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
       text-align: center;
       display: inline-block;
       white-space: nowrap;
+      min-height: 44px;
     }
     .dropbtn {
       font-size: 1rem !important;
       padding: 10px 16px !important;
       display: inline-block;
       white-space: nowrap;
+      min-height: 44px;
     }
     .dropdown {
       display: inline-block;
+    }
+    .dropdown-content {
+      left: auto !important;
+      right: 0;
+      transform: none !important;
+      min-width: 210px;
+      max-width: calc(100vw - 2rem);
     }
     /* Table horizontal scroll wrapper */
     .table-wrapper {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      margin: 0 -10px;
-      padding: 0 10px;
-      width: calc(100% + 20px);
+      margin: 0;
+      padding: 0;
+      width: 100%;
     }
     .table-lista1 {
-      min-width: 700px !important;
+      min-width: 740px !important;
       width: 100% !important;
       font-size: 0.9rem;
       display: table !important;
-      white-space: normal !important;
+      white-space: nowrap !important;
     }
     .table-lista1 thead,
     .table-lista1 tbody,
@@ -285,12 +301,22 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
     }
     .add-movie-btn,
     .dropbtn {
-      font-size: 0.95rem !important;
-      padding: 6px 10px !important;
+      font-size: 1rem !important;
+      padding: 8px 12px !important;
       margin-top: 0px;
     }
+    .buttons-container {
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .dropdown-content {
+      right: 0;
+      left: auto !important;
+      transform: none !important;
+      min-width: 190px;
+    }
     .table-lista1 {
-      min-width: 650px !important;
+      min-width: 680px !important;
     }
     .table-lista1 thead th,
     .table-lista1 tbody td {

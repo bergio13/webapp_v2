@@ -118,6 +118,8 @@
     text-shadow: 0 0 10px rgba(0, 204, 255, 0.4);
     text-align: left;
     margin: 0;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
   }
 
   .main-cards .card:nth-child(1) h1 {
@@ -149,6 +151,17 @@
     background: rgba(38, 48, 67, 0.9) !important;
     border: 1px solid rgba(122, 77, 194, 0.25) !important;
     border-radius: 4px !important;
+    overflow: hidden;
+  }
+
+  #bar-chart,
+  #line-chart,
+  #radar-chart,
+  #tv-vs-movies-chart,
+  #diversity-chart,
+  #habit-counts-chart,
+  #yearly-monthly-line-chart {
+    min-height: 240px;
   }
 
   .chart-title {
@@ -187,11 +200,59 @@
     .ascii-profile-header {
       display: none;
     }
+    .header {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 8px;
+      padding: 14px 16px !important;
+    }
+    .header-right {
+      width: 100%;
+    }
     .header h1 {
       font-size: 1.6rem !important;
     }
+    .main-container {
+      padding: 14px 10px;
+    }
     .main-cards .card h1 {
       font-size: 2rem !important;
+    }
+    .charts-card {
+      padding: 14px !important;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .header h1 {
+      font-size: 1.45rem !important;
+      letter-spacing: 1px;
+    }
+
+    .header-right a {
+      font-size: 1.15rem;
+    }
+
+    .main-cards {
+      gap: 12px;
+      margin: 12px 0;
+    }
+
+    .main-cards .card {
+      padding: 16px;
+    }
+
+    .main-cards .card h2 {
+      font-size: 1rem !important;
+    }
+
+    .main-cards .card h1 {
+      font-size: 1.7rem !important;
+      line-height: 1.1;
+    }
+
+    .chart-title {
+      font-size: 1.2rem !important;
     }
   }
 </style>

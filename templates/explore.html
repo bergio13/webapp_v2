@@ -1,9 +1,78 @@
 {% extends 'base.html' %} {% block title %}Discover{% endblock %} {% block
 body_attributes %} class="explore_page"{% endblock %}{% block content%}
+<style>
+  .explore-shell {
+    border: 1px solid rgba(96, 130, 182, 0.35);
+    border-radius: 12px;
+    background: rgba(15, 20, 29, 0.48);
+    padding: 14px;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.28);
+  }
+
+  .explore-title {
+    color: #ffffff;
+    font-family: "VT323", "Courier New", monospace;
+    letter-spacing: 1.5px;
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+  }
+
+  .explore-title span {
+    color: #6082b6;
+    opacity: 0.9;
+  }
+
+  .explore-cards {
+    padding: 1rem 0.4rem 1.2rem;
+    margin: 0;
+  }
+
+  @media (max-width: 600px) {
+    .explore-shell {
+      padding: 10px;
+    }
+
+    .explore-title {
+      font-size: 1.6rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .explore-cards {
+      padding: 0.7rem 0.2rem 0.9rem;
+      gap: 10px;
+    }
+
+    .explore-cards .carta {
+      width: 160px;
+      min-width: 160px;
+      height: 270px;
+    }
+
+    .explore-cards .carta:not(:first-child) {
+      margin-left: 0;
+    }
+
+    .explore-cards .carta:hover,
+    .explore-cards .carta:hover ~ .carta {
+      transform: none;
+    }
+
+    .explore-cards .img-carta {
+      width: 78%;
+      height: 180px;
+      margin-left: 11%;
+    }
+
+    .explore-cards .img-carta-back {
+      display: none;
+    }
+  }
+</style>
+
 <main>
-  <div>
-    <h2 style="color: white">Trending on Kineto</h2>
-    <section class="carta-list" id="scrollableSection">
+  <section class="explore-shell">
+    <h2 class="explore-title"><span>//</span> Trending on Kineto</h2>
+    <section class="carta-list explore-cards" id="scrollableSection">
       {% for m in movies %}
       <article class="carta">
         <header class="carta-header">
@@ -33,34 +102,38 @@ body_attributes %} class="explore_page"{% endblock %}{% block content%}
       </article>
       {% endfor %}
     </section>
-  </div>
+  </section>
 </main>
 {% endblock %}
 <script>
   const scrollableSection = document.getElementById("scrollableSection");
-  let isScrolling = false;
-  let targetScrollLeft = 0;
+  const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
 
-  scrollableSection.addEventListener("wheel", (event) => {
-    event.preventDefault();
-    const scrollAmount = event.deltaY;
-    targetScrollLeft += scrollAmount;
+  if (scrollableSection && hasFinePointer) {
+    let isScrolling = false;
+    let targetScrollLeft = 0;
 
-    if (!isScrolling) {
-      requestAnimationFrame(scrollSmooth);
-      isScrolling = true;
-    }
-  });
+    scrollableSection.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      const scrollAmount = event.deltaY;
+      targetScrollLeft += scrollAmount;
 
-  function scrollSmooth() {
-    scrollableSection.scrollLeft +=
-      (targetScrollLeft - scrollableSection.scrollLeft) * 0.1;
+      if (!isScrolling) {
+        requestAnimationFrame(scrollSmooth);
+        isScrolling = true;
+      }
+    });
 
-    if (Math.abs(targetScrollLeft - scrollableSection.scrollLeft) < 0.1) {
-      scrollableSection.scrollLeft = targetScrollLeft;
-      isScrolling = false;
-    } else {
-      requestAnimationFrame(scrollSmooth);
+    function scrollSmooth() {
+      scrollableSection.scrollLeft +=
+        (targetScrollLeft - scrollableSection.scrollLeft) * 0.1;
+
+      if (Math.abs(targetScrollLeft - scrollableSection.scrollLeft) < 0.1) {
+        scrollableSection.scrollLeft = targetScrollLeft;
+        isScrolling = false;
+      } else {
+        requestAnimationFrame(scrollSmooth);
+      }
     }
   }
 </script>
