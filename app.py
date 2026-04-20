@@ -1,8 +1,11 @@
 from flask import Flask, render_template, jsonify, request, flash, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
+import json
 import os
 import requests
 import re
+import random
+import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from functools import wraps
 from bs4 import BeautifulSoup
@@ -155,11 +158,97 @@ movie = Movie()
 tv = TV()
 season = Season()
 
+OPENROUTER_SETTINGS_FILE = os.environ.get('OPENROUTER_SETTINGS_FILE', 'openrouter_settings.json')
+
+def _load_openrouter_settings(path):
+    """Load OpenRouter tuning values from JSON file if present."""
+    try:
+        with open(path, 'r', encoding='utf-8') as handle:
+            data = json.load(handle)
+            if isinstance(data, dict):
+                return data
+            print(f"WARNING: OpenRouter settings file {path} is not a JSON object; ignoring")
+            return {}
+    except FileNotFoundError:
+        return {}
+    except Exception as exc:
+        print(f"WARNING: Failed to read OpenRouter settings file {path}: {exc}")
+        return {}
+
+OPENROUTER_FILE_SETTINGS = _load_openrouter_settings(OPENROUTER_SETTINGS_FILE)
+
+def _setting_value(name, default=None):
+    """Resolve setting from environment first, then JSON file, then default."""
+    raw_env = os.environ.get(name)
+    if raw_env is not None and raw_env.strip() != '':
+        return raw_env.strip()
+
+    file_value = OPENROUTER_FILE_SETTINGS.get(name, default)
+    return default if file_value is None else file_value
+
+def _env_bool(name, default=False):
+    """Parse a boolean setting from environment/JSON file with a sensible default."""
+    raw_value = _setting_value(name, default)
+    if isinstance(raw_value, bool):
+        return raw_value
+    if isinstance(raw_value, (int, float)):
+        return raw_value != 0
+    if raw_value is None:
+        return default
+    return str(raw_value).strip().lower() in ('1', 'true', 'yes', 'on')
+
+def _env_optional_float(name):
+    """Parse an optional float setting from environment/JSON file."""
+    raw_value = _setting_value(name, None)
+    if raw_value is None or (isinstance(raw_value, str) and not raw_value.strip()):
+        return None
+    try:
+        return float(raw_value)
+    except (TypeError, ValueError):
+        return None
+
+def _env_list(name):
+    """Parse list setting from environment CSV or JSON array."""
+    raw_value = _setting_value(name, [])
+    if isinstance(raw_value, list):
+        return [str(item).strip() for item in raw_value if str(item).strip()]
+    if isinstance(raw_value, str):
+        return [item.strip() for item in raw_value.split(',') if item.strip()]
+    return []
+
+def _env_int(name, default):
+    """Parse integer setting from environment/JSON file."""
+    raw_value = _setting_value(name, default)
+    try:
+        return int(raw_value)
+    except (TypeError, ValueError):
+        return default
+
+def _env_float(name, default):
+    """Parse float setting from environment/JSON file."""
+    raw_value = _setting_value(name, default)
+    try:
+        return float(raw_value)
+    except (TypeError, ValueError):
+        return default
+
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_MODEL_ID = "openrouter/free"
-OPENROUTER_REQUEST_TIMEOUT = float(os.environ.get('OPENROUTER_REQUEST_TIMEOUT', '30'))
-OPENROUTER_TOTAL_TIMEOUT = float(os.environ.get('OPENROUTER_TOTAL_TIMEOUT', '20'))
-OPENROUTER_MAX_TOKENS = int(os.environ.get('OPENROUTER_MAX_TOKENS', '700'))
+OPENROUTER_MODEL_ID = str(_setting_value('OPENROUTER_MODEL_ID', 'google/gemma-3-12b-it:free')).strip()
+OPENROUTER_REQUEST_TIMEOUT = _env_float('OPENROUTER_REQUEST_TIMEOUT', 30)
+OPENROUTER_TOTAL_TIMEOUT = _env_float('OPENROUTER_TOTAL_TIMEOUT', 20)
+OPENROUTER_MAX_COMPLETION_TOKENS = _env_int('OPENROUTER_MAX_COMPLETION_TOKENS', _env_int('OPENROUTER_MAX_TOKENS', 550))
+OPENROUTER_MAX_ATTEMPTS = _env_int('OPENROUTER_MAX_ATTEMPTS', 3)
+OPENROUTER_RETRY_BASE_DELAY = _env_float('OPENROUTER_RETRY_BASE_DELAY', 0.35)
+OPENROUTER_RETRY_MAX_DELAY = _env_float('OPENROUTER_RETRY_MAX_DELAY', 1.5)
+OPENROUTER_RETRY_JITTER = _env_float('OPENROUTER_RETRY_JITTER', 0.15)
+OPENROUTER_PROVIDER_SORT = str(_setting_value('OPENROUTER_PROVIDER_SORT', 'latency')).strip()
+OPENROUTER_PROVIDER_ALLOW_FALLBACKS = _env_bool('OPENROUTER_PROVIDER_ALLOW_FALLBACKS', True)
+OPENROUTER_PROVIDER_REQUIRE_PARAMETERS = _env_bool('OPENROUTER_PROVIDER_REQUIRE_PARAMETERS', False)
+OPENROUTER_PROVIDER_ONLY = _env_list('OPENROUTER_PROVIDER_ONLY')
+OPENROUTER_PROVIDER_IGNORE = _env_list('OPENROUTER_PROVIDER_IGNORE')
+OPENROUTER_PREFERRED_MAX_LATENCY = _env_optional_float('OPENROUTER_PREFERRED_MAX_LATENCY')
+OPENROUTER_PREFERRED_MIN_THROUGHPUT = _env_optional_float('OPENROUTER_PREFERRED_MIN_THROUGHPUT')
+OPENROUTER_SERVICE_TIER = str(_setting_value('OPENROUTER_SERVICE_TIER', '')).strip()
 
 DISCOVER_MODE_LABELS = {
     "explore": "Explore",
@@ -361,7 +450,7 @@ def build_profile_stats(user_id):
 
     return profile_stats
 
-def get_user_watch_history_summary(user_id, history_profile='balanced', max_cap=120):
+def get_user_watch_history_summary(user_id, history_profile='balanced', max_cap=60):
     """Get a formatted summary of user's watch history for AI analysis based on a history lens profile."""
     try:
         movies = get_movies(user_id)
@@ -377,7 +466,7 @@ def get_user_watch_history_summary(user_id, history_profile='balanced', max_cap=
 
         total_movies = len(movies)
 
-        recent_pool = movies[:40]
+        recent_pool = movies[:24]
         rated_movies = [movie for movie in movies if isinstance(movie.get('rating'), (int, float))]
         top_rated_pool = sorted(rated_movies, key=lambda x: x.get('rating', 0), reverse=True)
 
@@ -396,26 +485,26 @@ def get_user_watch_history_summary(user_id, history_profile='balanced', max_cap=
             selected_movies.append(candidate)
 
         if profile == 'recent':
-            for movie in recent_pool[:45]:
+            for movie in recent_pool[:24]:
                 append_unique(movie)
         elif profile == 'all_time':
             for movie in movies[:max_cap]:
                 append_unique(movie)
         else:
-            for movie in recent_pool[:30]:
+            for movie in recent_pool[:16]:
                 append_unique(movie)
-            for movie in top_rated_pool[:35]:
+            for movie in top_rated_pool[:12]:
                 append_unique(movie)
-            selected_movies = selected_movies[:70]
+            selected_movies = selected_movies[:24]
 
         if not selected_movies:
-            selected_movies = movies[: min(total_movies, 20)]
+            selected_movies = movies[: min(total_movies, 15)]
 
         lens_label = DISCOVER_HISTORY_PROFILE_LABELS.get(profile, 'Balanced Mix')
         summary = f"Watch history lens: {lens_label} ({len(selected_movies)} picked from {total_movies} total entries):\n"
         for i, movie in enumerate(selected_movies, 1):
-            rating_text = f"({movie['rating']}/10)" if movie['rating'] else "(unrated)"
-            summary += f"{i}. {movie['movie']} ({movie['p_year']}) - Director: {movie['director']} - Genre: {movie['genre']} - My Rating: {rating_text}\n"
+            rating_text = f"{movie['rating']}/10" if movie['rating'] else "unrated"
+            summary += f"{i}. {movie['movie']} ({movie['p_year']}) | dir: {movie['director']} | genres: {movie['genre']} | rating: {rating_text}\n"
 
         # Add some statistics
         rated_selected_movies = [movie for movie in selected_movies if isinstance(movie.get('rating'), (int, float))]
@@ -499,16 +588,65 @@ def _extract_openrouter_message_text(payload):
 
     return response_text
 
+def _build_openrouter_provider_preferences():
+    """Build provider routing preferences for faster and more reliable responses."""
+    provider = {
+        "allow_fallbacks": OPENROUTER_PROVIDER_ALLOW_FALLBACKS,
+        "require_parameters": OPENROUTER_PROVIDER_REQUIRE_PARAMETERS,
+    }
+
+    if OPENROUTER_PROVIDER_SORT:
+        provider["sort"] = OPENROUTER_PROVIDER_SORT
+    if OPENROUTER_PROVIDER_ONLY:
+        provider["only"] = OPENROUTER_PROVIDER_ONLY
+    if OPENROUTER_PROVIDER_IGNORE:
+        provider["ignore"] = OPENROUTER_PROVIDER_IGNORE
+    if OPENROUTER_PREFERRED_MAX_LATENCY is not None:
+        provider["preferred_max_latency"] = OPENROUTER_PREFERRED_MAX_LATENCY
+    if OPENROUTER_PREFERRED_MIN_THROUGHPUT is not None:
+        provider["preferred_min_throughput"] = OPENROUTER_PREFERRED_MIN_THROUGHPUT
+
+    return provider
+
+def _is_retryable_openrouter_status(status_code):
+    return status_code in {408, 429, 500, 502, 503, 504}
+
 def _post_openrouter_request(headers, payload):
-    """Perform a single OpenRouter request with strict socket timeouts."""
-    response = requests.post(
-        OPENROUTER_API_URL,
-        headers=headers,
-        json=payload,
-        timeout=OPENROUTER_REQUEST_TIMEOUT,
-    )
-    response.raise_for_status()
-    return response.json()
+    """Perform OpenRouter request(s) with retry/backoff for transient provider errors."""
+    for attempt in range(1, OPENROUTER_MAX_ATTEMPTS + 1):
+        try:
+            response = requests.post(
+                OPENROUTER_API_URL,
+                headers=headers,
+                json=payload,
+                timeout=OPENROUTER_REQUEST_TIMEOUT,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as exc:
+            status_code = getattr(getattr(exc, 'response', None), 'status_code', None)
+            retryable = (
+                isinstance(exc, (requests.exceptions.Timeout, requests.exceptions.ConnectionError))
+                or _is_retryable_openrouter_status(status_code)
+            )
+
+            if not retryable or attempt >= OPENROUTER_MAX_ATTEMPTS:
+                raise
+
+            base_delay = min(
+                OPENROUTER_RETRY_MAX_DELAY,
+                OPENROUTER_RETRY_BASE_DELAY * (2 ** (attempt - 1)),
+            )
+            sleep_for = base_delay + random.uniform(0, OPENROUTER_RETRY_JITTER)
+            app.logger.warning(
+                "OpenRouter request failed (attempt %s/%s, status=%s): %s. Retrying in %.2fs",
+                attempt,
+                OPENROUTER_MAX_ATTEMPTS,
+                status_code,
+                exc,
+                sleep_for,
+            )
+            time.sleep(sleep_for)
 
 def _post_openrouter_with_deadline(headers, payload):
     """Apply a hard deadline so AI calls cannot outlive Gunicorn worker timeout."""
@@ -597,8 +735,14 @@ Explain why each movie fits their taste based on their watch history."""
         payload = {
             "model": OPENROUTER_MODEL_ID,
             "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": OPENROUTER_MAX_TOKENS,
+            "max_completion_tokens": OPENROUTER_MAX_COMPLETION_TOKENS,
+            # Keep max_tokens as a compatibility fallback for providers that still expect it.
+            "max_tokens": OPENROUTER_MAX_COMPLETION_TOKENS,
         }
+        payload["provider"] = _build_openrouter_provider_preferences()
+        if OPENROUTER_SERVICE_TIER:
+            payload["service_tier"] = OPENROUTER_SERVICE_TIER
+
         payload = _post_openrouter_with_deadline(
             headers=headers,
             payload=payload,

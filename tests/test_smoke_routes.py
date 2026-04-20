@@ -89,7 +89,7 @@ def test_openrouter_response_is_formatted_to_html(app_module, monkeypatch):
     def fake_post(url, headers=None, json=None, timeout=None):
         assert url == "https://openrouter.ai/api/v1/chat/completions"
         assert headers["Authorization"] == "Bearer test-openrouter-key"
-        assert json["model"] == "openrouter/free"
+        assert json["model"] == app_module.OPENROUTER_MODEL_ID
         assert timeout == 30
         prompt = json["messages"][0]["content"]
         assert "Recommendation Mode: Similar" in prompt
