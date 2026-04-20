@@ -6,7 +6,6 @@ import requests
 import re
 import random
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from functools import wraps
 from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV, Season
@@ -237,6 +236,7 @@ OPENROUTER_MODEL_ID = str(_setting_value('OPENROUTER_MODEL_ID', 'google/gemma-3-
 OPENROUTER_MODEL_FALLBACKS = _env_list('OPENROUTER_MODEL_FALLBACKS')
 OPENROUTER_REQUEST_TIMEOUT = _env_float('OPENROUTER_REQUEST_TIMEOUT', 30)
 OPENROUTER_TOTAL_TIMEOUT = _env_float('OPENROUTER_TOTAL_TIMEOUT', 20)
+OPENROUTER_MODEL_DEADLINE = _env_float('OPENROUTER_MODEL_DEADLINE', 8)
 OPENROUTER_MAX_COMPLETION_TOKENS = _env_int('OPENROUTER_MAX_COMPLETION_TOKENS', _env_int('OPENROUTER_MAX_TOKENS', 550))
 OPENROUTER_MAX_ATTEMPTS = _env_int('OPENROUTER_MAX_ATTEMPTS', 3)
 OPENROUTER_RETRY_BASE_DELAY = _env_float('OPENROUTER_RETRY_BASE_DELAY', 0.35)
@@ -692,15 +692,32 @@ def _extract_openrouter_retry_after_seconds(response):
 
     return None
 
-def _post_openrouter_request(headers, payload):
+def _post_openrouter_request(headers, payload, deadline_seconds=None):
     """Perform OpenRouter request(s) with retry/backoff for transient provider errors."""
+    started_at = time.monotonic()
+
+    def _remaining_seconds():
+        if deadline_seconds is None:
+            return None
+        return deadline_seconds - (time.monotonic() - started_at)
+
     for attempt in range(1, OPENROUTER_MAX_ATTEMPTS + 1):
+        remaining_before_call = _remaining_seconds()
+        if remaining_before_call is not None and remaining_before_call <= 0:
+            raise TimeoutError(
+                f"OpenRouter request exceeded {deadline_seconds:.0f}s deadline"
+            )
+
+        request_timeout = OPENROUTER_REQUEST_TIMEOUT
+        if remaining_before_call is not None:
+            request_timeout = max(1.0, min(OPENROUTER_REQUEST_TIMEOUT, remaining_before_call))
+
         try:
             response = requests.post(
                 OPENROUTER_API_URL,
                 headers=headers,
                 json=payload,
-                timeout=OPENROUTER_REQUEST_TIMEOUT,
+                timeout=request_timeout,
             )
             response.raise_for_status()
             return response.json()
@@ -732,6 +749,21 @@ def _post_openrouter_request(headers, payload):
                 )
 
             sleep_for = sleep_base + random.uniform(0, OPENROUTER_RETRY_JITTER)
+
+            remaining_before_sleep = _remaining_seconds()
+            if remaining_before_sleep is not None:
+                if remaining_before_sleep <= 0:
+                    raise TimeoutError(
+                        f"OpenRouter request exceeded {deadline_seconds:.0f}s deadline"
+                    )
+
+                # Leave a small buffer before the deadline.
+                sleep_for = min(sleep_for, max(0.0, remaining_before_sleep - 0.05))
+                if sleep_for <= 0:
+                    raise TimeoutError(
+                        f"OpenRouter request exceeded {deadline_seconds:.0f}s deadline"
+                    )
+
             app.logger.warning(
                 "OpenRouter request failed (attempt %s/%s, status=%s): %s. Retrying in %.2fs",
                 attempt,
@@ -742,20 +774,16 @@ def _post_openrouter_request(headers, payload):
             )
             time.sleep(sleep_for)
 
-def _post_openrouter_with_deadline(headers, payload):
+def _post_openrouter_with_deadline(headers, payload, deadline_seconds=None):
     """Apply a hard deadline so AI calls cannot outlive Gunicorn worker timeout."""
-    executor = ThreadPoolExecutor(max_workers=1)
-    future = executor.submit(_post_openrouter_request, headers, payload)
-    try:
-        return future.result(timeout=OPENROUTER_TOTAL_TIMEOUT)
-    except FutureTimeoutError as exc:
-        future.cancel()
-        raise TimeoutError(
-            f"OpenRouter request exceeded {OPENROUTER_TOTAL_TIMEOUT:.0f}s deadline"
-        ) from exc
-    finally:
-        # Do not block shutdown waiting for a hung request thread.
-        executor.shutdown(wait=False, cancel_futures=True)
+    effective_deadline = OPENROUTER_TOTAL_TIMEOUT if deadline_seconds is None else float(deadline_seconds)
+    if effective_deadline <= 0:
+        raise TimeoutError("OpenRouter request deadline must be greater than 0 seconds")
+    return _post_openrouter_request(
+        headers=headers,
+        payload=payload,
+        deadline_seconds=effective_deadline,
+    )
 
 def get_ai_movie_recommendation(
     user_request,
@@ -830,10 +858,23 @@ Explain why each movie fits their taste based on their watch history."""
         if not model_candidates:
             raise RuntimeError("No OpenRouter model candidates configured")
 
+        overall_started_at = time.monotonic()
+        overall_deadline = max(1.0, float(OPENROUTER_TOTAL_TIMEOUT))
         last_rate_limit_exc = None
         last_exc = None
 
         for model_index, model_id in enumerate(model_candidates):
+            elapsed = time.monotonic() - overall_started_at
+            remaining_overall = overall_deadline - elapsed
+            if remaining_overall <= 0:
+                raise TimeoutError(
+                    f"OpenRouter request exceeded {overall_deadline:.0f}s deadline"
+                )
+
+            model_deadline = remaining_overall
+            if len(model_candidates) > 1:
+                model_deadline = min(remaining_overall, max(1.0, OPENROUTER_MODEL_DEADLINE))
+
             request_payload = {
                 "model": model_id,
                 "messages": [{"role": "user", "content": prompt}],
@@ -851,6 +892,7 @@ Explain why each movie fits their taste based on their watch history."""
                 response_payload = _post_openrouter_with_deadline(
                     headers=headers,
                     payload=request_payload,
+                    deadline_seconds=model_deadline,
                 )
                 response_text = _extract_openrouter_message_text(response_payload)
 
@@ -872,6 +914,18 @@ Explain why each movie fits their taste based on their watch history."""
                     app.logger.warning(
                         "OpenRouter model %s hit rate limit. Trying fallback model %s",
                         model_id,
+                        model_candidates[model_index + 1],
+                    )
+                    continue
+                raise
+
+            except TimeoutError as exc:
+                last_exc = exc
+                if has_more_models:
+                    app.logger.warning(
+                        "OpenRouter model %s timed out after %.2fs. Trying fallback model %s",
+                        model_id,
+                        model_deadline,
                         model_candidates[model_index + 1],
                     )
                     continue
@@ -918,6 +972,13 @@ Explain why each movie fits their taste based on their watch history."""
         return (
             "<p>Sorry, recommendation service is temporarily rate-limited.</p>"
             f"<p><strong>Details:</strong> {hint}</p>"
+        )
+
+    except TimeoutError as timeout_exc:
+        app.logger.warning("OpenRouter timeout while generating recommendations: %s", timeout_exc)
+        return (
+            "<p>Sorry, recommendation service is taking too long right now.</p>"
+            "<p><strong>Details:</strong> Please try again in a moment.</p>"
         )
         
     except Exception as e:

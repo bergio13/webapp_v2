@@ -108,7 +108,11 @@ def test_openrouter_response_is_formatted_to_html(app_module, monkeypatch):
         assert url == "https://openrouter.ai/api/v1/chat/completions"
         assert headers["Authorization"] == "Bearer test-openrouter-key"
         assert json["model"] == app_module.OPENROUTER_MODEL_ID
-        assert timeout == 30
+        expected_model_deadline = app_module.OPENROUTER_TOTAL_TIMEOUT
+        if len([app_module.OPENROUTER_MODEL_ID, *app_module.OPENROUTER_MODEL_FALLBACKS]) > 1:
+            expected_model_deadline = min(expected_model_deadline, app_module.OPENROUTER_MODEL_DEADLINE)
+        expected_timeout = min(app_module.OPENROUTER_REQUEST_TIMEOUT, expected_model_deadline)
+        assert timeout == expected_timeout
         prompt = json["messages"][0]["content"]
         assert "Recommendation Mode: Similar" in prompt
         assert "History Lens: Balanced Mix" in prompt
