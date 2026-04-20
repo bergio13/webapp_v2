@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import requests
 import re
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from functools import wraps
 from bs4 import BeautifulSoup
 from tmdbv3api import TMDb, Movie, TV, Season
@@ -156,6 +157,9 @@ season = Season()
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL_ID = "openrouter/free"
+OPENROUTER_REQUEST_TIMEOUT = float(os.environ.get('OPENROUTER_REQUEST_TIMEOUT', '30'))
+OPENROUTER_TOTAL_TIMEOUT = float(os.environ.get('OPENROUTER_TOTAL_TIMEOUT', '20'))
+OPENROUTER_MAX_TOKENS = int(os.environ.get('OPENROUTER_MAX_TOKENS', '700'))
 
 DISCOVER_MODE_LABELS = {
     "explore": "Explore",
@@ -495,6 +499,32 @@ def _extract_openrouter_message_text(payload):
 
     return response_text
 
+def _post_openrouter_request(headers, payload):
+    """Perform a single OpenRouter request with strict socket timeouts."""
+    response = requests.post(
+        OPENROUTER_API_URL,
+        headers=headers,
+        json=payload,
+        timeout=OPENROUTER_REQUEST_TIMEOUT,
+    )
+    response.raise_for_status()
+    return response.json()
+
+def _post_openrouter_with_deadline(headers, payload):
+    """Apply a hard deadline so AI calls cannot outlive Gunicorn worker timeout."""
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(_post_openrouter_request, headers, payload)
+    try:
+        return future.result(timeout=OPENROUTER_TOTAL_TIMEOUT)
+    except FutureTimeoutError as exc:
+        future.cancel()
+        raise TimeoutError(
+            f"OpenRouter request exceeded {OPENROUTER_TOTAL_TIMEOUT:.0f}s deadline"
+        ) from exc
+    finally:
+        # Do not block shutdown waiting for a hung request thread.
+        executor.shutdown(wait=False, cancel_futures=True)
+
 def get_ai_movie_recommendation(
     user_request,
     user_history,
@@ -558,24 +588,22 @@ If preferred genres are provided, prioritize those genres in all recommendations
 Avoid recommending exact title+year combinations already listed in watch history when possible.
 Explain why each movie fits their taste based on their watch history."""
 
-        response = requests.post(
-            OPENROUTER_API_URL,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": os.environ.get('APP_BASE_URL', 'http://localhost:5000'),
-                "X-Title": "Kineto",
-            },
-            json={
-                "model": OPENROUTER_MODEL_ID,
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 1000,
-            },
-            timeout=30,
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": os.environ.get('APP_BASE_URL', 'http://localhost:5000'),
+            "X-Title": "Kineto",
+        }
+        payload = {
+            "model": OPENROUTER_MODEL_ID,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": OPENROUTER_MAX_TOKENS,
+        }
+        payload = _post_openrouter_with_deadline(
+            headers=headers,
+            payload=payload,
         )
-        response.raise_for_status()
 
-        payload = response.json()
         response_text = _extract_openrouter_message_text(payload)
         
         # Convert markdown-style formatting to HTML for better display
