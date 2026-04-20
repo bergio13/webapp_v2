@@ -47,7 +47,13 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="radio"
                   name="recommendation_mode"
                   value="{{ mode_key }}"
-                  {% if recommendation_mode == mode_key %}checked{% endif %}
+                  {%
+                  if
+                  recommendation_mode=""
+                  ="mode_key"
+                  %}checked{%
+                  endif
+                  %}
                 />
                 <span class="choice-title">{{ mode_label }}</span>
               </label>
@@ -65,7 +71,13 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="radio"
                   name="history_profile"
                   value="{{ profile_key }}"
-                  {% if history_profile == profile_key %}checked{% endif %}
+                  {%
+                  if
+                  history_profile=""
+                  ="profile_key"
+                  %}checked{%
+                  endif
+                  %}
                 />
                 <span class="choice-title">{{ profile_label }}</span>
               </label>
@@ -82,7 +94,14 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
                   type="checkbox"
                   name="preferred_genres"
                   value="{{ genre }}"
-                  {% if genre in selected_genres %}checked{% endif %}
+                  {%
+                  if
+                  genre
+                  in
+                  selected_genres
+                  %}checked{%
+                  endif
+                  %}
                 />
                 <span>{{ genre }}</span>
               </label>
@@ -97,32 +116,24 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
       </div>
 
       <aside class="discover-card discover-status-card">
-        <h2>Active Configuration</h2>
-        <p>
-          <span>Mode</span>
-          <strong
-            >{{ discover_mode_labels.get(recommendation_mode, 'Similar')
-            }}</strong
-          >
+        <h2>Quick Setup</h2>
+        <p class="discover-helper-intro">
+          Choose these variables before generating recommendations.
         </p>
-        <p>
-          <span>History Lens</span>
-          <strong
-            >{{ discover_history_profile_labels.get(history_profile, 'Balanced
-            Mix') }}</strong
-          >
-        </p>
-        <p>
-          <span>Genre Filter</span>
-          <strong
-            >{% if selected_genres %}{{ selected_genres | join(', ') }}{% else
-            %}Any{% endif %}</strong
-          >
-        </p>
-        <p>
-          <span>Dedup Rule</span>
-          <strong>Exact title + year</strong>
-        </p>
+        <ul class="discover-helper-list">
+          <li>
+            <span>Recommendation Mode</span>
+            Similar for safer picks, unexpected for bold jumps.
+          </li>
+          <li>
+            <span>History Lens</span>
+            Focus for your core taste, balanced for variety.
+          </li>
+          <li>
+            <span>Genre Prefilter</span>
+            Optional. Select genres to narrow results, or leave empty.
+          </li>
+        </ul>
       </aside>
     </section>
 
@@ -246,45 +257,53 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
   }
 
   .discover-status-card {
-    padding: 16px;
+    padding: 14px;
   }
 
   .discover-status-card h2 {
-    margin: 0 0 12px;
+    margin: 0;
     color: var(--discover-purple);
     font-family: "VT323", "Courier New", monospace;
-    font-size: 1.8rem;
+    font-size: 1.55rem;
     font-weight: normal;
     letter-spacing: 1px;
   }
 
-  .discover-status-card p {
-    margin: 0;
-    padding: 9px 0;
-    border-bottom: 1px dashed rgba(100, 181, 246, 0.18);
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 10px;
-  }
-
-  .discover-status-card p:last-child {
-    border-bottom: none;
-  }
-
-  .discover-status-card span {
+  .discover-helper-intro {
+    margin: 8px 0 10px;
     color: var(--discover-muted);
     font-family: "VT323", "Courier New", monospace;
-    font-size: 1.08rem;
-    letter-spacing: 0.7px;
+    font-size: 1.04rem;
+    letter-spacing: 0.6px;
+    line-height: 1.25;
   }
 
-  .discover-status-card strong {
-    color: var(--discover-light);
+  .discover-helper-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .discover-helper-list li {
+    border: 1px dashed rgba(100, 181, 246, 0.24);
+    border-radius: 8px;
+    background: rgba(16, 24, 34, 0.76);
+    padding: 8px 10px;
+    color: var(--discover-muted);
     font-family: "VT323", "Courier New", monospace;
-    font-size: 1.05rem;
-    text-align: right;
-    font-weight: normal;
+    font-size: 1.02rem;
+    letter-spacing: 0.6px;
+    line-height: 1.25;
+  }
+
+  .discover-helper-list span {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--discover-light);
+    font-size: 1.08rem;
+    letter-spacing: 0.75px;
   }
 
   .recommendation-form {
