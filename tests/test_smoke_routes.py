@@ -85,6 +85,24 @@ class DummyOpenRouterResponse:
         return self._payload
 
 
+class DummyOpenRouterErrorResponse:
+    def __init__(self, status_code, payload=None, headers=None):
+        self.status_code = status_code
+        self._payload = payload or {}
+        self.headers = headers or {}
+
+    def raise_for_status(self):
+        import requests
+
+        raise requests.exceptions.HTTPError(
+            f"{self.status_code} Error",
+            response=self,
+        )
+
+    def json(self):
+        return self._payload
+
+
 def test_openrouter_response_is_formatted_to_html(app_module, monkeypatch):
     def fake_post(url, headers=None, json=None, timeout=None):
         assert url == "https://openrouter.ai/api/v1/chat/completions"
@@ -191,6 +209,61 @@ def test_openrouter_error_payload_returns_clear_error(app_module, monkeypatch):
 
     assert "OpenRouter error" in response_html
     assert "No provider available for openrouter/free right now" in response_html
+
+
+def test_openrouter_429_returns_user_friendly_rate_limit_message(app_module, monkeypatch):
+    monkeypatch.setattr(app_module, "OPENROUTER_MAX_ATTEMPTS", 1)
+    monkeypatch.setattr(app_module, "OPENROUTER_MODEL_FALLBACKS", [])
+
+    def fake_post(*_args, **_kwargs):
+        return DummyOpenRouterErrorResponse(
+            status_code=429,
+            payload={"error": {"message": "Too many requests, please retry after 7s"}},
+            headers={"Retry-After": "7"},
+        )
+
+    monkeypatch.setattr(app_module.requests, "post", fake_post)
+
+    response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
+
+    assert "temporarily rate-limited" in response_html
+    assert "about 7 seconds" in response_html
+
+
+def test_openrouter_switches_to_fallback_model_on_primary_rate_limit(app_module, monkeypatch):
+    monkeypatch.setattr(app_module, "OPENROUTER_MAX_ATTEMPTS", 1)
+    monkeypatch.setattr(app_module, "OPENROUTER_MODEL_ID", "primary/free-model:free")
+    monkeypatch.setattr(app_module, "OPENROUTER_MODEL_FALLBACKS", ["fallback/free-model:free"])
+
+    seen_models = []
+
+    def fake_post(_url, headers=None, json=None, timeout=None):
+        seen_models.append(json["model"])
+        if len(seen_models) == 1:
+            return DummyOpenRouterErrorResponse(
+                status_code=429,
+                payload={"error": {"message": "Too many requests"}},
+                headers={"Retry-After": "1"},
+            )
+
+        return DummyOpenRouterResponse(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "content": "1. **Arrival (2016) - Denis Villeneuve**\nGenre: Sci-Fi\nWhy I recommend it: fallback model succeeded."
+                        }
+                    }
+                ]
+            }
+        )
+
+    monkeypatch.setattr(app_module.requests, "post", fake_post)
+
+    response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
+
+    assert "Arrival (2016) - Denis Villeneuve" in response_html
+    assert seen_models == ["primary/free-model:free", "fallback/free-model:free"]
 
 
 def test_openrouter_missing_key_returns_config_error(app_module, monkeypatch):

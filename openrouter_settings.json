@@ -1,11 +1,22 @@
 {
   "OPENROUTER_MODEL_ID": "google/gemma-3-12b-it:free",
+  "OPENROUTER_MODEL_FALLBACKS": [
+    "google/gemma-3-27b-it:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "openai/gpt-oss-20b:free",
+    "openai/gpt-oss-120b:free",
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "z-ai/glm-4.5-air:free",
+    "google/gemma-4-26b-a4b-it:free"
+  ],
   "OPENROUTER_REQUEST_TIMEOUT": 30,
   "OPENROUTER_TOTAL_TIMEOUT": 20,
   "OPENROUTER_MAX_COMPLETION_TOKENS": 550,
   "OPENROUTER_MAX_ATTEMPTS": 3,
   "OPENROUTER_RETRY_BASE_DELAY": 0.35,
   "OPENROUTER_RETRY_MAX_DELAY": 1.5,
+  "OPENROUTER_RETRY_429_MAX_DELAY": 6,
   "OPENROUTER_RETRY_JITTER": 0.15,
   "OPENROUTER_PROVIDER_SORT": "latency",
   "OPENROUTER_PROVIDER_ALLOW_FALLBACKS": true,

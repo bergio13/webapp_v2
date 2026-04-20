@@ -234,12 +234,14 @@ def _env_float(name, default):
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL_ID = str(_setting_value('OPENROUTER_MODEL_ID', 'google/gemma-3-12b-it:free')).strip()
+OPENROUTER_MODEL_FALLBACKS = _env_list('OPENROUTER_MODEL_FALLBACKS')
 OPENROUTER_REQUEST_TIMEOUT = _env_float('OPENROUTER_REQUEST_TIMEOUT', 30)
 OPENROUTER_TOTAL_TIMEOUT = _env_float('OPENROUTER_TOTAL_TIMEOUT', 20)
 OPENROUTER_MAX_COMPLETION_TOKENS = _env_int('OPENROUTER_MAX_COMPLETION_TOKENS', _env_int('OPENROUTER_MAX_TOKENS', 550))
 OPENROUTER_MAX_ATTEMPTS = _env_int('OPENROUTER_MAX_ATTEMPTS', 3)
 OPENROUTER_RETRY_BASE_DELAY = _env_float('OPENROUTER_RETRY_BASE_DELAY', 0.35)
 OPENROUTER_RETRY_MAX_DELAY = _env_float('OPENROUTER_RETRY_MAX_DELAY', 1.5)
+OPENROUTER_RETRY_429_MAX_DELAY = _env_float('OPENROUTER_RETRY_429_MAX_DELAY', 6)
 OPENROUTER_RETRY_JITTER = _env_float('OPENROUTER_RETRY_JITTER', 0.15)
 OPENROUTER_PROVIDER_SORT = str(_setting_value('OPENROUTER_PROVIDER_SORT', 'latency')).strip()
 OPENROUTER_PROVIDER_ALLOW_FALLBACKS = _env_bool('OPENROUTER_PROVIDER_ALLOW_FALLBACKS', True)
@@ -611,6 +613,85 @@ def _build_openrouter_provider_preferences():
 def _is_retryable_openrouter_status(status_code):
     return status_code in {408, 429, 500, 502, 503, 504}
 
+def _build_openrouter_model_candidates():
+    """Build ordered model candidates: primary first, then configured fallbacks."""
+    candidates = []
+    for model_id in [OPENROUTER_MODEL_ID, *OPENROUTER_MODEL_FALLBACKS]:
+        cleaned = str(model_id).strip()
+        if cleaned and cleaned not in candidates:
+            candidates.append(cleaned)
+    return candidates
+
+def _is_fallback_worthy_openrouter_payload_error(exc):
+    """Determine whether a structured OpenRouter payload error should trigger model fallback."""
+    message = str(exc).lower()
+    fallback_signals = (
+        'no provider',
+        'not available',
+        'temporarily unavailable',
+        'rate limit',
+        'too many requests',
+        'overloaded',
+        'capacity',
+        'quota',
+    )
+    return any(signal in message for signal in fallback_signals)
+
+class OpenRouterRateLimitError(RuntimeError):
+    """Raised when OpenRouter keeps returning HTTP 429 after retries."""
+
+    def __init__(self, wait_seconds=None):
+        self.wait_seconds = wait_seconds
+        if wait_seconds is None:
+            message = "OpenRouter is rate-limiting requests"
+        else:
+            message = f"OpenRouter is rate-limiting requests (retry after ~{wait_seconds:.0f}s)"
+        super().__init__(message)
+
+def _extract_openrouter_retry_after_seconds(response):
+    """Extract Retry-After seconds from headers or error payload when available."""
+    if response is None:
+        return None
+
+    retry_after_header = None
+    try:
+        retry_after_header = response.headers.get("Retry-After")
+    except Exception:
+        retry_after_header = None
+
+    if retry_after_header:
+        try:
+            parsed = float(str(retry_after_header).strip())
+            if parsed >= 0:
+                return parsed
+        except (TypeError, ValueError):
+            pass
+
+    try:
+        payload = response.json()
+    except Exception:
+        payload = None
+
+    if isinstance(payload, dict):
+        error_payload = payload.get("error")
+        if isinstance(error_payload, dict):
+            message = str(error_payload.get("message") or "")
+        elif error_payload is not None:
+            message = str(error_payload)
+        else:
+            message = ""
+
+        retry_match = re.search(r"retry(?:\s+after)?\s*(\d+(?:\.\d+)?)\s*s", message, flags=re.IGNORECASE)
+        if retry_match:
+            try:
+                parsed = float(retry_match.group(1))
+                if parsed >= 0:
+                    return parsed
+            except (TypeError, ValueError):
+                return None
+
+    return None
+
 def _post_openrouter_request(headers, payload):
     """Perform OpenRouter request(s) with retry/backoff for transient provider errors."""
     for attempt in range(1, OPENROUTER_MAX_ATTEMPTS + 1):
@@ -624,20 +705,33 @@ def _post_openrouter_request(headers, payload):
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as exc:
-            status_code = getattr(getattr(exc, 'response', None), 'status_code', None)
+            response_obj = getattr(exc, 'response', None)
+            status_code = getattr(response_obj, 'status_code', None)
+            retry_after_seconds = _extract_openrouter_retry_after_seconds(response_obj)
             retryable = (
                 isinstance(exc, (requests.exceptions.Timeout, requests.exceptions.ConnectionError))
                 or _is_retryable_openrouter_status(status_code)
             )
 
             if not retryable or attempt >= OPENROUTER_MAX_ATTEMPTS:
+                if status_code == 429:
+                    raise OpenRouterRateLimitError(wait_seconds=retry_after_seconds) from exc
                 raise
 
             base_delay = min(
                 OPENROUTER_RETRY_MAX_DELAY,
                 OPENROUTER_RETRY_BASE_DELAY * (2 ** (attempt - 1)),
             )
-            sleep_for = base_delay + random.uniform(0, OPENROUTER_RETRY_JITTER)
+            sleep_base = base_delay
+            if status_code == 429:
+                if retry_after_seconds is None:
+                    retry_after_seconds = max(1.0, base_delay * 2)
+                sleep_base = min(
+                    OPENROUTER_RETRY_429_MAX_DELAY,
+                    max(base_delay, retry_after_seconds),
+                )
+
+            sleep_for = sleep_base + random.uniform(0, OPENROUTER_RETRY_JITTER)
             app.logger.warning(
                 "OpenRouter request failed (attempt %s/%s, status=%s): %s. Retrying in %.2fs",
                 attempt,
@@ -732,28 +826,99 @@ Explain why each movie fits their taste based on their watch history."""
             "HTTP-Referer": os.environ.get('APP_BASE_URL', 'http://localhost:5000'),
             "X-Title": "Kineto",
         }
-        payload = {
-            "model": OPENROUTER_MODEL_ID,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_completion_tokens": OPENROUTER_MAX_COMPLETION_TOKENS,
-            # Keep max_tokens as a compatibility fallback for providers that still expect it.
-            "max_tokens": OPENROUTER_MAX_COMPLETION_TOKENS,
-        }
-        payload["provider"] = _build_openrouter_provider_preferences()
-        if OPENROUTER_SERVICE_TIER:
-            payload["service_tier"] = OPENROUTER_SERVICE_TIER
+        model_candidates = _build_openrouter_model_candidates()
+        if not model_candidates:
+            raise RuntimeError("No OpenRouter model candidates configured")
 
-        payload = _post_openrouter_with_deadline(
-            headers=headers,
-            payload=payload,
+        last_rate_limit_exc = None
+        last_exc = None
+
+        for model_index, model_id in enumerate(model_candidates):
+            request_payload = {
+                "model": model_id,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_completion_tokens": OPENROUTER_MAX_COMPLETION_TOKENS,
+                # Keep max_tokens as a compatibility fallback for providers that still expect it.
+                "max_tokens": OPENROUTER_MAX_COMPLETION_TOKENS,
+            }
+            request_payload["provider"] = _build_openrouter_provider_preferences()
+            if OPENROUTER_SERVICE_TIER:
+                request_payload["service_tier"] = OPENROUTER_SERVICE_TIER
+
+            has_more_models = model_index < len(model_candidates) - 1
+
+            try:
+                response_payload = _post_openrouter_with_deadline(
+                    headers=headers,
+                    payload=request_payload,
+                )
+                response_text = _extract_openrouter_message_text(response_payload)
+
+                if model_index > 0:
+                    app.logger.info(
+                        "OpenRouter succeeded with fallback model %s after %s prior failure(s)",
+                        model_id,
+                        model_index,
+                    )
+
+                # Convert markdown-style formatting to HTML for better display
+                formatted_response = format_ai_response_to_html(response_text, watched_lookup=watched_lookup)
+                return formatted_response
+
+            except OpenRouterRateLimitError as exc:
+                last_rate_limit_exc = exc
+                last_exc = exc
+                if has_more_models:
+                    app.logger.warning(
+                        "OpenRouter model %s hit rate limit. Trying fallback model %s",
+                        model_id,
+                        model_candidates[model_index + 1],
+                    )
+                    continue
+                raise
+
+            except requests.exceptions.RequestException as exc:
+                last_exc = exc
+                status_code = getattr(getattr(exc, 'response', None), 'status_code', None)
+                if has_more_models and _is_retryable_openrouter_status(status_code):
+                    app.logger.warning(
+                        "OpenRouter model %s failed with status=%s. Trying fallback model %s",
+                        model_id,
+                        status_code,
+                        model_candidates[model_index + 1],
+                    )
+                    continue
+                raise
+
+            except ValueError as exc:
+                last_exc = exc
+                if has_more_models and _is_fallback_worthy_openrouter_payload_error(exc):
+                    app.logger.warning(
+                        "OpenRouter model %s returned payload error (%s). Trying fallback model %s",
+                        model_id,
+                        exc,
+                        model_candidates[model_index + 1],
+                    )
+                    continue
+                raise
+
+        if last_rate_limit_exc is not None:
+            raise last_rate_limit_exc
+        if last_exc is not None:
+            raise last_exc
+        raise RuntimeError("OpenRouter request failed without a specific error")
+
+    except OpenRouterRateLimitError as rate_limit_exc:
+        app.logger.warning("OpenRouter rate-limit while generating recommendations: %s", rate_limit_exc)
+        wait_seconds = rate_limit_exc.wait_seconds
+        if wait_seconds is None:
+            hint = "Please wait a few seconds and try again."
+        else:
+            hint = f"Please wait about {max(1, int(round(wait_seconds)))} seconds and try again."
+        return (
+            "<p>Sorry, recommendation service is temporarily rate-limited.</p>"
+            f"<p><strong>Details:</strong> {hint}</p>"
         )
-
-        response_text = _extract_openrouter_message_text(payload)
-        
-        # Convert markdown-style formatting to HTML for better display
-        formatted_response = format_ai_response_to_html(response_text, watched_lookup=watched_lookup)
-        
-        return formatted_response
         
     except Exception as e:
         app.logger.exception("Error getting AI recommendations from OpenRouter: %s", e)
