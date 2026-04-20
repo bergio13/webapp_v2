@@ -1,1 +1,11 @@
-{}
+{
+	"[html]": {
+		"editor.formatOnSave": false
+	},
+	"files.associations": {
+		"*.html": "jinja-html"
+	},
+	"[jinja-html]": {
+		"editor.formatOnSave": false
+	}
+}
