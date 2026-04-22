@@ -1021,9 +1021,16 @@ def add_movie():
 @limiter.limit("30 per hour")  # Rate limit movie removals
 def remove_movie():
     if request.method == "POST":
-        movie_id = request.form['movie_id']
+        movie_id = request.form.get('movie_id')
+        if not movie_id and request.is_json:
+            movie_id = request.json.get('movie_id')
+            
         remove_movie_by_id(movie_id)
         clear_user_cache(session['id'])  # Clear cache after removing movie
+        
+        if request.headers.get('Accept') == 'application/json' or request.is_json:
+            return jsonify({'success': True, 'message': 'Movie removed'})
+            
         flash('Movie removed', category='success')
         return redirect('/home')
     return redirect('/home')

@@ -1106,7 +1106,7 @@ body::-webkit-scrollbar-thumb {
 
 .app-toolbar-link:hover {
   color: var(--app-toolbar-link-hover-color) !important;
-  text-shadow: var(--app-toolbar-link-hover-shadow) !important;
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor !important;
 }
 
 .app-toolbar-pill {
@@ -1126,7 +1126,8 @@ body::-webkit-scrollbar-thumb {
 .app-toolbar-pill:hover {
   color: var(--app-toolbar-pill-hover-color) !important;
   border-color: var(--app-toolbar-pill-hover-border) !important;
-  text-shadow: var(--app-toolbar-pill-hover-shadow) !important;
+  text-shadow: 0 0 8px currentColor !important;
+  box-shadow: 0 0 12px var(--app-toolbar-pill-hover-border) inset !important;
 }
 
 .app-dropdown-themed {
@@ -1398,11 +1399,13 @@ body::-webkit-scrollbar-thumb {
 
 .app-grid-table tbody tr {
   border-bottom: 1px solid var(--app-table-row-border);
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .app-grid-table tbody tr:hover {
   background: var(--app-table-row-hover) !important;
+  box-shadow: inset 0 0 20px var(--app-table-row-hover);
+  transform: scale(1.005);
 }
 
 .app-grid-table tbody td {

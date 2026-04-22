@@ -87,6 +87,7 @@
 
   .table-home tbody tr {
     border-bottom: 1px solid rgba(100, 181, 246, 0.12) !important;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .table-home tbody tr:last-child {
@@ -95,6 +96,8 @@
 
   .table-home tbody tr:hover {
     background-color: rgba(59, 154, 138, 0.35) !important;
+    box-shadow: inset 0 0 15px rgba(100, 181, 246, 0.2);
+    transform: scale(1.005);
   }
 
   .btn-add-movie-terminal {
@@ -113,7 +116,8 @@
 
   .btn-add-movie-terminal:hover {
     background: rgba(129, 199, 132, 0.22) !important;
-    box-shadow: 0 0 12px rgba(129, 199, 132, 0.25);
+    box-shadow: 0 0 12px rgba(129, 199, 132, 0.5), inset 0 0 8px rgba(129, 199, 132, 0.3);
+    text-shadow: 0 0 8px var(--ocean-green);
   }
 
   .table-home tbody td {
@@ -197,6 +201,60 @@
   function confirmDeletion(movieName) {
     return confirm(`Are you sure you want to remove "${movieName}"?`);
   }
+
+  async function deleteMovie(btn, movieId, movieName, csrfToken) {
+    if (!confirmDeletion(movieName)) return;
+    
+    const row = btn.closest('tr');
+    
+    try {
+      const response = await fetch('/remove_movie', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ movie_id: movieId })
+      });
+      
+      if (response.ok) {
+        row.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'scale(0.95)';
+        setTimeout(() => row.remove(), 400);
+      } else {
+        alert('Failed to delete movie.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting movie.');
+    }
+  }
+
+  let sortDirection = 1;
+  function sortTable(columnIndex, isNumeric = false) {
+    const table = document.getElementById("table-home");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    
+    // Ignore empty message row
+    if (rows.length === 0 || rows[0].cells.length <= 1) return; 
+    
+    sortDirection = sortDirection * -1;
+    
+    rows.sort((a, b) => {
+      const aText = a.cells[columnIndex].innerText.trim();
+      const bText = b.cells[columnIndex].innerText.trim();
+      
+      if (isNumeric) {
+        return (parseFloat(aText) - parseFloat(bText)) * sortDirection;
+      }
+      return aText.localeCompare(bText) * sortDirection;
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+  }
 </script>
 
 <canvas class="canvas_home" id="canvas"></canvas>
@@ -220,11 +278,11 @@
       <thead>
         <tr style="text-align: left">
           <th style="padding: 10px"></th>
-          <th style="padding: 10px">TITLE</th>
+          <th style="padding: 10px; cursor: pointer; color: gold;" onclick="sortTable(1)">TITLE ↕</th>
           <th style="padding: 1px"></th>
-          <th style="padding: 10px">YEAR</th>
-          <th style="padding: 10px">DIRECTOR</th>
-          <th style="padding: 10px">RATING</th>
+          <th style="padding: 10px; cursor: pointer; color: gold;" onclick="sortTable(3, true)">YEAR ↕</th>
+          <th style="padding: 10px; cursor: pointer; color: gold;" onclick="sortTable(4)">DIRECTOR ↕</th>
+          <th style="padding: 10px; cursor: pointer; color: gold;" onclick="sortTable(5, true)">RATING ↕</th>
           <th style="width: 7%; padding: 10px"></th>
           <th style="width: 5%; padding: 10px"></th>
         </tr>
@@ -285,22 +343,9 @@
             </form>
           </td>
           <td style="padding: 10px">
-            <form
-              action="/remove_movie"
-              method="post"
-              style="margin: 0"
-              onsubmit="return confirmDeletion('{{ movie['movie'] }}')"
-            >
-              <input
-                type="hidden"
-                name="csrf_token"
-                value="{{ csrf_token() }}"
-              />
-              <button type="submit" class="table-button app-table-action-danger">
-                X
-              </button>
-              <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-            </form>
+            <button type="button" class="table-button app-table-action-danger" onclick="deleteMovie(this, '{{movie['id']}}', '{{ movie['movie'] }}', '{{ csrf_token() }}')">
+              X
+            </button>
           </td>
         </tr>
         {% endfor %}
