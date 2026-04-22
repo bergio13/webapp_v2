@@ -538,7 +538,11 @@ body::-webkit-scrollbar-thumb {
   padding: 0.62rem 0.88rem;
   border: 1px solid var(--app-toolbar-pill-border);
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.01)
+  );
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
   color: var(--app-toolbar-pill-color);
   cursor: pointer;
@@ -547,7 +551,11 @@ body::-webkit-scrollbar-thumb {
   letter-spacing: 1px;
   text-shadow: var(--app-toolbar-pill-shadow);
   user-select: none;
-  transition: transform 0.18s ease, box-shadow 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
   box-sizing: border-box;
 }
 
@@ -643,14 +651,24 @@ body::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.02);
   color: var(--app-wayfinder-link-color);
   text-decoration: none;
-  transition: transform 0.16s ease, background 0.22s ease, color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  transition:
+    transform 0.16s ease,
+    background 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
 .app-wayfinder-link::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.18) 52%, transparent 100%);
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.18) 52%,
+    transparent 100%
+  );
   opacity: 0;
   transition: opacity 0.22s ease;
   pointer-events: none;
@@ -759,9 +777,17 @@ body::-webkit-scrollbar-thumb {
 }
 
 .app-analytics-shell {
-  --app-analytics-chip-bg: linear-gradient(140deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+  --app-analytics-chip-bg: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.09),
+    rgba(255, 255, 255, 0.02)
+  );
   --app-analytics-chip-border: rgba(179, 157, 219, 0.35);
-  --app-analytics-chip-hover-bg: linear-gradient(140deg, rgba(122, 77, 194, 0.52), rgba(106, 235, 252, 0.24));
+  --app-analytics-chip-hover-bg: linear-gradient(
+    140deg,
+    rgba(122, 77, 194, 0.52),
+    rgba(106, 235, 252, 0.24)
+  );
   --app-analytics-chip-hover-border: rgba(106, 235, 252, 0.58);
   --app-analytics-tab-bg: rgba(13, 20, 32, 0.78);
   --app-analytics-tab-shadow: 0 14px 30px rgba(0, 0, 0, 0.26);
@@ -856,7 +882,11 @@ body::-webkit-scrollbar-thumb {
   border-radius: 10px;
   background: var(--app-analytics-chip-bg);
   box-shadow: 0 7px 15px rgba(0, 0, 0, 0.15);
-  transition: transform 0.16s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
   min-width: 0;
   overflow: hidden;
 }
@@ -929,7 +959,9 @@ body::-webkit-scrollbar-thumb {
   line-height: 1;
   background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .app-analytics-shell .closebtn:hover {
