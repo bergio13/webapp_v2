@@ -1,5 +1,5 @@
 {% extends 'base.html' %} {% block title %}Discover{% endblock %} {% block
-body_attributes %}class="discover_page"{% endblock %} {% block content %}
+body_class %} discover_page{% endblock %} {% block content %}
 <link
   href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
   rel="stylesheet"
@@ -18,7 +18,7 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
     </header>
 
     <section class="discover-grid">
-      <div class="discover-card discover-form-card">
+      <div class="discover-card app-panel discover-form-card">
         <form method="post" class="recommendation-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
@@ -96,7 +96,7 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
         </form>
       </div>
 
-      <aside class="discover-card discover-status-card">
+      <aside class="discover-card app-panel discover-status-card">
         <h2>Quick Setup</h2>
         <p class="discover-helper-intro">
           Choose the two settings that steer recommendation behavior.
@@ -115,7 +115,7 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
     </section>
 
     {% if ai_response %}
-    <section class="discover-card response-card">
+    <section class="discover-card app-panel response-card">
       <div class="response-headline">
         <h2>OUTPUT_RECOMMENDATIONS</h2>
         <p>
@@ -222,10 +222,6 @@ body_attributes %}class="discover_page"{% endblock %} {% block content %}
   }
 
   .discover-card {
-    border-radius: 12px;
-    background: rgba(19, 28, 39, 0.78);
-    border: 1px solid var(--discover-line);
-    box-shadow: 0 0 24px rgba(100, 181, 246, 0.08);
     backdrop-filter: blur(7px);
   }
 

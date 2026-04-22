@@ -2,82 +2,11 @@
 {% block content %}
 <script src="/static/js/grid.js"></script>
 
-<style>
-  .grid-container2 {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    padding: 0 1rem;
-    box-sizing: border-box;
-  }
-  .grid-item2 {
-    width: 100%;
-    max-width: 100%;
-  }
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    max-width: 100%;
-  }
-  .column1 {
-    flex: 0 0 calc(16.66% - 10px);
-    min-width: 100px;
-    max-width: calc(16.66% - 10px);
-    padding: 20px 10px;
-    box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.2s ease;
-  }
-  .column1:hover {
-    background: rgba(136, 30, 30, 0.8);
-    color: white;
-  }
-  .column1 h3 {
-    margin: 0;
-    font-size: 16px;
-  }
-  .containerTab {
-    flex: 0 0 100%;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    margin-top: 10px;
-  }
-  .containerTab table {
-    font-size: 13px;
-    table-layout: auto;
-    width: 100%;
-  }
-  .containerTab th,
-  .containerTab td {
-    padding: 6px 8px;
-  }
-  @media (max-width: 768px) {
-    .column1 {
-      flex: 0 0 calc(25% - 10px);
-      max-width: calc(25% - 10px);
-    }
-  }
-  @media (max-width: 480px) {
-    .column1 {
-      flex: 0 0 calc(33.33% - 10px);
-      max-width: calc(33.33% - 10px);
-    }
-  }
-</style>
-
-<main class="filterby">
+<main class="filterby app-analytics-shell">
   <div class="grid-container2">
     <div class="grid-item2 item1">
-      <h1 style="margin-right: 5%; display: inline-block; color: white">
-        By genre
-      </h1>
+      <h1 class="app-title-terminal app-analytics-title"><span>//</span> By genre</h1>
+      {% include '_analytics_wayfinder.html' %}
     </div>
 
     <div class="grid-item2 item2 filtered">
@@ -92,7 +21,7 @@
             class="closebtn"
             >&times;</span
           >
-          <table>
+          <table class="app-grid-table app-analytics-table">
             <thead>
               <tr>
                 <th></th>
@@ -128,7 +57,7 @@
                       name="csrf_token"
                       value="{{ csrf_token() }}"
                     />
-                    <button type="submit" class="table-button-list">X</button>
+                    <button type="submit" class="table-button-list app-table-action-danger">X</button>
                     <input
                       type="hidden"
                       name="movie_id"
@@ -159,7 +88,7 @@
                       name="csrf_token"
                       value="{{ csrf_token() }}"
                     />
-                    <button type="submit" class="table-button-list">X</button>
+                    <button type="submit" class="table-button-list app-table-action-danger">X</button>
                     <input
                       type="hidden"
                       name="movie_id"
@@ -190,7 +119,7 @@
                       name="csrf_token"
                       value="{{ csrf_token() }}"
                     />
-                    <button type="submit" class="table-button-list">X</button>
+                    <button type="submit" class="table-button-list app-table-action-danger">X</button>
                     <input
                       type="hidden"
                       name="movie_id"

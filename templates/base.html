@@ -33,7 +33,30 @@
     {% endblock %}
   </head>
 
-  <body {% block body_attributes %}{% endblock %}>
+  {% set current_path = request.path if request and request.path else '/' %}
+  {% set is_home_nav = current_path == '/home' or current_path.startswith('/add_movie') or current_path.startswith('/edit_movie') or current_path.startswith('/remove_movie') %}
+  {% set is_friends_nav = current_path.startswith('/friends') or current_path.startswith('/follow') %}
+  {% set is_list_nav = current_path == '/lista' or current_path.startswith('/list/') or current_path.startswith('/directors') or current_path.startswith('/genres') or current_path.startswith('/years') or current_path.startswith('/ratings') %}
+  {% set is_discover_nav = current_path.startswith('/discover') or current_path.startswith('/explore') %}
+  {% set is_profile_nav = current_path.startswith('/profile') or current_path.startswith('/users/') or current_path.startswith('/login') or current_path.startswith('/register') or current_path.startswith('/passwordreset') or current_path.startswith('/reset2') %}
+
+  {% if current_path.startswith('/explore') %}
+    {% set page_theme_class = 'theme-explore' %}
+  {% elif is_home_nav %}
+    {% set page_theme_class = 'theme-home' %}
+  {% elif is_discover_nav %}
+    {% set page_theme_class = 'theme-discover' %}
+  {% elif is_list_nav %}
+    {% set page_theme_class = 'theme-list' %}
+  {% elif is_friends_nav %}
+    {% set page_theme_class = 'theme-friends' %}
+  {% elif is_profile_nav %}
+    {% set page_theme_class = 'theme-profile' %}
+  {% else %}
+    {% set page_theme_class = 'theme-default' %}
+  {% endif %}
+
+  <body class="app-shell {{ page_theme_class }}{% block body_class %}{% endblock %}" {% block body_attributes %}{% endblock %}>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="flash-container">
@@ -48,7 +71,7 @@
 
 {% endwith %}
 
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
       <ul class="navbar-nav">
         <li class="logo">
           <a href="/" class="nav-link">
@@ -80,7 +103,14 @@
         </li>
 
         <li class="nav-item">
-          <a href="/home" class="nav-link">
+          <a
+            href="/home"
+            class="nav-link{% if is_home_nav %} active{% endif %}"
+            data-nav-label="Home"
+            title="Home"
+            aria-label="Home"
+            {% if is_home_nav %}aria-current="page"{% endif %}
+          >
             <svg
               aria-hidden="true"
               focusable="false"
@@ -109,7 +139,14 @@
         </li>
 
         <li class="nav-item">
-          <a href="/friends" class="nav-link">
+          <a
+            href="/friends"
+            class="nav-link{% if is_friends_nav %} active{% endif %}"
+            data-nav-label="Friends"
+            title="Friends"
+            aria-label="Friends"
+            {% if is_friends_nav %}aria-current="page"{% endif %}
+          >
             <svg
               aria-hidden="true"
               focusable="false"
@@ -138,7 +175,14 @@
         </li>
 
         <li class="nav-item">
-          <a href="/lista" class="nav-link">
+          <a
+            href="/lista"
+            class="nav-link{% if is_list_nav %} active{% endif %}"
+            data-nav-label="List"
+            title="List"
+            aria-label="List"
+            {% if is_list_nav %}aria-current="page"{% endif %}
+          >
             <svg
             class="theme-icon"
             id="darkIcon"
@@ -169,7 +213,14 @@
         </li>
 
         <li class="nav-item">
-          <a href="/discover" class="nav-link">
+          <a
+            href="/discover"
+            class="nav-link{% if is_discover_nav %} active{% endif %}"
+            data-nav-label="Discover"
+            title="Discover"
+            aria-label="Discover"
+            {% if is_discover_nav %}aria-current="page"{% endif %}
+          >
             <svg
             aria-hidden="true"
             focusable="false"
@@ -199,9 +250,23 @@
 
         <li class="nav-item">
           {% if session['loggedin'] == True %}
-          <a href="/profile" class="nav-link">
+          <a
+            href="/profile"
+            class="nav-link{% if is_profile_nav %} active{% endif %}"
+            data-nav-label="Profile"
+            title="Profile"
+            aria-label="Profile"
+            {% if is_profile_nav %}aria-current="page"{% endif %}
+          >
           {% else %}
-          <a href="/login" class="nav-link">
+          <a
+            href="/login"
+            class="nav-link{% if is_profile_nav %} active{% endif %}"
+            data-nav-label="Account"
+            title="Account"
+            aria-label="Account"
+            {% if is_profile_nav %}aria-current="page"{% endif %}
+          >
           {% endif %}
           <svg
               aria-hidden="true"
@@ -227,7 +292,7 @@
               </g>
             </svg>
             
-            <span class="link-text">Profile</span>
+            <span class="link-text">{% if session['loggedin'] == True %}Profile{% else %}Account{% endif %}</span>
           </a>
         </li>
       </ul>

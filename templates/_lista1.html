@@ -1,5 +1,5 @@
-{% extends 'base.html' %} {% block title %} {{username}}'s Watched Movies{%
-endblock %} {% block body_attributes %} class="list_page"{% endblock %} {% block
+{% extends 'base.html' %} {% block title %} {{username}}'s Watched Movies{% 
+endblock %} {% block body_class %} list_page list_page_friend_theme{% endblock %} {% block
 body %} {% block content %}
 
 <!-- VT323 Terminal Font -->
@@ -13,376 +13,30 @@ body %} {% block content %}
   crossorigin="anonymous"
 ></script>
 
-<style>
-  /* Friend List Theme - Teal/Cyan Colors */
-  :root {
-    --friend-teal: #26a69a;
-    --friend-teal-light: #80cbc4;
-    --friend-cyan: #00bcd4;
-    --friend-gold: #ffd54f;
-    --friend-grey: #b0bec5;
-    --friend-dark: #1a2f2f;
-    --friend-light: #e0f2f1;
-    --friend-coral: #ef5350;
-  }
-
-  .list_list {
-    background: rgba(26, 47, 47, 0.95) !important;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  .ascii-header {
-    color: var(--friend-teal-light);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 14px;
-    line-height: 1.1;
-    white-space: pre;
-    text-shadow: 0 0 5px rgba(128, 203, 196, 0.3);
-    margin-bottom: 10px;
-    opacity: 0.8;
-  }
-
-  .filter-add-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 1rem;
-  }
-
-  .page-title {
-    font-family: "VT323", "Courier New", monospace !important;
-    font-size: 2rem;
-    color: var(--friend-teal-light) !important;
-    letter-spacing: 2px;
-    margin: 0;
-    text-shadow: 0 0 8px rgba(128, 203, 196, 0.4);
-  }
-
-  .page-title span {
-    color: var(--friend-teal);
-    opacity: 0.8;
-  }
-
-  .page-title .username-link {
-    color: var(--friend-gold) !important;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-
-  .page-title .username-link:hover {
-    color: var(--friend-cyan) !important;
-    text-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
-  }
-
-  /* Neon-style buttons */
-  .dropbtn {
-    font-family: "VT323", monospace !important;
-    font-size: 1.2rem !important;
-    background: transparent !important;
-    border: 0.1rem solid rgba(0, 188, 212, 0.4) !important;
-    border-radius: 2rem !important;
-    color: var(--friend-cyan) !important;
-    padding: 0.8em !important;
-    text-shadow: 0 0 8px rgba(0, 188, 212, 0.5);
-    transition: all 0.3s ease;
-    letter-spacing: 1px;
-  }
-
-  .dropbtn:hover {
-    color: var(--friend-gold) !important;
-    border-color: rgba(255, 213, 79, 0.5) !important;
-    text-shadow: 0 0 12px rgba(255, 213, 79, 0.6);
-  }
-
-  .dropdown-content {
-    background: rgba(26, 47, 47, 0.95) !important;
-    border: 1px solid rgba(128, 203, 196, 0.3) !important;
-  }
-
-  .dropdown-content a {
-    font-family: "VT323", monospace;
-    font-size: 1.1rem;
-    color: var(--friend-light) !important;
-  }
-
-  .dropdown-content a:hover {
-    background: rgba(38, 166, 154, 0.2) !important;
-    color: var(--friend-teal-light) !important;
-  }
-
-  .dropdown-content input {
-    font-family: "VT323", monospace;
-    background: rgba(26, 47, 47, 0.8) !important;
-    border: 1px solid rgba(128, 203, 196, 0.2) !important;
-    color: var(--friend-light) !important;
-  }
-
-  /* Table wrapper for horizontal scroll */
-  .table-wrapper {
-    display: block;
-    overflow-x: auto;
-    overflow-y: visible;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Table styling */
-  .table-lista1 {
-    border: 1px solid rgba(38, 166, 154, 0.15);
-    border-radius: 8px;
-    overflow: visible;
-    width: max-content;
-    min-width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-  }
-
-  .table-lista1 thead tr {
-    background: linear-gradient(
-      to right,
-      rgba(38, 166, 154, 0.4),
-      rgba(0, 188, 212, 0.3)
-    ) !important;
-  }
-
-  .table-lista1 thead th {
-    font-family: "VT323", "Courier New", monospace !important;
-    font-size: 1.2rem;
-    color: var(--friend-light) !important;
-    letter-spacing: 1px;
-    padding: 12px 10px !important;
-    text-align: left;
-  }
-
-  .table-lista1 tbody tr {
-    border-bottom: 1px solid rgba(38, 166, 154, 0.1);
-    transition: background 0.2s ease;
-  }
-
-  .table-lista1 tbody tr:hover {
-    background: rgba(38, 166, 154, 0.15) !important;
-  }
-
-  .table-lista1 tbody td {
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.1rem;
-    letter-spacing: 0.5px;
-    color: white;
-    padding: 10px;
-  }
-
-  .table-lista1 tbody td a {
-    font-family: "VT323", "Courier New", monospace;
-    transition: color 0.2s ease;
-    color: inherit;
-  }
-
-  .table-lista1 tbody td a:hover {
-    color: var(--friend-teal-light) !important;
-  }
-
-  .legend-terminal {
-    font-family: "VT323", monospace;
-    font-size: 1.1rem;
-    color: var(--friend-grey);
-    margin-top: 20px;
-  }
-
-  .legend-terminal i {
-    color: var(--friend-teal);
-  }
-
-  /* Preloader styling */
-  #preloader {
-    background: var(--friend-dark) !important;
-  }
-
-  @media (max-width: 768px) {
-    .ascii-header {
-      display: none;
-    }
-    .page-title {
-      font-size: 1.6rem;
-      width: 100%;
-      margin-top: 15px;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    .filter-add-section {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-    .dropbtn {
-      font-size: 1rem !important;
-      padding: 10px 16px !important;
-      min-height: 44px;
-    }
-    .dropdown {
-      width: 100%;
-      display: flex;
-      justify-content: flex-end;
-    }
-    .dropdown-content {
-      left: auto !important;
-      right: 0;
-      transform: none !important;
-      min-width: 210px;
-      max-width: calc(100vw - 2rem);
-    }
-    .list_list {
-      padding: 10px !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
-      width: 100% !important;
-      max-width: 100vw !important;
-      box-sizing: border-box !important;
-    }
-    .table-wrapper {
-      display: block;
-      overflow-x: scroll !important;
-      -webkit-overflow-scrolling: touch;
-      width: 100%;
-      max-width: calc(100vw - 20px);
-      padding-bottom: 15px;
-      box-sizing: border-box;
-    }
-    .table-lista1 {
-      font-size: 0.9rem;
-      width: max-content;
-      min-width: 640px;
-    }
-    .table-lista1 thead th {
-      font-size: 0.9rem;
-      padding: 8px 6px !important;
-      white-space: nowrap;
-    }
-    .table-lista1 tbody td {
-      font-size: 0.9rem;
-      padding: 8px 6px;
-      white-space: nowrap;
-    }
-    .table-poster1 {
-      width: 40px !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .page-title {
-      font-size: 1.4rem;
-    }
-    .list_list {
-      padding: 5px !important;
-      margin: 0 !important;
-      width: 100% !important;
-      max-width: 100vw !important;
-    }
-    .dropbtn {
-      font-size: 1rem !important;
-      padding: 8px 12px !important;
-    }
-    .dropdown-content {
-      right: 0;
-      left: auto !important;
-      transform: none !important;
-      min-width: 190px;
-    }
-    .table-wrapper {
-      max-width: calc(100vw - 10px);
-      padding-bottom: 15px;
-    }
-    .table-lista1 {
-      min-width: 620px;
-    }
-    .table-lista1 thead th,
-    .table-lista1 tbody td {
-      font-size: 0.85rem;
-      padding: 6px 4px !important;
-    }
-    .table-poster1 {
-      width: 35px !important;
-    }
-  }
-</style>
-
 <!-- Preloader -->
-<div
-  id="preloader"
-  style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    background: #1a2f2f;
-  "
->
-  <div
-    class="loader"
-    style="
-      border: 8px solid rgba(128, 203, 196, 0.3);
-      border-top: 8px solid #80cbc4;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-    "
-  ></div>
+<div id="preloader" class="app-preloader">
+  <div class="loader app-preloader-spinner"></div>
 </div>
 
-<style>
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-</style>
-
 <!-- Main Content -->
-<div class="list_list" style="display: none">
-  <div class="ascii-header">
+<div class="list_list app-panel app-panel-mobile app-panel-mobile-compact" style="display: none">
+  <div class="ascii-header app-ascii-header app-ascii-hide-mobile">
     ╔═══ FRIEND_LIST.db :: user: {{username}} :: entries: {{ movies|length }} ═══╝
   </div>
 
+  {% include '_analytics_wayfinder.html' %}
+
   <!-- Filter Section -->
-  <div class="filter-add-section">
-    <h2 class="page-title">
+  <div class="filter-add-section app-toolbar app-toolbar-stack-mobile">
+    <h2 class="page-title app-title-terminal app-title-themed app-title-mobile-centered">
       <span>//</span>
-      <a class="username-link" href="/profile/{{username}}">{{username}}</a>'s
+      <a class="username-link app-title-link-themed" href="/profile/{{username}}">{{username}}</a>'s
       List
     </h2>
-
-    <div class="dropdown">
-      <button onclick="myFunction()" class="dropbtn">[ FILTER ]</button>
-      <div id="myDropdown" class="dropdown-content">
-        <input
-          type="text"
-          placeholder="> Search.."
-          id="myInput"
-          onkeyup="filterFunction()"
-        />
-        <a href="/directors/{{username}}">> Director</a>
-        <a href="/genres/{{username}}">> Genre</a>
-        <a href="/years/{{username}}">> Year</a>
-        <a href="/ratings/{{username}}">> Rating</a>
-      </div>
-    </div>
   </div>
 
-  <div class="table-wrapper">
-    <table class="table-lista1">
+  <div class="table-wrapper app-table-scroll app-table-scroll-mobile app-table-scroll-mobile-extended">
+    <table class="table-lista1 app-grid-table app-table-responsive app-table-mobile-width">
       <thead>
         <tr>
           <th>VIEW_DATE</th>
@@ -406,7 +60,7 @@ body %} {% block content %}
           </td>
           <td>
             <img
-              class="table-poster1"
+              class="table-poster1 app-table-poster-responsive"
               src="{{movie['poster']}}"
               style="width: 50px"
               loading="lazy"
@@ -429,58 +83,19 @@ body %} {% block content %}
     </table>
   </div>
 
-  <p class="legend-terminal">
+  <p class="legend-terminal app-legend">
     <i class="fa-solid fa-film"></i> cinema &nbsp;&nbsp;
     <i class="fa-solid fa-repeat"></i> rewatch
   </p>
 </div>
 
-<script src="static/js/grid.js"></script>
+<script src="/static/js/grid.js"></script>
 
 <script>
   window.onload = () => {
     document.getElementById("preloader").style.display = "none";
     document.querySelector(".list_list").style.display = "block";
   };
-
-  function myFunction() {
-    document.getElementById("myDropdown").classList.toggle("show");
-  }
-
-  window.onclick = function (event) {
-    if (!event.target.matches(".dropbtn")) {
-      var dropdowns = document.getElementsByClassName("dropdown-content");
-      for (var i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains("show")) {
-          openDropdown.classList.remove("show");
-        }
-      }
-    }
-  };
-
-  function filterFunction() {
-    var input, filter, table, tr, td, i, txtValue;
-    input = document.getElementById("myInput");
-    filter = input.value.toUpperCase();
-    table = document.querySelector(".table-lista1");
-    tr = table.getElementsByTagName("tr");
-
-    for (i = 1; i < tr.length; i++) {
-      var show = false;
-      td = tr[i].getElementsByTagName("td");
-      for (var j = 0; j < td.length; j++) {
-        if (td[j]) {
-          txtValue = td[j].textContent || td[j].innerText;
-          if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            show = true;
-            break;
-          }
-        }
-      }
-      tr[i].style.display = show ? "" : "none";
-    }
-  }
 </script>
 
 {% endblock %} {% endblock %}

@@ -576,9 +576,12 @@ def lista():
 @app.route('/list/<username>')
 def lista_user(username):
     user = get_user_id(username)
-    print(user)
+    if not user:
+        app.logger.warning("Friend list requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends' if 'loggedin' in session else '/')
+
     id = user[0]['id']
-    print(id)
     year_now, _ = get_current_year_month()
     try:
         movies = get_movies(id)
@@ -607,9 +610,14 @@ def show_directors():
 @app.route('/directors/<username>', methods=['GET'])
 @login_required
 def show_directors_friends(username):
+    user = get_user_id(username)
+    if not user:
+        app.logger.warning("Friend directors requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends')
+
+    id = user[0]['id']
     try:
-        id = get_user_id(username)
-        id = id[0]['id']
         movies = get_movies_groupby_director(id)
         directors = get_directors(id)
     except Exception as e:
@@ -617,7 +625,7 @@ def show_directors_friends(username):
         movies = []
         directors = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_directors.html', movies=movies, directors=directors)
+    return render_template('_directors.html', movies=movies, directors=directors, username=username)
 
 @app.route('/genres', methods=['GET'])
 @login_required
@@ -644,9 +652,14 @@ def show_genres():
 @login_required
 def show_genres_friends(username):
     final_genres = set()
+    user = get_user_id(username)
+    if not user:
+        app.logger.warning("Friend genres requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends')
+
+    id = user[0]['id']
     try:
-        id = get_user_id(username)
-        id = id[0]['id']
         movies = get_movies_groupby_genre(id)
         in_genres = ""
         generi = get_genres(id)
@@ -660,7 +673,7 @@ def show_genres_friends(username):
         movies = []
         generi = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_genres.html', movies=movies, genres=final_genres)
+    return render_template('_genres.html', movies=movies, genres=final_genres, username=username)
 
 
 @app.route('/years', methods=['GET'])
@@ -680,9 +693,14 @@ def show_years():
 @app.route('/years/<username>', methods=['GET'])
 @login_required
 def show_years_friends(username):
+    user = get_user_id(username)
+    if not user:
+        app.logger.warning("Friend years requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends')
+
+    id = user[0]['id']
     try:
-        id = get_user_id(username)
-        id = id[0]['id']
         movies = get_movies_groupby_year(id)
         anni = get_years(id)
     except Exception as e:
@@ -690,7 +708,7 @@ def show_years_friends(username):
         movies = []
         anni = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_years.html', movies=movies, years=anni)
+    return render_template('_years.html', movies=movies, years=anni, username=username)
 
 # ========================================
 # STATISTICS & ANALYTICS ROUTES
@@ -713,9 +731,14 @@ def show_ratings():
 @app.route('/ratings/<username>', methods=['GET'])
 @login_required
 def show_ratings_friends(username):
+    user = get_user_id(username)
+    if not user:
+        app.logger.warning("Friend ratings requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends')
+
+    id = user[0]['id']
     try:
-        id = get_user_id(username)
-        id = id[0]['id']
         movies = get_movies_groupby_year(id)
         ratings = get_ratings(id)
     except Exception as e:
@@ -723,7 +746,7 @@ def show_ratings_friends(username):
         movies = []
         ratings = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_ratings.html', movies=movies, ratings=ratings)
+    return render_template('_ratings.html', movies=movies, ratings=ratings, username=username)
 
 # ========================================
 # USER PROFILE & DATA ROUTES
