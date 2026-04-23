@@ -6,7 +6,7 @@ body_class %} discover_page{% endblock %} {% block content %}
 />
 
 <canvas class="canvas_discover" id="canvas"></canvas>
-<script src="static/js/script_discover.js"></script>
+<script src="{{ url_for('static', filename='js/script_discover.js') }}"></script>
 
 <main class="discover-main">
   <div class="discover-wrap">
