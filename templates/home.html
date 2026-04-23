@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %} {%block body
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block body_class %} home_page{% endblock %} {%block body
 %}{%block content %}
 
 <!-- FontAwesome for icons -->
@@ -7,22 +7,43 @@
   crossorigin="anonymous"
 ></script>
 
-<!-- VT323 Terminal Font -->
+<!-- VT323 Terminal Font & Rajdhani -->
 <link
-  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=VT323&display=swap"
   rel="stylesheet"
 />
 
 <style>
-  /* Soft Ocean Color Palette */
+  /* Soft Cool-Neutral Palette */
   :root {
-    --ocean-blue: #64b5f6;
-    --ocean-green: #81c784;
-    --ocean-grey: #b0bec5;
+    --ocean-blue: #7eb5c4;
+    --ocean-green: #7aa898;
+    --ocean-grey: #9eb0ba;
     --ocean-dark: #1a2634;
     --ocean-darker: #131c27;
-    --ocean-light: #e0e7ee;
-    --ocean-coral: #e57373;
+    --ocean-light: #d0dde5;
+    --ocean-coral: #b58a8a;
+    --app-panel-border: rgba(126, 181, 196, 0.15);
+    --app-panel-bg: rgba(26, 38, 52, 0.5);
+    --app-panel-shadow: 0 0 20px rgba(126, 181, 196, 0.05);
+    --app-panel-title: var(--ocean-light);
+    --app-panel-title-accent: var(--ocean-blue);
+    --app-ascii-color: var(--ocean-blue);
+    --app-ascii-shadow: 0 0 4px rgba(126, 181, 196, 0.2);
+    --app-action-edit-bg: rgba(126, 181, 196, 0.12);
+    --app-action-edit-border: var(--ocean-blue);
+    --app-action-edit-text: var(--ocean-blue);
+    --app-action-edit-hover-bg: rgba(126, 181, 196, 0.22);
+    --app-action-danger-bg: rgba(181, 138, 138, 0.12);
+    --app-action-danger-border: var(--ocean-coral);
+    --app-action-danger-text: var(--ocean-coral);
+    --app-action-danger-hover-bg: rgba(181, 138, 138, 0.22);
+    --app-table-shell-border: rgba(126, 181, 196, 0.1);
+    --app-table-shell-bg: rgba(19, 28, 39, 0.25);
+    --app-table-shell-radius: 10px;
+    --app-legend-color: var(--ocean-light);
+    --app-legend-icon-color: var(--ocean-blue);
+    --app-legend-font-size: 18px;
   }
 
   .canvas_home {
@@ -34,41 +55,32 @@
     ) !important;
   }
 
-  .list_list {
-    background: rgba(26, 38, 52, 0.5) !important;
-    border: 1px solid rgba(100, 181, 246, 0.2) !important;
-    box-shadow: 0 0 30px rgba(100, 181, 246, 0.08) !important;
+  .home-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+    letter-spacing: 4px;
+    margin: 0;
+    text-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+    display: flex;
+    align-items: center;
+  }
+  
+  .home-title span {
+    color: var(--ocean-blue);
+    margin-right: 15px;
+    font-size: 2.5rem;
   }
 
-  .ascii-header {
-    color: var(--ocean-blue);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 14px;
-    line-height: 1.1;
-    white-space: pre;
-    text-shadow: 0 0 5px rgba(100, 181, 246, 0.3);
-    margin-bottom: 10px;
+  .home-ascii {
     margin-left: 1%;
-    opacity: 0.8;
   }
 
   .header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 15px;
     margin-left: 1%;
     margin-right: 2%;
-    margin-bottom: 1rem;
-  }
-
-  .header-row h1 {
-    color: var(--ocean-light) !important;
-  }
-
-  .header-row h1 span {
-    color: var(--ocean-blue) !important;
   }
 
   .table-home thead th {
@@ -88,6 +100,7 @@
 
   .table-home tbody tr {
     border-bottom: 1px solid rgba(100, 181, 246, 0.12) !important;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .table-home tbody tr:last-child {
@@ -96,6 +109,8 @@
 
   .table-home tbody tr:hover {
     background-color: rgba(59, 154, 138, 0.35) !important;
+    box-shadow: inset 0 0 15px rgba(100, 181, 246, 0.2);
+    transform: scale(1.005);
   }
 
   .btn-add-movie-terminal {
@@ -114,18 +129,8 @@
 
   .btn-add-movie-terminal:hover {
     background: rgba(129, 199, 132, 0.22) !important;
-    box-shadow: 0 0 12px rgba(129, 199, 132, 0.25);
-  }
-
-  .legend-terminal {
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 18px;
-    color: var(--ocean-light) !important;
-    letter-spacing: 1px;
-  }
-
-  .legend-terminal i {
-    color: var(--ocean-blue);
+    box-shadow: 0 0 12px rgba(129, 199, 132, 0.5), inset 0 0 8px rgba(129, 199, 132, 0.3);
+    text-shadow: 0 0 8px var(--ocean-green);
   }
 
   .table-home tbody td {
@@ -146,39 +151,6 @@
     color: var(--ocean-blue) !important;
   }
 
-  .table-edit {
-    background: rgba(100, 181, 246, 0.12) !important;
-    border: 1px solid var(--ocean-blue) !important;
-    color: var(--ocean-blue) !important;
-    font-family: "VT323", "Courier New", monospace !important;
-    border-radius: 3px !important;
-    transition: all 0.2s ease;
-  }
-
-  .table-edit:hover {
-    background: rgba(100, 181, 246, 0.22) !important;
-  }
-
-  .table-button {
-    background: rgba(229, 115, 115, 0.12) !important;
-    border: 1px solid var(--ocean-coral) !important;
-    color: var(--ocean-coral) !important;
-    font-family: "VT323", "Courier New", monospace !important;
-    border-radius: 3px !important;
-    transition: all 0.2s ease;
-  }
-
-  .table-button:hover {
-    background: rgba(229, 115, 115, 0.25) !important;
-  }
-
-  .table-container {
-    border: 1px solid rgba(100, 181, 246, 0.1);
-    border-radius: 10px;
-    background: rgba(19, 28, 39, 0.25);
-    overflow: hidden;
-  }
-
   @media (max-width: 768px) {
     .ascii-header {
       display: none;
@@ -196,7 +168,7 @@
       box-sizing: border-box;
     }
 
-    h1 {
+    .home-title {
       margin-top: 1rem;
       font-size: 2.5rem;
     }
@@ -214,7 +186,7 @@
   }
 
   @media (max-width: 600px) {
-    h1 {
+    .home-title {
       font-size: 2.1rem;
       letter-spacing: 1px;
     }
@@ -235,6 +207,31 @@
       margin-bottom: 12px;
     }
   }
+
+  @keyframes reelFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reel-frame {
+    animation: reelFadeIn 0.7s ease forwards;
+  }
+  #mascot-pre {
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    line-height: 1.45;
+    margin: 0;
+    white-space: pre;
+    color: var(--ocean-green);
+  }
+  #mascot-caption {
+    font-family: 'VT323', monospace;
+    font-size: 1.05rem;
+    color: var(--ocean-grey);
+    text-align: center;
+    margin: 10px 0 0;
+    letter-spacing: 1px;
+    opacity: 0.75;
+  }
 </style>
 
 <!-- JavaScript function for confirmation popup -->
@@ -242,34 +239,126 @@
   function confirmDeletion(movieName) {
     return confirm(`Are you sure you want to remove "${movieName}"?`);
   }
+
+  async function deleteMovie(btn, movieId, movieName, csrfToken) {
+    if (!confirmDeletion(movieName)) return;
+    
+    const row = btn.closest('tr');
+    
+    try {
+      const response = await fetch('/remove_movie', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ movie_id: movieId })
+      });
+      
+      if (response.ok) {
+        row.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'scale(0.95)';
+        setTimeout(() => row.remove(), 400);
+      } else {
+        alert('Failed to delete movie.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting movie.');
+    }
+  }
+
+  let sortDirection = 1;
+  function sortTable(columnIndex, isNumeric = false) {
+    const table = document.getElementById("table-home");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    
+    // Ignore empty message row
+    if (rows.length === 0 || rows[0].cells.length <= 1) return; 
+    
+    sortDirection = sortDirection * -1;
+    
+    rows.sort((a, b) => {
+      const aText = a.cells[columnIndex].innerText.trim();
+      const bText = b.cells[columnIndex].innerText.trim();
+      
+      if (isNumeric) {
+        return (parseFloat(aText) - parseFloat(bText)) * sortDirection;
+      }
+      return aText.localeCompare(bText) * sortDirection;
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+  }
 </script>
 
 <canvas class="canvas_home" id="canvas"></canvas>
 <script src="static/js/script_home.js"></script>
 
-<div class="list_list">
-  <div class="ascii-header">═══════════════════════════════════════</div>
+<div class="list_list app-panel">
+  <div class="home-layout">
+    
+    <!-- MAIN COLUMN -->
+    <div class="main-column">
 
-  <div class="header-row">
-    <h1 style="font-family: 'VT323', monospace; letter-spacing: 2px">
-      <span style="opacity: 0.8">//</span> Monthly Log
-    </h1>
+      <div class="header-row app-toolbar">
+        <h1 class="app-title-terminal home-title glitch-text">
+          <span>//</span> Monthly Log
+        </h1>
 
-    <a href="/add_movie" class="btn-add-movie btn-add-movie-terminal">
-      [ + ADD ENTRY ]
-    </a>
-  </div>
+        <a href="/add_movie" class="btn-add-movie btn-add-movie-terminal">
+          [ + ADD ENTRY ]
+        </a>
+      </div>
 
-  <div class="table-container">
-    <table class="table-home" id="table-home">
+      <!-- HERO HOLOGRAM -->
+      {% if highest_rated %}
+      <div class="cyber-card glass-panel" style="margin-bottom: 20px; padding: 0; overflow: hidden; display: flex; align-items: center; min-height: 200px;">
+        <div class="scanline-overlay"></div>
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('{{highest_rated['poster']}}'); background-size: cover; background-position: center; filter: blur(20px) brightness(0.4); z-index: 0;"></div>
+        
+        <div style="position: relative; z-index: 1; display: flex; align-items: center; padding: 20px; width: 100%; flex-wrap: wrap; gap: 20px;">
+          <img src="{{highest_rated['poster']}}" style="width: 100px; border-radius: 4px; box-shadow: 0 0 8px rgba(126, 181, 196, 0.3); border: 1px solid var(--ocean-blue); opacity: 0.92;" />
+          <div style="flex-grow: 1;">
+            <h2 style="font-family: 'VT323', monospace; color: #d0dde5; font-size: 2.5rem; margin: 0; text-shadow: 0 0 6px rgba(208,221,229,0.2);">{{ highest_rated['movie'].upper() }}</h2>
+            <p style="font-family: 'VT323', monospace; color: var(--ocean-green); font-size: 1.3rem; margin: 0; letter-spacing: 2px; opacity: 0.85;">HIGHLIGHT OF THE MONTH</p>
+          </div>
+          <div style="text-align: center; padding-right: 20px;">
+            <div style="font-family: 'VT323', monospace; font-size: 3.5rem; color: #c4a96d; text-shadow: 0 0 8px rgba(196, 169, 109, 0.4); line-height: 1;">{{ highest_rated['rating'] }}</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- STATS ROW -->
+      <div class="stats-row">
+        <div class="cyber-card glass-panel">
+          <p class="stat-label">Total Logs</p>
+          <p class="stat-value">{{ total }}</p>
+        </div>
+        <div class="cyber-card glass-panel">
+          <p class="stat-label">Avg Rating</p>
+          <p class="stat-value">{{ avg_rating }}</p>
+        </div>
+        <div class="cyber-card glass-panel">
+          <p class="stat-label">Cinema Trips</p>
+          <p class="stat-value">{{ cinema }}</p>
+        </div>
+      </div>
+
+      <div class="table-container app-table-shell glass-panel">
+        <table class="table-home" id="table-home">
       <thead>
         <tr style="text-align: left">
           <th style="padding: 10px"></th>
-          <th style="padding: 10px">TITLE</th>
+          <th style="padding: 10px; cursor: pointer; color: gold;" onclick="sortTable(1)">TITLE ↕</th>
           <th style="padding: 1px"></th>
-          <th style="padding: 10px">YEAR</th>
-          <th style="padding: 10px">DIRECTOR</th>
-          <th style="padding: 10px">RATING</th>
+          <th style="padding: 10px; cursor: pointer; color: gold;" onclick="sortTable(3, true)">YEAR ↕</th>
+          <th style="padding: 10px; cursor: pointer; color: gold;" onclick="sortTable(4)">DIRECTOR ↕</th>
+          <th style="padding: 10px; cursor: pointer; color: gold;" onclick="sortTable(5, true)">RATING ↕</th>
           <th style="width: 7%; padding: 10px"></th>
           <th style="width: 5%; padding: 10px"></th>
         </tr>
@@ -314,7 +403,9 @@
           <td style="padding: 10px; text-align: center">{{movie['rating']}}</td>
           <td style="padding: 10px">
             <form action="/edit_movie" method="GET" style="margin: 0">
-              <button type="submit" class="table-edit">Edit</button>
+              <button type="submit" class="table-edit app-table-action-edit">
+                Edit
+              </button>
               <input type="hidden" name="movie_id" value="{{movie['id']}}" />
               <input type="hidden" name="movie" value="{{movie['movie']}}" />
               <input type="hidden" name="year" value="{{movie['p_year']}}" />
@@ -328,42 +419,48 @@
             </form>
           </td>
           <td style="padding: 10px">
-            <form
-              action="/remove_movie"
-              method="post"
-              style="margin: 0"
-              onsubmit="return confirmDeletion('{{ movie['movie'] }}')"
-            >
-              <input
-                type="hidden"
-                name="csrf_token"
-                value="{{ csrf_token() }}"
-              />
-              <button
-                type="submit"
-                class="table-button"
-                style="
-                  border: none;
-                  color: white;
-                  padding: 5px 10px;
-                  cursor: pointer;
-                "
-              >
-                X
-              </button>
-              <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-            </form>
+            <button type="button" class="table-button app-table-action-danger" onclick="deleteMovie(this, {{ movie['id']|tojson }}, {{ movie['movie']|tojson }}, {{ csrf_token()|tojson }})">
+              X
+            </button>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
 
-    <p class="legend-terminal" style="margin-top: 20px; margin-left: 2%">
+    <p class="legend-terminal app-legend" style="margin-top: 20px; margin-left: 2%">
       <i class="fa-solid fa-film"></i> Cinema &nbsp;&nbsp;
       <i class="fa-solid fa-repeat"></i> Rewatch
     </p>
   </div>
-</div>
+  </div> <!-- end main column -->  <!-- SIDEBAR COLUMN -->
+  <div class="sidebar-column">
+    <div class="cyber-card glass-panel" style="height:100%;min-height:480px;display:flex;flex-direction:column;align-items:center;padding:1rem 0.8rem;gap:6px;">
+      <h3 style="font-family:'VT323',monospace;color:var(--ocean-blue);margin:0;border-bottom:1px dashed rgba(126,181,196,0.3);padding-bottom:8px;font-size:1.15rem;opacity:0.85;width:100%;text-align:center;flex-shrink:0;">// NOW IN CINEMAS</h3>
 
+      <!-- Poster carousel (takes most space) -->
+      <div style="position:relative;width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column;align-items:center;">
+        <div id="kin-poster-wrap" style="position:relative;width:100%;flex:1 1 0;min-height:0;overflow:hidden;border-radius:6px;">
+
+          <div id="kin-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;gap:8px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
+            <img id="kin-img-a" src="" alt="" style="width:200px;border-radius:6px;box-shadow:0 10px 32px rgba(0,0,0,0.5);border:1px solid rgba(126,181,196,0.2);object-fit:cover;" />
+            <p id="kin-title-a" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1.05rem;margin:0;text-align:center;line-height:1.25;opacity:0.88;"></p>
+          </div>
+
+          <div id="kin-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;gap:8px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
+            <img id="kin-img-b" src="" alt="" style="width:200px;border-radius:6px;box-shadow:0 10px 32px rgba(0,0,0,0.5);border:1px solid rgba(126,181,196,0.2);object-fit:cover;" />
+            <p id="kin-title-b" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1.05rem;margin:0;text-align:center;line-height:1.25;opacity:0.88;"></p>
+          </div>
+
+        </div>
+        <div id="kin-dots" style="display:flex;justify-content:center;gap:5px;margin-top:6px;flex-shrink:0;"></div>
+      </div>
+
+      <!-- Kin canvas (compact strip at bottom) -->
+      <canvas id="kin-canvas" width="240" height="80" style="image-rendering:pixelated;image-rendering:crisp-edges;width:240px;height:80px;flex-shrink:0;"></canvas>
+    </div>
+  </div>
+  </div><!-- end home-layout -->
+</div>
+<script src="/static/js/kin_mascot.js"></script>
 {% endblock %} {% endblock %}

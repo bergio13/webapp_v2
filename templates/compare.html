@@ -1,0 +1,225 @@
+{% extends 'base.html' %} 
+{% block title %}Compare Taste{% endblock %} 
+{% block body_class %} friends_page{% endblock %}
+{% block body%} 
+{% block content %}
+
+<!-- VT323 Terminal Font -->
+<link
+  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  :root {
+    --friends-purple: #b39ddb;
+    --friends-purple-light: #d1c4e9;
+    --friends-green: #81c784;
+    --friends-grey: #b0bec5;
+    --friends-dark: #1a1a2e;
+    --friends-light: #e0e7ee;
+    --friends-coral: #e57373;
+  }
+
+  .friends {
+    background-color: #323232 !important;
+    background-image: radial-gradient(#7a4dc2 0.7px, #323232 0.7px) !important;
+    background-size: 14px 14px !important;
+    min-height: 100vh;
+    padding-bottom: 50px;
+  }
+
+  .friends_page::before {
+    background-color: #323232 !important;
+    background-image: radial-gradient(#7a4dc2 0.7px, #323232 0.7px) !important;
+    background-size: 14px 14px !important;
+  }
+
+  .section-title {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.8rem;
+    color: var(--friends-light);
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .section-title span {
+    color: var(--friends-purple);
+  }
+
+  .match-card {
+    background: rgba(26, 26, 46, 0.85);
+    border: 1px solid rgba(179, 157, 219, 0.3);
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 800px;
+    margin: 40px auto;
+    text-align: center;
+  }
+
+  .match-score {
+    font-family: "VT323", monospace;
+    font-size: 5rem;
+    font-weight: bold;
+    margin: 20px 0;
+    text-shadow: 0 0 15px rgba(129, 199, 132, 0.2);
+  }
+
+  .match-score.high { color: var(--friends-green); }
+  .match-score.med { color: #ffd54f; }
+  .match-score.low { color: var(--friends-coral); }
+
+  .shared-count {
+    font-family: "VT323", monospace;
+    font-size: 1.5rem;
+    color: var(--friends-grey);
+    margin-bottom: 30px;
+  }
+
+  .movie-comparison-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  .compare-item {
+    display: flex;
+    align-items: center;
+    background: rgba(26, 26, 46, 0.6);
+    border: 1px solid rgba(179, 157, 219, 0.15);
+    border-radius: 6px;
+    padding: 15px;
+    gap: 20px;
+  }
+
+  .compare-poster {
+    width: 60px;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+
+  .compare-info {
+    flex: 1;
+    text-align: left;
+  }
+
+  .compare-title {
+    font-family: "VT323", monospace;
+    font-size: 1.3rem;
+    color: var(--friends-light);
+    margin: 0 0 5px 0;
+  }
+
+  .ratings-row {
+    display: flex;
+    gap: 30px;
+    font-family: "VT323", monospace;
+    font-size: 1.1rem;
+  }
+
+  .rating-you { color: var(--friends-purple-light); }
+  .rating-them { color: var(--ocean-grey); }
+
+  .diff-badge {
+    font-family: "VT323", monospace;
+    font-size: 1.2rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(179, 157, 219, 0.1);
+  }
+
+  .diff-badge.diff-0 { color: var(--friends-green); border: 1px solid rgba(129, 199, 132, 0.4); }
+  .diff-badge.diff-1 { color: #ffd54f; border: 1px solid rgba(255, 213, 79, 0.4); }
+  .diff-badge.diff-high { color: var(--friends-coral); border: 1px solid rgba(229, 115, 115, 0.4); }
+
+  .back-btn {
+    display: inline-block;
+    font-family: "VT323", monospace;
+    color: var(--friends-purple-light);
+    border: 1px solid var(--friends-purple);
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+  }
+
+  .back-btn:hover {
+    background: rgba(179, 157, 219, 0.2);
+    color: white;
+  }
+
+  @media (max-width: 600px) {
+    .match-card {
+      padding: 15px;
+      margin: 20px 10px;
+    }
+    .compare-item {
+      padding: 10px;
+      gap: 10px;
+    }
+    .ratings-row {
+      flex-direction: column;
+      gap: 5px;
+    }
+  }
+</style>
+
+<div class="friends">
+  <main class="main-container main-friends" style="padding-top: 2rem;">
+    
+    <div style="max-width: 800px; margin: 0 auto;">
+      <a href="/friends" class="back-btn"><< BACK_TO_FRIENDS</a>
+    </div>
+
+    <div class="match-card">
+      <h2 class="section-title" style="margin-top:0;"><span>//</span> TASTE_MATCH_ANALYSIS</h2>
+      <div style="font-family: 'VT323', monospace; font-size: 1.8rem; color: var(--friends-light);">
+        You vs. <span style="color: var(--friends-purple-light);">{{ friend_username }}</span>
+      </div>
+
+      {% if match_data.shared_count == 0 %}
+        <div class="match-score med">N/A</div>
+        <div class="shared-count">> 0 movies in common</div>
+        <div style="color: var(--friends-grey); font-family: 'VT323', monospace; font-size: 1.2rem; margin-top: 20px;">
+          You need to watch and rate the same movies to compare tastes!
+        </div>
+      {% else %}
+        {% set score = match_data.match_percent %}
+        {% set score_class = 'high' if score >= 80 else ('med' if score >= 50 else 'low') %}
+        
+        <div class="match-score {{ score_class }}">{{ score }}%</div>
+        <div class="shared-count">> Based on {{ match_data.shared_count }} shared movie(s)</div>
+
+        <div class="movie-comparison-list">
+          {% for movie in match_data.shared_movies %}
+            <div class="compare-item">
+              <img src="{{ movie.poster }}" class="compare-poster" alt="{{ movie.movie }}">
+              <div class="compare-info">
+                <h4 class="compare-title">{{ movie.movie }} ({{ movie.year }})</h4>
+                <div class="ratings-row">
+                  <div class="rating-you">You: {{ movie.u_rating }}/10</div>
+                  <div class="rating-them">Them: {{ movie.f_rating }}/10</div>
+                </div>
+              </div>
+              
+              {% set diff = movie.diff %}
+              {% set diff_class = 'diff-0' if diff <= 1 else ('diff-1' if diff <= 3 else 'diff-high') %}
+              
+              <div class="diff-badge {{ diff_class }}">
+                {% if diff == 0 %}EXACT MATCH
+                {% else %}Δ {{ diff }}
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+{% endblock %}

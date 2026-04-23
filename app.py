@@ -540,19 +540,58 @@ def format_ai_response_to_html(text, watched_lookup=None):
 # MAIN NAVIGATION ROUTES
 # ========================================
 
+@app.route('/api/now-playing')
+@login_required
+def api_now_playing():
+    """Return a list of movies currently in cinemas this week (TMDB now_playing)."""
+    import requests as http_requests
+    api_key = tmdb.api_key
+    if not api_key:
+        return jsonify({'movies': []})
+    try:
+        url = f'https://api.themoviedb.org/3/movie/now_playing?api_key={api_key}&language=en-US&page=1'
+        resp = http_requests.get(url, timeout=5)
+        data = resp.json()
+        movies = []
+        for m in (data.get('results') or [])[:8]:
+            poster = m.get('poster_path')
+            if poster:
+                movies.append({
+                    'title': m.get('title', ''),
+                    'poster': f'https://image.tmdb.org/t/p/w185{poster}',
+                    'rating': round(m.get('vote_average', 0), 1),
+                })
+        return jsonify({'movies': movies})
+    except Exception:
+        return jsonify({'movies': []})
+
 @app.route('/home')
 def hello():
     if 'loggedin' in session:
         try:
             _, month_now = get_current_year_month()
             movies = get_monthly_movies(session['id'], month_now)
+            
+            # Calculate Monthly Stats
+            total_this_month = len(movies)
+            avg_rating = round(sum(float(m['rating']) for m in movies) / total_this_month, 1) if total_this_month > 0 else 0
+            cinema_trips = sum(1 for m in movies if int(m['cinema']) == 1)
+            highest_rated = max(movies, key=lambda m: float(m['rating'])) if movies else None
+
         except Exception as e:
             app.logger.exception("Failed to load home monthly movies: %s", e)
             movies = []
+            total_this_month = 0
+            avg_rating = 0
+            cinema_trips = 0
+            highest_rated = None
             flash('Something went wrong, please refresh the page', category='error')
     else:
-        return render_template('home.html', movies=[])
-    return render_template('home.html', session=session, movies=movies)
+        return render_template('home.html', movies=[], total=0, avg_rating=0, cinema=0, highest_rated=None)
+        
+    return render_template('home.html', session=session, movies=movies, 
+                           total=total_this_month, avg_rating=avg_rating, 
+                           cinema=cinema_trips, highest_rated=highest_rated)
 
 @app.route('/')
 def animation():
@@ -576,9 +615,12 @@ def lista():
 @app.route('/list/<username>')
 def lista_user(username):
     user = get_user_id(username)
-    print(user)
+    if not user:
+        app.logger.warning("Friend list requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends' if 'loggedin' in session else '/')
+
     id = user[0]['id']
-    print(id)
     year_now, _ = get_current_year_month()
     try:
         movies = get_movies(id)
@@ -607,9 +649,14 @@ def show_directors():
 @app.route('/directors/<username>', methods=['GET'])
 @login_required
 def show_directors_friends(username):
+    user = get_user_id(username)
+    if not user:
+        app.logger.warning("Friend directors requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends')
+
+    id = user[0]['id']
     try:
-        id = get_user_id(username)
-        id = id[0]['id']
         movies = get_movies_groupby_director(id)
         directors = get_directors(id)
     except Exception as e:
@@ -617,7 +664,7 @@ def show_directors_friends(username):
         movies = []
         directors = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_directors.html', movies=movies, directors=directors)
+    return render_template('_directors.html', movies=movies, directors=directors, username=username)
 
 @app.route('/genres', methods=['GET'])
 @login_required
@@ -644,9 +691,14 @@ def show_genres():
 @login_required
 def show_genres_friends(username):
     final_genres = set()
+    user = get_user_id(username)
+    if not user:
+        app.logger.warning("Friend genres requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends')
+
+    id = user[0]['id']
     try:
-        id = get_user_id(username)
-        id = id[0]['id']
         movies = get_movies_groupby_genre(id)
         in_genres = ""
         generi = get_genres(id)
@@ -660,7 +712,7 @@ def show_genres_friends(username):
         movies = []
         generi = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_genres.html', movies=movies, genres=final_genres)
+    return render_template('_genres.html', movies=movies, genres=final_genres, username=username)
 
 
 @app.route('/years', methods=['GET'])
@@ -680,9 +732,14 @@ def show_years():
 @app.route('/years/<username>', methods=['GET'])
 @login_required
 def show_years_friends(username):
+    user = get_user_id(username)
+    if not user:
+        app.logger.warning("Friend years requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends')
+
+    id = user[0]['id']
     try:
-        id = get_user_id(username)
-        id = id[0]['id']
         movies = get_movies_groupby_year(id)
         anni = get_years(id)
     except Exception as e:
@@ -690,7 +747,7 @@ def show_years_friends(username):
         movies = []
         anni = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_years.html', movies=movies, years=anni)
+    return render_template('_years.html', movies=movies, years=anni, username=username)
 
 # ========================================
 # STATISTICS & ANALYTICS ROUTES
@@ -713,9 +770,14 @@ def show_ratings():
 @app.route('/ratings/<username>', methods=['GET'])
 @login_required
 def show_ratings_friends(username):
+    user = get_user_id(username)
+    if not user:
+        app.logger.warning("Friend ratings requested for unknown user: %s", username)
+        flash('User not found', category='error')
+        return redirect('/friends')
+
+    id = user[0]['id']
     try:
-        id = get_user_id(username)
-        id = id[0]['id']
         movies = get_movies_groupby_year(id)
         ratings = get_ratings(id)
     except Exception as e:
@@ -723,7 +785,7 @@ def show_ratings_friends(username):
         movies = []
         ratings = []
         flash('Something went wrong, please refresh the page', category='error')
-    return render_template('_ratings.html', movies=movies, ratings=ratings)
+    return render_template('_ratings.html', movies=movies, ratings=ratings, username=username)
 
 # ========================================
 # USER PROFILE & DATA ROUTES
@@ -780,6 +842,12 @@ def profile_friend(username):
 @login_required
 def search_friends():
     friends = get_friends(session['id'])
+    
+    # Calculate a basic taste match for each friend to display on their card
+    # We will just fetch it directly to avoid too many heavy queries if there are many friends
+    # For a large number of friends, this might be slow, but for now we'll do it.
+    # Actually, the user asked for a "Compare" page, so we don't need to calculate match percent here!
+    
     if request.method == "POST":
         name = request.form['name']
         users = get_user_name(name)
@@ -787,13 +855,11 @@ def search_friends():
             flash('No user found', category='error')
         else:
             return render_template('friends.html', users=users, friends=friends, session=session) 
-    liked = []   
-    for friend in friends:
-        movies = get_movies(friend['user_id'])
-        for movie in movies:
-            if movie['rating'] >= 8 and datetime.date.today() - movie['v_date'] < datetime.timedelta(days=30):
-                liked.append(movie)                  
-    return render_template('friends.html', friends=friends, liked=liked, session=session)
+            
+    # Fetch real-time activity feed
+    recent_activity = get_friend_activity(session['id'], limit=25)
+    
+    return render_template('friends.html', friends=friends, activity=recent_activity, session=session)
 
 @app.route('/follow', methods=['GET', 'POST'])
 @login_required
@@ -802,9 +868,39 @@ def follow():
         friend_id = request.form['user_id']
         friend_username = request.form['username']
         insert_friends(friend_id, friend_username, session['id'])
+        flash(f'You are now following {friend_username}', 'success')
         return redirect('/friends')
     return redirect('/friends')
 
+@app.route('/unfollow', methods=['POST'])
+@login_required
+def unfollow():
+    friend_id = request.form.get('user_id')
+    friend_username = request.form.get('username')
+    if friend_id:
+        try:
+            friend_id = int(friend_id)
+        except ValueError:
+            pass
+        remove_friend(session['id'], friend_id)
+        flash(f'You unfollowed {friend_username}', 'success')
+    return redirect('/friends')
+
+@app.route('/compare/<username>')
+@login_required
+def compare_taste(username):
+    # Get friend user ID
+    friend_data = get_user_name(username)
+    if not friend_data:
+        flash("User not found.", "error")
+        return redirect('/friends')
+        
+    friend_id = friend_data[0]['id']
+    
+    # Calculate match
+    match_data = get_taste_match(session['id'], friend_id)
+    
+    return render_template('compare.html', friend_username=username, match_data=match_data, session=session)
 
 @app.route('/discover', methods=['GET', 'POST'])
 @login_required
@@ -998,9 +1094,16 @@ def add_movie():
 @limiter.limit("30 per hour")  # Rate limit movie removals
 def remove_movie():
     if request.method == "POST":
-        movie_id = request.form['movie_id']
+        movie_id = request.form.get('movie_id')
+        if not movie_id and request.is_json:
+            movie_id = request.json.get('movie_id')
+            
         remove_movie_by_id(movie_id)
         clear_user_cache(session['id'])  # Clear cache after removing movie
+        
+        if request.is_json or request.accept_mimetypes.accept_json:
+            return jsonify({'success': True, 'message': 'Movie removed'})
+            
         flash('Movie removed', category='success')
         return redirect('/home')
     return redirect('/home')

@@ -390,6 +390,92 @@ def get_friends(parent_id):
         friends_dicts.append(friend_dict)
     return friends_dicts
 
+def get_friend_activity(parent_id, limit=20):
+    friends = get_friends(parent_id)
+    if not friends:
+        return []
+    
+    friend_ids = [f['user_id'] for f in friends]
+    friend_map = {f['user_id']: f['f_username'] for f in friends}
+    
+    # Supabase allows 'in' filtering using .in_()
+    data = client.table('lista') \
+        .select('*') \
+        .in_('parent_id', friend_ids) \
+        .order('v_date', desc=True) \
+        .limit(limit) \
+        .execute()
+        
+    lista_dicts = []
+    for row in data.data:
+        try:
+            v_date_obj = datetime.strptime(row['v_date'], "%Y-%m-%d").date()
+        except:
+            v_date_obj = row['v_date']
+            
+        movie_dict = {
+            "id": row['lista_id'],
+            "movie": row['movie'],
+            "director": row['director'],
+            "genre": row['genre'],
+            "p_year": row['p_year'],
+            "v_date": v_date_obj,
+            "rating": row['rating'],
+            "rewatch": row['rewatch'],
+            "tv_show": row['tv_show'],
+            "poster": row['poster'],
+            "cinema": row['cinema'],
+            "f_username": friend_map.get(row['parent_id'], "Unknown"),
+            "f_user_id": row['parent_id']
+        }
+        lista_dicts.append(movie_dict)
+    return lista_dicts
+
+def remove_friend(parent_id, friend_id):
+    client.table('friends').delete().eq('parent_id', parent_id).eq('user_id', friend_id).execute()
+
+def get_taste_match(user_id, friend_id):
+    user_movies = get_movies(user_id)
+    friend_movies = get_movies(friend_id)
+    
+    user_ratings = {f"{m['movie'].lower()}_{m['p_year']}": m['rating'] for m in user_movies}
+    
+    shared_movies = []
+    total_diff = 0
+    count = 0
+    
+    for m in friend_movies:
+        key = f"{m['movie'].lower()}_{m['p_year']}"
+        if key in user_ratings:
+            u_rating = user_ratings[key]
+            f_rating = m['rating']
+            diff = abs(u_rating - f_rating)
+            
+            shared_movies.append({
+                "movie": m['movie'],
+                "poster": m['poster'],
+                "year": m['p_year'],
+                "u_rating": u_rating,
+                "f_rating": f_rating,
+                "diff": diff
+            })
+            total_diff += diff
+            count += 1
+            
+    if count == 0:
+        return {"match_percent": 0, "shared_count": 0, "shared_movies": []}
+        
+    avg_diff = total_diff / count
+    match_percent = max(0, min(100, 100 - (avg_diff * 10)))
+    
+    shared_movies.sort(key=lambda x: x['diff'])
+    
+    return {
+        "match_percent": int(match_percent),
+        "shared_count": count,
+        "shared_movies": shared_movies
+    }
+
 #############################################
 ####### TOKENS ##############################
 #############################################

@@ -1,5 +1,5 @@
 {% extends 'base.html' %} {% block title %}Watched Movies{% endblock %} {% block
-body_attributes %} class="list_page"{% endblock %} {% block body %}
+body_class %} list_page{% endblock %} {% block body %}
 
 <!-- VT323 Terminal Font -->
 <link
@@ -12,392 +12,41 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
   crossorigin="anonymous"
 ></script>
 
-<style>
-  /* Original Neon Theme with ASCII Touch */
-  :root {
-    --neon-cyan: rgb(0, 204, 255);
-    --neon-gold: gold;
-    --list-purple: #7a4dc2;
-    --list-purple-light: #b39ddb;
-    --list-grey: #b0bec5;
-    --list-dark: #2a2a37;
-    --list-light: #e0e7ee;
-    --list-coral: #e57373;
-  }
-
-  .list_list {
-    background: rgba(42, 42, 55, 0.95) !important;
-  }
-
-  .ascii-header {
-    color: var(--list-purple-light);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 14px;
-    line-height: 1.1;
-    white-space: pre;
-    text-shadow: 0 0 5px rgba(179, 157, 219, 0.3);
-    margin-bottom: 10px;
-    opacity: 0.8;
-  }
-
-  .filter-add-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 1rem;
-  }
-
-  .buttons-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .page-title {
-    font-family: "VT323", "Courier New", monospace !important;
-    font-size: 2rem;
-    color: var(--list-purple-light) !important;
-    letter-spacing: 2px;
-    margin: 0;
-    text-shadow: 0 0 8px rgba(179, 157, 219, 0.4);
-  }
-
-  .page-title span {
-    color: var(--list-purple);
-    opacity: 0.8;
-  }
-
-  /* Neon-style buttons matching original */
-  .add-movie-btn {
-    font-family: "VT323", monospace !important;
-    font-size: 1.3rem;
-    background: transparent !important;
-    border: none !important;
-    color: var(--neon-cyan) !important;
-    padding: 8px 16px !important;
-    text-shadow: 0 0 8px rgba(0, 204, 255, 0.5);
-    transition: all 0.3s ease;
-  }
-
-  .add-movie-btn:hover {
-    color: var(--neon-gold) !important;
-    text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
-  }
-
-  .dropbtn {
-    font-family: "VT323", monospace !important;
-    font-size: 1.2rem !important;
-    background: transparent !important;
-    border: 0.1rem solid rgba(0, 204, 255, 0.4) !important;
-    border-radius: 2rem !important;
-    color: var(--neon-cyan) !important;
-    padding: 0.8em !important;
-    text-shadow: 0 0 8px rgba(0, 204, 255, 0.5);
-    transition: all 0.3s ease;
-    letter-spacing: 1px;
-  }
-
-  .dropbtn:hover {
-    color: var(--neon-gold) !important;
-    border-color: rgba(255, 215, 0, 0.5) !important;
-    text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
-  }
-
-  .dropdown-content {
-    background: rgba(26, 26, 46, 0.95) !important;
-    border: 1px solid rgba(179, 157, 219, 0.3) !important;
-  }
-
-  .dropdown-content a {
-    font-family: "VT323", monospace;
-    font-size: 1.1rem;
-    color: var(--list-light) !important;
-  }
-
-  .dropdown-content a:hover {
-    background: rgba(122, 77, 194, 0.2) !important;
-    color: var(--list-purple-light) !important;
-  }
-
-  .dropdown-content input {
-    font-family: "VT323", monospace;
-    background: rgba(26, 26, 46, 0.8) !important;
-    border: 1px solid rgba(179, 157, 219, 0.2) !important;
-    color: var(--list-light) !important;
-  }
-
-  /* Table styling */
-  .table-lista1 {
-    border: 1px solid rgba(122, 77, 194, 0.15);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .table-lista1 thead tr {
-    background: linear-gradient(
-      to right,
-      rgba(122, 77, 194, 0.4),
-      rgba(106, 235, 252, 0.3)
-    ) !important;
-  }
-
-  .table-lista1 thead th {
-    font-family: "VT323", "Courier New", monospace !important;
-    font-size: 1.2rem;
-    color: var(--list-light) !important;
-    letter-spacing: 1px;
-    padding: 12px 10px !important;
-  }
-
-  .table-lista1 tbody tr {
-    border-bottom: 1px solid rgba(122, 77, 194, 0.1);
-    transition: background 0.2s ease;
-  }
-
-  .table-lista1 tbody tr:hover {
-    background: rgba(122, 77, 194, 0.15) !important;
-  }
-
-  .table-lista1 tbody td {
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.1rem;
-    letter-spacing: 0.5px;
-  }
-
-  .table-lista1 tbody td a {
-    font-family: "VT323", "Courier New", monospace;
-    transition: color 0.2s ease;
-  }
-
-  .table-lista1 tbody td a:hover {
-    color: var(--list-purple-light) !important;
-  }
-
-  .table-button-list {
-    font-family: "VT323", monospace !important;
-    background: rgba(229, 115, 115, 0.15) !important;
-    border: 1px solid var(--list-coral) !important;
-    color: var(--list-coral) !important;
-    border-radius: 3px !important;
-    transition: all 0.2s ease;
-  }
-
-  .table-button-list:hover {
-    background: rgba(229, 115, 115, 0.3) !important;
-  }
-
-  .legend-terminal {
-    font-family: "VT323", monospace;
-    font-size: 1.1rem;
-    color: var(--list-grey);
-    margin-top: 20px;
-  }
-
-  .legend-terminal i {
-    color: var(--list-purple);
-  }
-
-  /* Preloader styling */
-  #preloader {
-    background: var(--list-dark) !important;
-  }
-
-  @media (max-width: 768px) {
-    .ascii-header {
-      display: none;
-    }
-    .page-title {
-      font-size: 1.8rem;
-      width: 100%;
-      margin-top: 15px;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    .filter-add-section {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-    .buttons-container {
-      display: flex;
-      flex-direction: row !important;
-      flex-wrap: wrap !important;
-      gap: 10px;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-    }
-    .add-movie-btn {
-      font-size: 1.1rem;
-      padding: 10px 16px !important;
-      text-align: center;
-      display: inline-block;
-      white-space: nowrap;
-      min-height: 44px;
-    }
-    .dropbtn {
-      font-size: 1rem !important;
-      padding: 10px 16px !important;
-      display: inline-block;
-      white-space: nowrap;
-      min-height: 44px;
-    }
-    .dropdown {
-      display: inline-block;
-    }
-    .dropdown-content {
-      left: auto !important;
-      right: 0;
-      transform: none !important;
-      min-width: 210px;
-      max-width: calc(100vw - 2rem);
-    }
-    /* Table horizontal scroll wrapper */
-    .table-wrapper {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin: 0;
-      padding: 0;
-      width: 100%;
-    }
-    .table-lista1 {
-      min-width: 740px !important;
-      width: 100% !important;
-      font-size: 0.9rem;
-      display: table !important;
-      white-space: nowrap !important;
-    }
-    .table-lista1 thead,
-    .table-lista1 tbody,
-    .table-lista1 tr,
-    .table-lista1 th,
-    .table-lista1 td {
-      display: revert !important;
-    }
-    .table-lista1 thead th {
-      font-size: 0.9rem;
-      padding: 8px 6px !important;
-      white-space: nowrap;
-    }
-    .table-lista1 tbody td {
-      font-size: 0.9rem;
-      padding: 8px 6px;
-    }
-    .table-poster1 {
-      width: 40px !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .page-title {
-      font-size: 1.8rem;
-    }
-    .list_list {
-      padding: 10px !important;
-      margin-left: 0 !important;
-    }
-    .add-movie-btn,
-    .dropbtn {
-      font-size: 1rem !important;
-      padding: 8px 12px !important;
-      margin-top: 0px;
-    }
-    .buttons-container {
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .dropdown-content {
-      right: 0;
-      left: auto !important;
-      transform: none !important;
-      min-width: 190px;
-    }
-    .table-lista1 {
-      min-width: 680px !important;
-    }
-    .table-lista1 thead th,
-    .table-lista1 tbody td {
-      font-size: 0.85rem;
-      padding: 6px 4px !important;
-    }
-    .table-poster1 {
-      width: 35px !important;
-    }
-  }
-</style>
-
 <!-- Preloader -->
-<div
-  id="preloader"
-  style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-  "
->
-  <div
-    class="loader"
-    style="
-      border: 8px solid rgba(179, 157, 219, 0.3);
-      border-top: 8px solid #b39ddb;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-    "
-  ></div>
+<div id="preloader" class="app-preloader">
+  <div class="loader app-preloader-spinner"></div>
 </div>
 
 <!-- Main Content -->
-<div class="list_list" style="display: none">
-  <div class="ascii-header">
+<div class="list_list app-panel app-panel-mobile" style="display: none">
+  <div class="ascii-header app-ascii-header app-ascii-hide-mobile">
     ╔═══ WATCHED_LIST.db :: total_entries: {{ movies|length }} ═══╝
   </div>
 
-  <!-- Filter and Add Movie Section -->
-  <div class="filter-add-section">
-    <h2 class="page-title"><span>//</span> Watched List</h2>
+  {% include '_analytics_wayfinder.html' %}
 
-    <div class="buttons-container">
-      <a href="/add_movie" class="a_list add-movie-btn">[ + ADD ]</a>
-      <div class="dropdown">
-        <button onclick="myFunction()" class="dropbtn">[ FILTER ]</button>
-        <div id="myDropdown" class="dropdown-content">
-          <input
-            type="text"
-            placeholder="> Search.."
-            id="myInput"
-            onkeyup="filterFunction()"
-          />
-          <a href="/directors">> Director</a>
-          <a href="/genres">> Genre</a>
-          <a href="/years">> Year</a>
-          <a href="/ratings">> Rating</a>
-        </div>
-      </div>
+  <!-- Filter and Add Movie Section -->
+  <div class="filter-add-section app-toolbar app-toolbar-stack-mobile">
+    <h2 class="page-title app-title-terminal app-title-themed app-title-mobile-centered"><span>//</span> Watched List</h2>
+
+    <div class="buttons-container app-toolbar-actions app-toolbar-actions-mobile">
+      <a href="/add_movie" class="add-movie-btn app-toolbar-link app-toolbar-link-mobile"
+        >[ + ADD ]</a
+      >
     </div>
   </div>
 
-  <div class="table-wrapper">
-    <table class="table-lista1">
+  <div class="table-wrapper app-table-scroll app-table-scroll-mobile">
+    <table class="table-lista1 app-grid-table app-table-responsive app-table-mobile-width app-table-mobile-structured">
       <thead>
         <tr style="text-align: left">
-          <th>VIEW_DATE</th>
-          <th></th>
-          <th>TITLE</th>
-          <th>YEAR</th>
-          <th>DIRECTOR</th>
-          <th>RATING</th>
-          <th></th>
+          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(0)">VIEW_DATE ↕</th>
+          <th style="padding: 10px"></th>
+          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(2)">TITLE ↕</th>
+          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(3, true)">YEAR ↕</th>
+          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(4)">DIRECTOR ↕</th>
+          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(5, true)">RATING ↕</th>
+          <th style="padding: 10px"></th>
         </tr>
       </thead>
       <tbody>
@@ -414,7 +63,7 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
           </td>
           <td style="padding: 10px">
             <img
-              class="table-poster1"
+              class="table-poster1 app-table-poster-responsive"
               src="{{movie['poster']}}"
               style="width: 50px"
               loading="lazy"
@@ -432,20 +81,9 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
           <td style="padding: 10px">{{movie['director'].upper()}}</td>
           <td style="padding: 10px; text-align: center">{{movie['rating']}}</td>
           <td style="padding: 10px">
-            <form
-              action="/remove_movie"
-              method="post"
-              style="margin: 0"
-              onsubmit="return confirmDeletion('{{ movie['movie'] }}')"
-            >
-              <input
-                type="hidden"
-                name="csrf_token"
-                value="{{ csrf_token() }}"
-              />
-              <button type="submit" class="table-button-list">X</button>
-              <input type="hidden" name="movie_id" value="{{movie['id']}}" />
-            </form>
+            <button type="button" class="table-button-list app-table-action-danger" onclick="deleteMovie(this, {{ movie['id'] | tojson }}, {{ movie['movie'] | tojson }}, {{ csrf_token() | tojson }})">
+              X
+            </button>
           </td>
         </tr>
         {% endfor %}
@@ -453,28 +91,76 @@ body_attributes %} class="list_page"{% endblock %} {% block body %}
     </table>
   </div>
 
-  <p class="legend-terminal">
+  <p class="legend-terminal app-legend">
     <i class="fa-solid fa-film"></i> cinema &nbsp;&nbsp;
     <i class="fa-solid fa-repeat"></i> rewatch
   </p>
 </div>
 
-<script src="static/js/grid.js"></script>
+<script src="/static/js/grid.js"></script>
 
 <script>
   function confirmDeletion(movieName) {
     return confirm(`Are you sure you want to remove "${movieName}"?`);
   }
 
+  async function deleteMovie(btn, movieId, movieName, csrfToken) {
+    if (!confirmDeletion(movieName)) return;
+    
+    const row = btn.closest('tr');
+    
+    try {
+      const response = await fetch('/remove_movie', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ movie_id: movieId })
+      });
+      
+      if (response.ok) {
+        row.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'scale(0.95)';
+        setTimeout(() => row.remove(), 400);
+      } else {
+        alert('Failed to delete movie.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting movie.');
+    }
+  }
+
+  let sortDirection = 1;
+  function sortTable(columnIndex, isNumeric = false) {
+    const table = document.querySelector(".table-lista1");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    
+    if (rows.length === 0 || rows[0].cells.length <= 1) return; 
+    
+    sortDirection = sortDirection * -1;
+    
+    rows.sort((a, b) => {
+      const aText = a.cells[columnIndex].innerText.trim();
+      const bText = b.cells[columnIndex].innerText.trim();
+      
+      if (isNumeric) {
+        return (parseFloat(aText) - parseFloat(bText)) * sortDirection;
+      }
+      return aText.localeCompare(bText) * sortDirection;
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+  }
+
   window.onload = () => {
     document.getElementById("preloader").style.display = "none";
     document.querySelector(".list_list").style.display = "block";
   };
-
-  function toggleButtonsContainer() {
-    const buttonsContainer = document.querySelector(".buttons-container");
-    buttonsContainer.classList.toggle("show-buttons");
-  }
 </script>
 
 {% endblock %}

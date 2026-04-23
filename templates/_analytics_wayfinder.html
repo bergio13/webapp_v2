@@ -1,0 +1,45 @@
+{% set has_friend = username is defined and username %}
+{% if has_friend %}
+  {% set path_list = '/list/' ~ username %}
+  {% set path_directors = '/directors/' ~ username %}
+  {% set path_genres = '/genres/' ~ username %}
+  {% set path_years = '/years/' ~ username %}
+  {% set path_ratings = '/ratings/' ~ username %}
+{% else %}
+  {% set path_list = '/lista' %}
+  {% set path_directors = '/directors' %}
+  {% set path_genres = '/genres' %}
+  {% set path_years = '/years' %}
+  {% set path_ratings = '/ratings' %}
+{% endif %}
+
+{% set active_section = 'LIST' %}
+{% if request.path == path_directors %}
+  {% set active_section = 'DIRECTORS' %}
+{% elif request.path == path_genres %}
+  {% set active_section = 'GENRES' %}
+{% elif request.path == path_years %}
+  {% set active_section = 'YEARS' %}
+{% elif request.path == path_ratings %}
+  {% set active_section = 'RATINGS' %}
+{% endif %}
+
+<nav class="app-wayfinder" aria-label="List analytics sections">
+  <details class="app-wayfinder-menu">
+    <summary class="app-wayfinder-trigger" aria-label="Open analytics navigation">
+      <span class="app-wayfinder-trigger-left">
+        <span class="app-wayfinder-trigger-tag">[ FILTER ]</span>
+        <span class="app-wayfinder-trigger-active">{{ active_section }}</span>
+      </span>
+      <span class="app-wayfinder-caret" aria-hidden="true"></span>
+    </summary>
+
+    <div class="app-wayfinder-panel" role="list">
+      <a href="{{ path_list }}" class="app-wayfinder-link{% if request.path == path_list %} active{% endif %}">LIST</a>
+      <a href="{{ path_directors }}" class="app-wayfinder-link{% if request.path == path_directors %} active{% endif %}">DIRECTORS</a>
+      <a href="{{ path_genres }}" class="app-wayfinder-link{% if request.path == path_genres %} active{% endif %}">GENRES</a>
+      <a href="{{ path_years }}" class="app-wayfinder-link{% if request.path == path_years %} active{% endif %}">YEARS</a>
+      <a href="{{ path_ratings }}" class="app-wayfinder-link{% if request.path == path_ratings %} active{% endif %}">RATINGS</a>
+    </div>
+  </details>
+</nav>

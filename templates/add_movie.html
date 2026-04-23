@@ -100,19 +100,21 @@ content %}
 
   .add-movie-main .button {
     font-family: "VT323", "Courier New", monospace;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     letter-spacing: 1px;
     padding: 0.8rem 2rem;
     margin-top: 1rem;
-    background: yellow;
-    color: #1a1a2e;
-    border: none;
+    background: transparent;
+    color: #00ff00;
+    border: 2px solid #00ff00;
     cursor: pointer;
     transition: all 0.3s ease;
   }
 
   .add-movie-main .button:hover {
-    background: #00ff00;
+    background: rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5), inset 0 0 8px rgba(0, 255, 0, 0.3);
+    text-shadow: 0 0 8px #00ff00;
     transform: scale(1.02);
   }
 
