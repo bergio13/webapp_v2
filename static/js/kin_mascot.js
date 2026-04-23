@@ -215,7 +215,7 @@
 
   var STATES = ['drift', 'drift', 'drift', 'nap', 'peek', 'spin_y',
     'tumble', 'vanish', 'squish', 'hover', 'cartwheel', 'belly_flop'];
-  var state = 'drift', elapsed = 0, stateEnd = 6000;
+  var state = 'drift', elapsed = 0, stateEnd = 6000, stateStart = 0;
   var lastTime = performance.now(), blinkMs = 0;
   var peekDir = 1, peekPhase = 0, hoverTargetY = 20;
 
@@ -237,6 +237,7 @@
       case 'belly_flop': dur = rnd(2000, 3000); break;
       default: dur = 6000;
     }
+    stateStart = elapsed;
     stateEnd = elapsed + dur;
     tAlpha = 1; tSX = 1; tSY = 1; tAngle = 0;
     vx = rnd(-0.3, 0.3);
@@ -283,9 +284,14 @@
         px += vx * 0.6 * t16; py = lerp(py, CH * 0.3, 0.01);
         tAlpha = 1; tSX = 1; tSY = 1; kinExpr = 'excited'; break;
       case 'vanish':
-        var tl = stateEnd - elapsed;
-        if (tl > (stateEnd - elapsed + 3000) * 0.5) { tAlpha = 0; }
-        else { if (kinAlpha < 0.1) { px = rnd(SW, CW - SW * 2); py = rnd(GROUND * 0.3, GROUND); } tAlpha = 1; }
+        var stateDur = stateEnd - stateStart;
+        var progress = stateDur > 0 ? (elapsed - stateStart) / stateDur : 1;
+        if (progress < 0.5) {
+          tAlpha = 1 - progress * 2;
+        } else {
+          if (kinAlpha < 0.1) { px = rnd(SW, CW - SW * 2); py = rnd(GROUND * 0.3, GROUND); }
+          tAlpha = (progress - 0.5) * 2;
+        }
         tSX = 1; tSY = 1; tAngle = 0; kinExpr = 'happy'; break;
       case 'squish':
         var sq = Math.sin(elapsed * 0.004);
