@@ -131,5 +131,6 @@ SENDGRID_SETUP.md
 
 # Local-only archive for deprecated assets/templates
 old-local/
+local-tools/
 
 .github/
