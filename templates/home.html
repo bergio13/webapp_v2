@@ -419,7 +419,7 @@
             </form>
           </td>
           <td style="padding: 10px">
-            <button type="button" class="table-button app-table-action-danger" onclick="deleteMovie(this, '{{movie['id']}}', '{{ movie['movie'] }}', '{{ csrf_token() }}')">
+            <button type="button" class="table-button app-table-action-danger" onclick="deleteMovie(this, {{ movie['id']|tojson }}, {{ movie['movie']|tojson }}, {{ csrf_token()|tojson }})">
               X
             </button>
           </td>
