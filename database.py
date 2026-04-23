@@ -2,6 +2,7 @@ import os
 import supabase
 from datetime import datetime
 from dotenv import load_dotenv
+import math
 
 load_dotenv()
 
@@ -438,18 +439,44 @@ def get_taste_match(user_id, friend_id):
     user_movies = get_movies(user_id)
     friend_movies = get_movies(friend_id)
     
-    user_ratings = {f"{m['movie'].lower()}_{m['p_year']}": m['rating'] for m in user_movies}
+    # 1. Create fast lookups and determine unique libraries
+    user_dict = {f"{m['movie'].lower()}_{m['p_year']}": m['rating'] for m in user_movies}
+    friend_dict = {f"{m['movie'].lower()}_{m['p_year']}": m['rating'] for m in friend_movies}
     
+    shared_keys = set(user_dict.keys()).intersection(set(friend_dict.keys()))
+    total_unique_movies = len(set(user_dict.keys()).union(set(friend_dict.keys())))
+    
+    shared_count = len(shared_keys)
+    
+    # Handle edge case where they share zero movies
+    if shared_count == 0:
+        return {
+            "match_percent": 0, 
+            "shared_count": 0, 
+            "shared_movies": [],
+            "library_overlap": 0,
+            "rating_similarity": 0,
+            "harsher_critic": "None"
+        }
+        
     shared_movies = []
-    total_diff = 0
-    count = 0
+    sum_squared_diff = 0
     
+    # Track totals to determine who is the harsher critic
+    user_rating_sum = 0
+    friend_rating_sum = 0
+
     for m in friend_movies:
         key = f"{m['movie'].lower()}_{m['p_year']}"
-        if key in user_ratings:
-            u_rating = user_ratings[key]
+        if key in shared_keys:
+            u_rating = user_dict[key]
             f_rating = m['rating']
+            
             diff = abs(u_rating - f_rating)
+            sum_squared_diff += diff ** 2  # Square the difference for RMSE
+            
+            user_rating_sum += u_rating
+            friend_rating_sum += f_rating
             
             shared_movies.append({
                 "movie": m['movie'],
@@ -459,23 +486,44 @@ def get_taste_match(user_id, friend_id):
                 "f_rating": f_rating,
                 "diff": diff
             })
-            total_diff += diff
-            count += 1
             
-    if count == 0:
-        return {"match_percent": 0, "shared_count": 0, "shared_movies": []}
-        
-    avg_diff = total_diff / count
-    match_percent = max(0, min(100, 100 - (avg_diff * 10)))
+    # 2. Root Mean Square Error (RMSE)
+    # Penalizes large disagreements heavily compared to minor differences
+    rmse = math.sqrt(sum_squared_diff / shared_count)
     
-    shared_movies.sort(key=lambda x: x['diff'])
+    # Map RMSE to a 0-100 score (Assumes a 10-point scale. If using 5-point, change 10 to 20)
+    rating_match_score = max(0, min(100, 100 - (rmse * 10)))
+    
+    # 3. Jaccard Index (Library Overlap)
+    # What percentage of their combined unique libraries have they BOTH seen?
+    overlap_percent = (shared_count / total_unique_movies) * 100 if total_unique_movies > 0 else 0
+    
+    # 4. Confidence Scaling
+    # If they only share 1 or 2 movies, the match percentage is unreliable.
+    # This gently scales the score down if they share fewer than 5 movies.
+    confidence_multiplier = min(1.0, shared_count / 5.0) 
+    
+    final_match_percent = rating_match_score * confidence_multiplier
+
+    # Sort shared movies by biggest agreements first, then by highest user rating
+    shared_movies.sort(key=lambda x: (x['diff'], -x['u_rating']))
+    
+    # Determine the harsher critic for fun UI insights
+    if user_rating_sum < friend_rating_sum:
+        harsher_critic = "You"
+    elif friend_rating_sum < user_rating_sum:
+        harsher_critic = "Friend"
+    else:
+        harsher_critic = "Equal"
     
     return {
-        "match_percent": int(match_percent),
-        "shared_count": count,
-        "shared_movies": shared_movies
+        "match_percent": int(final_match_percent),
+        "shared_count": shared_count,
+        "shared_movies": shared_movies,
+        "library_overlap": int(overlap_percent),
+        "rating_similarity": int(rating_match_score),
+        "harsher_critic": harsher_critic
     }
-
 #############################################
 ####### TOKENS ##############################
 #############################################
