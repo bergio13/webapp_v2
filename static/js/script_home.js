@@ -75,6 +75,7 @@ class Effect {
     this.flowField = [];
     this.curve = 1.5;
     this.zoom = 0.15;
+    this.time = 0;
 
     window.addEventListener("resize", (e) => {
       this.resize(e.target.innerWidth, e.target.innerHeight);

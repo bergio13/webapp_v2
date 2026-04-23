@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %} {% block body_class %} home_page{% endblock %} {%block body
+﻿{% extends "base.html" %} {% block title %}Home{% endblock %} {% block body_class %} home_page{% endblock %} {%block body
 %}{%block content %}
 
 <!-- FontAwesome for icons -->
@@ -7,38 +7,38 @@
   crossorigin="anonymous"
 ></script>
 
-<!-- VT323 Terminal Font -->
+<!-- VT323 Terminal Font & Rajdhani -->
 <link
-  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=VT323&display=swap"
   rel="stylesheet"
 />
 
 <style>
-  /* Soft Ocean Color Palette */
+  /* Soft Cool-Neutral Palette */
   :root {
-    --ocean-blue: #64b5f6;
-    --ocean-green: #81c784;
-    --ocean-grey: #b0bec5;
+    --ocean-blue: #7eb5c4;
+    --ocean-green: #7aa898;
+    --ocean-grey: #9eb0ba;
     --ocean-dark: #1a2634;
     --ocean-darker: #131c27;
-    --ocean-light: #e0e7ee;
-    --ocean-coral: #e57373;
-    --app-panel-border: rgba(100, 181, 246, 0.2);
+    --ocean-light: #d0dde5;
+    --ocean-coral: #b58a8a;
+    --app-panel-border: rgba(126, 181, 196, 0.15);
     --app-panel-bg: rgba(26, 38, 52, 0.5);
-    --app-panel-shadow: 0 0 30px rgba(100, 181, 246, 0.08);
+    --app-panel-shadow: 0 0 20px rgba(126, 181, 196, 0.05);
     --app-panel-title: var(--ocean-light);
     --app-panel-title-accent: var(--ocean-blue);
     --app-ascii-color: var(--ocean-blue);
-    --app-ascii-shadow: 0 0 5px rgba(100, 181, 246, 0.3);
-    --app-action-edit-bg: rgba(100, 181, 246, 0.12);
+    --app-ascii-shadow: 0 0 4px rgba(126, 181, 196, 0.2);
+    --app-action-edit-bg: rgba(126, 181, 196, 0.12);
     --app-action-edit-border: var(--ocean-blue);
     --app-action-edit-text: var(--ocean-blue);
-    --app-action-edit-hover-bg: rgba(100, 181, 246, 0.22);
-    --app-action-danger-bg: rgba(229, 115, 115, 0.12);
+    --app-action-edit-hover-bg: rgba(126, 181, 196, 0.22);
+    --app-action-danger-bg: rgba(181, 138, 138, 0.12);
     --app-action-danger-border: var(--ocean-coral);
     --app-action-danger-text: var(--ocean-coral);
-    --app-action-danger-hover-bg: rgba(229, 115, 115, 0.25);
-    --app-table-shell-border: rgba(100, 181, 246, 0.1);
+    --app-action-danger-hover-bg: rgba(181, 138, 138, 0.22);
+    --app-table-shell-border: rgba(126, 181, 196, 0.1);
     --app-table-shell-bg: rgba(19, 28, 39, 0.25);
     --app-table-shell-radius: 10px;
     --app-legend-color: var(--ocean-light);
@@ -56,9 +56,22 @@
   }
 
   .home-title {
-    font-size: 2.8rem;
-    letter-spacing: 2px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+    letter-spacing: 4px;
     margin: 0;
+    text-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+    display: flex;
+    align-items: center;
+  }
+  
+  .home-title span {
+    color: var(--ocean-blue);
+    margin-right: 15px;
+    font-size: 2.5rem;
   }
 
   .home-ascii {
@@ -194,6 +207,31 @@
       margin-bottom: 12px;
     }
   }
+
+  @keyframes reelFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reel-frame {
+    animation: reelFadeIn 0.7s ease forwards;
+  }
+  #mascot-pre {
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    line-height: 1.45;
+    margin: 0;
+    white-space: pre;
+    color: var(--ocean-green);
+  }
+  #mascot-caption {
+    font-family: 'VT323', monospace;
+    font-size: 1.05rem;
+    color: var(--ocean-grey);
+    text-align: center;
+    margin: 10px 0 0;
+    letter-spacing: 1px;
+    opacity: 0.75;
+  }
 </style>
 
 <!-- JavaScript function for confirmation popup -->
@@ -261,20 +299,58 @@
 <script src="static/js/script_home.js"></script>
 
 <div class="list_list app-panel">
-  <div class="ascii-header app-ascii-header home-ascii">═══════════════════════════════════════</div>
+  <div class="home-layout">
+    
+    <!-- MAIN COLUMN -->
+    <div class="main-column">
 
-  <div class="header-row app-toolbar">
-    <h1 class="app-title-terminal home-title">
-      <span>//</span> Monthly Log
-    </h1>
+      <div class="header-row app-toolbar">
+        <h1 class="app-title-terminal home-title glitch-text">
+          <span>//</span> Monthly Log
+        </h1>
 
-    <a href="/add_movie" class="btn-add-movie btn-add-movie-terminal">
-      [ + ADD ENTRY ]
-    </a>
-  </div>
+        <a href="/add_movie" class="btn-add-movie btn-add-movie-terminal">
+          [ + ADD ENTRY ]
+        </a>
+      </div>
 
-  <div class="table-container app-table-shell">
-    <table class="table-home" id="table-home">
+      <!-- HERO HOLOGRAM -->
+      {% if highest_rated %}
+      <div class="cyber-card glass-panel" style="margin-bottom: 20px; padding: 0; overflow: hidden; display: flex; align-items: center; min-height: 200px;">
+        <div class="scanline-overlay"></div>
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('{{highest_rated['poster']}}'); background-size: cover; background-position: center; filter: blur(20px) brightness(0.4); z-index: 0;"></div>
+        
+        <div style="position: relative; z-index: 1; display: flex; align-items: center; padding: 20px; width: 100%; flex-wrap: wrap; gap: 20px;">
+          <img src="{{highest_rated['poster']}}" style="width: 100px; border-radius: 4px; box-shadow: 0 0 8px rgba(126, 181, 196, 0.3); border: 1px solid var(--ocean-blue); opacity: 0.92;" />
+          <div style="flex-grow: 1;">
+            <h2 style="font-family: 'VT323', monospace; color: #d0dde5; font-size: 2.5rem; margin: 0; text-shadow: 0 0 6px rgba(208,221,229,0.2);">{{ highest_rated['movie'].upper() }}</h2>
+            <p style="font-family: 'VT323', monospace; color: var(--ocean-green); font-size: 1.3rem; margin: 0; letter-spacing: 2px; opacity: 0.85;">HIGHLIGHT OF THE MONTH</p>
+          </div>
+          <div style="text-align: center; padding-right: 20px;">
+            <div style="font-family: 'VT323', monospace; font-size: 3.5rem; color: #c4a96d; text-shadow: 0 0 8px rgba(196, 169, 109, 0.4); line-height: 1;">{{ highest_rated['rating'] }}</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- STATS ROW -->
+      <div class="stats-row">
+        <div class="cyber-card glass-panel">
+          <p class="stat-label">Total Logs</p>
+          <p class="stat-value">{{ total }}</p>
+        </div>
+        <div class="cyber-card glass-panel">
+          <p class="stat-label">Avg Rating</p>
+          <p class="stat-value">{{ avg_rating }}</p>
+        </div>
+        <div class="cyber-card glass-panel">
+          <p class="stat-label">Cinema Trips</p>
+          <p class="stat-value">{{ cinema }}</p>
+        </div>
+      </div>
+
+      <div class="table-container app-table-shell glass-panel">
+        <table class="table-home" id="table-home">
       <thead>
         <tr style="text-align: left">
           <th style="padding: 10px"></th>
@@ -357,6 +433,24 @@
       <i class="fa-solid fa-repeat"></i> Rewatch
     </p>
   </div>
-</div>
+  </div> <!-- end main column -->  <!-- SIDEBAR COLUMN -->
+  <div class="sidebar-column">
+    <div class="cyber-card glass-panel" style="height:100%;min-height:500px;display:flex;flex-direction:column;padding:1rem;gap:8px;overflow:hidden;">
+      <h3 style="font-family:'VT323',monospace;color:var(--ocean-blue);margin:0;border-bottom:1px dashed rgba(126,181,196,0.3);padding-bottom:6px;font-size:1.15rem;opacity:0.85;text-align:center;flex-shrink:0;">// NOW IN CINEMAS</h3>
 
+      <!-- Poster carousel -->
+      <div style="overflow:hidden;width:100%;flex-shrink:0;position:relative;">
+        <div id="kin-track" style="display:flex;transition:transform 0.85s cubic-bezier(0.33,1,0.68,1);will-change:transform;align-items:flex-end;gap:0;"></div>
+      </div>
+
+      <!-- Movie title -->
+      <p id="kin-movie-title" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1.05rem;margin:0;text-align:center;opacity:0.8;min-height:1.2rem;transition:opacity 0.4s ease;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></p>
+
+      <!-- Kin playground canvas -->
+      <canvas id="kin-canvas" width="240" height="160" style="image-rendering:pixelated;image-rendering:crisp-edges;width:100%;height:160px;flex-grow:1;display:block;"></canvas>
+    </div>
+  </div>
+  </div><!-- end home-layout -->
+</div>
+<script src="/static/js/kin_mascot.js"></script>
 {% endblock %} {% endblock %}

@@ -6,19 +6,18 @@ body_class %} discover_page{% endblock %} {% block content %}
 />
 
 <canvas class="canvas_discover" id="canvas"></canvas>
-<script src="static/js/particles.js"></script>
+<script src="static/js/script_discover.js"></script>
 
 <main class="discover-main">
   <div class="discover-wrap">
     <header class="discover-header">
-      <div class="ascii-top">
-        ═══════════════════════════════════════════════
-      </div>
-      <h1><span>//</span> Discover</h1>
+      <h1 class="app-title-terminal home-title glitch-text">
+        <span>//</span> Discover
+      </h1>
     </header>
 
     <section class="discover-grid">
-      <div class="discover-card app-panel discover-form-card">
+      <div class="cyber-card glass-panel discover-card discover-form-card">
         <form method="post" class="recommendation-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
@@ -96,7 +95,7 @@ body_class %} discover_page{% endblock %} {% block content %}
         </form>
       </div>
 
-      <aside class="discover-card app-panel discover-status-card">
+      <aside class="cyber-card glass-panel discover-card discover-status-card">
         <h2>Quick Setup</h2>
         <p class="discover-helper-intro">
           Choose the two settings that steer recommendation behavior.
@@ -115,7 +114,7 @@ body_class %} discover_page{% endblock %} {% block content %}
     </section>
 
     {% if ai_response %}
-    <section class="discover-card app-panel response-card">
+    <section class="cyber-card glass-panel discover-card response-card">
       <div class="response-headline">
         <h2>OUTPUT_RECOMMENDATIONS</h2>
         <p>
@@ -140,13 +139,13 @@ body_class %} discover_page{% endblock %} {% block content %}
   :root {
     --discover-bg: #181f2b;
     --discover-bg-elev: #1f2a3a;
-    --discover-cyan: #64b5f6;
-    --discover-purple: #b39ddb;
-    --discover-green: #81c784;
-    --discover-gold: #ffd54f;
-    --discover-light: #e0e7ee;
-    --discover-muted: #b0bec5;
-    --discover-line: rgba(100, 181, 246, 0.22);
+    --discover-cyan: #7eb5c4;
+    --discover-purple: #9e96b8;
+    --discover-green: #7aa898;
+    --discover-gold: #c4a96d;
+    --discover-light: #d0dde5;
+    --discover-muted: #9eb0ba;
+    --discover-line: rgba(126, 181, 196, 0.18);
   }
 
   .discover_page::before {
@@ -346,13 +345,11 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .choice-title {
-    display: block;
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 44px;
     text-align: center;
-    border-radius: 7px;
     border: 1px solid rgba(179, 157, 219, 0.35);
     background: rgba(17, 25, 35, 0.85);
     color: var(--discover-light);
@@ -362,17 +359,18 @@ body_class %} discover_page{% endblock %} {% block content %}
     letter-spacing: 0.7px;
     transition: all 0.22s ease;
     cursor: pointer;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
   }
 
   .choice-card input:checked + .choice-title {
     border-color: var(--discover-cyan);
-    background: rgba(100, 181, 246, 0.18);
-    color: #ffffff;
-    box-shadow: 0 0 0 1px rgba(100, 181, 246, 0.2);
+    background: rgba(126, 181, 196, 0.15);
+    color: #d0dde5;
+    box-shadow: 0 0 8px rgba(126, 181, 196, 0.25);
   }
 
   .choice-card:hover .choice-title {
-    border-color: rgba(100, 181, 246, 0.6);
+    border-color: rgba(126, 181, 196, 0.5);
     transform: translateY(-1px);
   }
 
@@ -397,40 +395,42 @@ body_class %} discover_page{% endblock %} {% block content %}
     align-items: center;
     min-height: 40px;
     border: 1px solid rgba(176, 190, 197, 0.3);
-    border-radius: 999px;
     background: rgba(17, 25, 35, 0.82);
     color: var(--discover-muted);
-    padding: 4px 10px;
+    padding: 4px 15px;
     font-family: "VT323", "Courier New", monospace;
     font-size: 1.02rem;
     letter-spacing: 0.6px;
     transition: all 0.22s ease;
     cursor: pointer;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
   }
 
   .genre-chip input:checked + span {
     border-color: var(--discover-green);
-    color: var(--discover-green);
-    background: rgba(129, 199, 132, 0.14);
+    color: #d0dde5;
+    background: rgba(122, 168, 152, 0.15);
+    box-shadow: 0 0 6px rgba(122, 168, 152, 0.25);
   }
 
   .recommend-button {
     align-self: flex-start;
     border: 1px solid var(--discover-cyan);
-    border-radius: 7px;
     background: rgba(100, 181, 246, 0.15);
     color: var(--discover-cyan);
-    padding: 10px 18px;
+    padding: 12px 24px;
     font-family: "VT323", "Courier New", monospace;
-    font-size: 1.25rem;
-    letter-spacing: 1px;
+    font-size: 1.35rem;
+    letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.25s ease;
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
   }
 
   .recommend-button:hover:not(:disabled) {
-    background: rgba(100, 181, 246, 0.25);
-    box-shadow: 0 0 14px rgba(100, 181, 246, 0.25);
+    background: rgba(100, 181, 246, 0.3);
+    box-shadow: 0 0 20px rgba(100, 181, 246, 0.5);
+    color: #ffffff;
   }
 
   .recommend-button:disabled {

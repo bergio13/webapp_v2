@@ -540,19 +540,58 @@ def format_ai_response_to_html(text, watched_lookup=None):
 # MAIN NAVIGATION ROUTES
 # ========================================
 
+@app.route('/api/now-playing')
+@login_required
+def api_now_playing():
+    """Return a list of movies currently in cinemas this week (TMDB now_playing)."""
+    import requests as http_requests
+    api_key = tmdb.api_key
+    if not api_key:
+        return jsonify({'movies': []})
+    try:
+        url = f'https://api.themoviedb.org/3/movie/now_playing?api_key={api_key}&language=en-US&page=1'
+        resp = http_requests.get(url, timeout=5)
+        data = resp.json()
+        movies = []
+        for m in (data.get('results') or [])[:8]:
+            poster = m.get('poster_path')
+            if poster:
+                movies.append({
+                    'title': m.get('title', ''),
+                    'poster': f'https://image.tmdb.org/t/p/w185{poster}',
+                    'rating': round(m.get('vote_average', 0), 1),
+                })
+        return jsonify({'movies': movies})
+    except Exception:
+        return jsonify({'movies': []})
+
 @app.route('/home')
 def hello():
     if 'loggedin' in session:
         try:
             _, month_now = get_current_year_month()
             movies = get_monthly_movies(session['id'], month_now)
+            
+            # Calculate Monthly Stats
+            total_this_month = len(movies)
+            avg_rating = round(sum(float(m['rating']) for m in movies) / total_this_month, 1) if total_this_month > 0 else 0
+            cinema_trips = sum(1 for m in movies if int(m['cinema']) == 1)
+            highest_rated = max(movies, key=lambda m: float(m['rating'])) if movies else None
+
         except Exception as e:
             app.logger.exception("Failed to load home monthly movies: %s", e)
             movies = []
+            total_this_month = 0
+            avg_rating = 0
+            cinema_trips = 0
+            highest_rated = None
             flash('Something went wrong, please refresh the page', category='error')
     else:
-        return render_template('home.html', movies=[])
-    return render_template('home.html', session=session, movies=movies)
+        return render_template('home.html', movies=[], total=0, avg_rating=0, cinema=0, highest_rated=None)
+        
+    return render_template('home.html', session=session, movies=movies, 
+                           total=total_this_month, avg_rating=avg_rating, 
+                           cinema=cinema_trips, highest_rated=highest_rated)
 
 @app.route('/')
 def animation():
