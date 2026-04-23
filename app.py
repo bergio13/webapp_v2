@@ -842,6 +842,12 @@ def profile_friend(username):
 @login_required
 def search_friends():
     friends = get_friends(session['id'])
+    
+    # Calculate a basic taste match for each friend to display on their card
+    # We will just fetch it directly to avoid too many heavy queries if there are many friends
+    # For a large number of friends, this might be slow, but for now we'll do it.
+    # Actually, the user asked for a "Compare" page, so we don't need to calculate match percent here!
+    
     if request.method == "POST":
         name = request.form['name']
         users = get_user_name(name)
@@ -849,13 +855,11 @@ def search_friends():
             flash('No user found', category='error')
         else:
             return render_template('friends.html', users=users, friends=friends, session=session) 
-    liked = []   
-    for friend in friends:
-        movies = get_movies(friend['user_id'])
-        for movie in movies:
-            if movie['rating'] >= 8 and datetime.date.today() - movie['v_date'] < datetime.timedelta(days=30):
-                liked.append(movie)                  
-    return render_template('friends.html', friends=friends, liked=liked, session=session)
+            
+    # Fetch real-time activity feed
+    recent_activity = get_friend_activity(session['id'], limit=25)
+    
+    return render_template('friends.html', friends=friends, activity=recent_activity, session=session)
 
 @app.route('/follow', methods=['GET', 'POST'])
 @login_required
@@ -864,9 +868,39 @@ def follow():
         friend_id = request.form['user_id']
         friend_username = request.form['username']
         insert_friends(friend_id, friend_username, session['id'])
+        flash(f'You are now following {friend_username}', 'success')
         return redirect('/friends')
     return redirect('/friends')
 
+@app.route('/unfollow', methods=['POST'])
+@login_required
+def unfollow():
+    friend_id = request.form.get('user_id')
+    friend_username = request.form.get('username')
+    if friend_id:
+        try:
+            friend_id = int(friend_id)
+        except ValueError:
+            pass
+        remove_friend(session['id'], friend_id)
+        flash(f'You unfollowed {friend_username}', 'success')
+    return redirect('/friends')
+
+@app.route('/compare/<username>')
+@login_required
+def compare_taste(username):
+    # Get friend user ID
+    friend_data = get_user_name(username)
+    if not friend_data:
+        flash("User not found.", "error")
+        return redirect('/friends')
+        
+    friend_id = friend_data[0]['id']
+    
+    # Calculate match
+    match_data = get_taste_match(session['id'], friend_id)
+    
+    return render_template('compare.html', friend_username=username, match_data=match_data, session=session)
 
 @app.route('/discover', methods=['GET', 'POST'])
 @login_required

@@ -157,7 +157,8 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
 
   .search:focus {
     outline: none;
-    box-shadow: 0 0 10px rgba(179, 157, 219, 0.2);
+    box-shadow: 0 0 15px rgba(179, 157, 219, 0.4);
+    background: rgba(36, 36, 66, 0.9) !important;
   }
 
   .search::placeholder {
@@ -222,7 +223,50 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
   }
 
   .follow-btn:hover {
-    background: rgba(129, 199, 132, 0.3) !important;
+    background: rgba(129, 199, 132, 0.35) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(129, 199, 132, 0.2);
+  }
+
+  .compare-btn {
+    font-family: "VT323", monospace !important;
+    font-size: 0.85rem;
+    background: rgba(179, 157, 219, 0.15) !important;
+    border: 1px solid var(--friends-purple) !important;
+    color: var(--friends-purple-light) !important;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .compare-btn:hover {
+    background: rgba(179, 157, 219, 0.35) !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(179, 157, 219, 0.2);
+  }
+
+  .unfollow-btn {
+    font-family: "VT323", monospace !important;
+    font-size: 0.75rem;
+    background: rgba(229, 115, 115, 0.1) !important;
+    border: 1px dashed var(--friends-coral) !important;
+    color: var(--friends-coral) !important;
+    padding: 2px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .unfollow-btn:hover {
+    background: rgba(229, 115, 115, 0.25) !important;
+    color: #fff !important;
+    border-style: solid !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(229, 115, 115, 0.2);
   }
 
   /* Popular Section */
@@ -239,10 +283,14 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
   .carta {
     background: rgba(26, 26, 46, 0.95) !important;
     border: 1px solid rgba(179, 157, 219, 0.15) !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   }
 
   .carta:hover {
-    border-color: var(--friends-purple) !important;
+    border-color: var(--friends-purple-light) !important;
+    box-shadow: 0 8px 25px rgba(179, 157, 219, 0.2);
+    transform: translateY(-5px);
   }
 
   .carta-link {
@@ -394,10 +442,22 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
       {% if friends|length > 0 %}
       <div class="friends-grid">
         {% for friend in friends %}
-        <a href="/list/{{ friend.f_username }}" class="friend-card">
-          <div class="friend-avatar">{{ friend.f_username[0].upper() }}</div>
-          <div class="friend-name">{{ friend.f_username }}</div>
-        </a>
+        <div class="friend-card" style="position: relative;">
+          <a href="/list/{{ friend.f_username }}" style="text-decoration: none; display: block;">
+            <div class="friend-avatar">{{ friend.f_username[0].upper() }}</div>
+            <div class="friend-name">{{ friend.f_username }}</div>
+          </a>
+          
+          <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 15px;">
+            <a href="/compare/{{ friend.f_username }}" class="compare-btn">[ COMPARE ]</a>
+            <form method="post" action="/unfollow" style="margin: 0;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="username" value="{{ friend.f_username }}" />
+              <input type="hidden" name="user_id" value="{{ friend.user_id }}" />
+              <button type="submit" class="unfollow-btn" onclick="return confirm('Are you sure you want to unfollow {{ friend.f_username }}?');">[X]</button>
+            </form>
+          </div>
+        </div>
         {% endfor %}
       </div>
       {% else %}
@@ -407,35 +467,39 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
       {% endif %}
     </div>
 
-    <!-- Popular With Friends -->
-    {% if liked|length > 0 %}
+    <!-- Activity Feed -->
+    {% if activity|length > 0 %}
     <div class="popular-section">
-      <h2 class="section-title"><span>//</span> Popular With Friends</h2>
+      <h2 class="section-title"><span>//</span> RECENT_LOGS</h2>
       <section class="carta-list" id="scrollableSection">
-        {% for like in liked %}
+        {% for act in activity %}
         <article class="carta">
           <header class="carta-header">
-            <img class="img-carta" src="{{like.poster}}" />
-            <img class="img-carta-back" src="{{like.poster}}" />
-            {% if like.movie|length < 29 %}
-            <h5>
+            <img class="img-carta" src="{{act.poster}}" />
+            <img class="img-carta-back" src="{{act.poster}}" />
+            <div style="text-align: center; margin-top: 8px; font-family: 'VT323', monospace;">
+              <span style="color: var(--friends-purple-light); font-size: 1.1rem;">> {{act.f_username}}</span><br>
+              <span style="color: var(--ocean-grey); font-size: 0.9rem;">rated {{act.rating}}/10</span>
+            </div>
+            {% if act.movie|length < 29 %}
+            <h5 style="margin-top: 5px;">
               <a
                 class="carta-link"
-                href="https://www.google.com/search?q={{like['movie']}}"
-                >{{like.movie.upper()}}</a
+                href="https://www.google.com/search?q={{act['movie']}}"
+                >{{act.movie.upper()}}</a
               >
             </h5>
             {% else %}
-            <h5 style="font-size: 14px">
+            <h5 style="font-size: 14px; margin-top: 5px;">
               <a
                 class="carta-link"
-                href="https://www.google.com/search?q={{like['movie']}}"
-                >{{like.movie.upper()}}</a
+                href="https://www.google.com/search?q={{act['movie']}}"
+                >{{act.movie.upper()}}</a
               >
             </h5>
             {% endif %}
             <p style="font-size: 14px; margin-top: 0; color: var(--ocean-grey)">
-              {{like.director }} ({{like.p_year}})
+              {{act.director }} ({{act.p_year}})
             </p>
           </header>
         </article>
