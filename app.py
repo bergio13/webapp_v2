@@ -1101,7 +1101,7 @@ def remove_movie():
         remove_movie_by_id(movie_id)
         clear_user_cache(session['id'])  # Clear cache after removing movie
         
-        if request.headers.get('Accept') == 'application/json' or request.is_json:
+        if request.is_json or request.accept_mimetypes.accept_json:
             return jsonify({'success': True, 'message': 'Movie removed'})
             
         flash('Movie removed', category='success')
