@@ -12,6 +12,22 @@ body_class %} list_page{% endblock %} {% block body %}
   crossorigin="anonymous"
 ></script>
 
+<style>
+  .custom-toolbar-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+  }
+  @media (max-width: 768px) {
+    .custom-toolbar-actions {
+      width: 100% !important;
+      justify-content: space-between !important;
+      margin-top: 10px;
+    }
+  }
+</style>
+
 <!-- Preloader -->
 <div id="preloader" class="app-preloader">
   <div class="loader app-preloader-spinner"></div>
@@ -29,7 +45,7 @@ body_class %} list_page{% endblock %} {% block body %}
   <div class="filter-add-section app-toolbar app-toolbar-stack-mobile">
     <h2 class="page-title app-title-terminal app-title-themed app-title-mobile-centered"><span>//</span> Watched List</h2>
 
-    <div class="buttons-container app-toolbar-actions app-toolbar-actions-mobile" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 10px; width: 100%; flex-wrap: wrap; margin-top: 10px;">
+    <div class="buttons-container app-toolbar-actions app-toolbar-actions-mobile custom-toolbar-actions">
       <div style="display: flex; align-items: center; gap: 5px; height: 32px;">
         <span style="color: var(--neon-cyan); font-family: 'VT323', monospace; font-size: 1.1rem; line-height: 1;">find_title:</span>
         <input type="text" id="movie-search-input" placeholder="type..." 
