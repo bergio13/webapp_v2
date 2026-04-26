@@ -422,7 +422,7 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
       <div class="search-result-item">
         <span class="search-result-name">> {{ user.username }}</span>
         {% if user.id not in friends|map(attribute="user_id")|list and user.id
-        != session.id %}
+        != current_user.id %}
         <form method="post" action="/follow" style="margin: 0">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <input type="submit" value="[ FOLLOW ]" class="follow-btn" />

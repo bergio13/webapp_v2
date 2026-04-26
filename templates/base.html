@@ -249,7 +249,7 @@
         </li>
 
         <li class="nav-item">
-          {% if session['loggedin'] == True %}
+          {% if current_user.is_authenticated %}
           <a
             href="/profile"
             class="nav-link{% if is_profile_nav %} active{% endif %}"
@@ -292,7 +292,7 @@
               </g>
             </svg>
             
-            <span class="link-text">{% if session['loggedin'] == True %}Profile{% else %}Account{% endif %}</span>
+            <span class="link-text">{% if current_user.is_authenticated %}Profile{% else %}Account{% endif %}</span>
           </a>
         </li>
       </ul>

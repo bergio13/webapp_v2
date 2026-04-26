@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user, logout_user, current_user
+from auth.models import User
 from database import *
 
 # Create the blueprint
@@ -9,22 +11,16 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     """Log user in"""
-    # If user is already logged in, redirect to home
-    if session.get('loggedin'):
+    if current_user.is_authenticated:
         return redirect('/home')
 
-    # Forget any user_id
-    session.clear()
-
-    # User reached route via POST (submitting a form)
     if request.method == "POST":
         email = request.form['email']
         password = request.form['password']
 
-        # Validate inputs
         if not email or not password:
             flash('Email and password are required!', category='error')
-            return render_template("login.html", session=session)
+            return render_template("login.html")
 
         try:
             users = load_users_from_email(email)
@@ -33,12 +29,15 @@ def login():
             flash('Something went wrong, please try again', category='error')
 
         if users:
-            user = users[0]
-            # Verify the user's password
-            if user['email'] == email and check_password_hash(user['password'], password):
+            user_data = users[0]
+            if user_data['email'] == email and check_password_hash(user_data['password'], password):
+                user_obj = User(id=user_data['id'], username=user_data['username'], email=user_data['email'])
+                login_user(user_obj)
+                
                 session['loggedin'] = True
-                session['id'] = user['id']
-                session['email'] = user['email']
+                session['id'] = user_data['id']
+                session['email'] = user_data['email']
+                
                 flash('Logged in successfully!', category='success')
                 return redirect('/home')
             else:
@@ -46,8 +45,7 @@ def login():
         else:
             flash('No account found for this email!', category='error')
 
-    # User reached route via GET (clicking a link or via redirect)
-    return render_template("login.html", session=session)
+    return render_template("login.html")
 
 
 # Register route
@@ -97,6 +95,17 @@ def register():
             try:
                 hashed_password = generate_password_hash(password, method='scrypt')
                 insert_user(name, email, password=hashed_password)
+                
+                users = load_users_from_email(email)
+                if users:
+                    user_data = users[0]
+                    user_obj = User(id=user_data['id'], username=user_data['username'], email=user_data['email'])
+                    login_user(user_obj)
+                    
+                    session['loggedin'] = True
+                    session['id'] = user_data['id']
+                    session['email'] = user_data['email']
+                
                 flash('Your account has been created successfully!', category='success')
                 return redirect('/home')
             except Exception as e:
@@ -107,6 +116,7 @@ def register():
 # Logout route
 @auth.route('/logout')
 def logout():
+    logout_user()
     session.clear()
     flash('You have been logged out', 'success')
     return redirect('/login')

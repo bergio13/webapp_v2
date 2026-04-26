@@ -45,6 +45,23 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY')
 # Enable CSRF protection for all forms
 csrf = CSRFProtect(app)
 
+from flask_login import LoginManager, login_required
+from auth.models import User
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+login_manager.login_message = "Please log in to access this page"
+login_manager.login_message_category = "error"
+
+@login_manager.user_loader
+def load_user(user_id):
+    users = get_user_by_id(user_id)
+    if users:
+        user_data = users[0]
+        return User(id=user_data['id'], username=user_data['username'], email=user_data['email'])
+    return None
+
 # Rate limiting to prevent brute-force attacks
 limiter = Limiter(
     key_func=get_remote_address,
@@ -57,15 +74,7 @@ limiter = Limiter(
 # LOGIN REQUIRED DECORATOR
 # ========================================
 
-def login_required(f):
-    """Decorator to require login for routes"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'loggedin' not in session:
-            flash('Please log in to access this page', category='error')
-            return redirect('/login')
-        return f(*args, **kwargs)
-    return decorated_function
+# login_required decorator is imported from flask_login
 
 # ========================================
 # EMAIL CONFIGURATION

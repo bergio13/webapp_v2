@@ -19,3 +19,4 @@ httpx==0.25.2
 python-dotenv==1.1.1
 PyYAML==6.0.3
 werkzeug==2.3.8
+Flask-Login==0.6.3
