@@ -240,6 +240,14 @@
     return confirm(`Are you sure you want to remove "${movieName}"?`);
   }
 
+  function handleDelete(btn) {
+    let movieId = btn.getAttribute('data-id');
+    const movieName = btn.getAttribute('data-movie');
+    const csrfToken = btn.getAttribute('data-csrf');
+    if (!isNaN(movieId)) movieId = parseInt(movieId, 10);
+    deleteMovie(btn, movieId, movieName, csrfToken);
+  }
+
   async function deleteMovie(btn, movieId, movieName, csrfToken) {
     if (!confirmDeletion(movieName)) return;
     
@@ -419,7 +427,11 @@
             </form>
           </td>
           <td style="padding: 10px">
-            <button type="button" class="table-button app-table-action-danger" onclick="deleteMovie(this, {{ movie['id']|tojson }}, {{ movie['movie']|tojson }}, {{ csrf_token()|tojson }})">
+            <button type="button" class="table-button app-table-action-danger" 
+                    data-id="{{ movie['id'] }}" 
+                    data-movie="{{ movie['movie'] }}" 
+                    data-csrf="{{ csrf_token() }}"
+                    onclick="handleDelete(this)">
               X
             </button>
           </td>

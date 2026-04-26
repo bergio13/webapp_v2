@@ -6,7 +6,7 @@ import requests
 import re
 from functools import wraps
 from bs4 import BeautifulSoup
-from tmdbv3api import TMDb, Movie, TV, Season
+from services import tmdb_service
 from flask_mail import Mail, Message
 from flask_caching import Cache
 from flask_wtf.csrf import CSRFProtect
@@ -34,8 +34,7 @@ import datetime
 # APP CONFIGURATION
 # ========================================
 
-tmdb = TMDb()
-tmdb.api_key = os.environ.get('TMDB_API_KEY')
+# TMDB initialized in services/tmdb_service.py
 
 app = Flask(__name__)
 # Register the auth blueprint with the main app
@@ -145,23 +144,7 @@ def clear_user_cache(user_id):
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 dict_months = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
 
-movie_genres = {
-    28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
-    99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
-    27: "Horror", 10402: "Musical", 9648: "Mystery", 10749: "Romance", 878: "Sci-Fi",
-    10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western"
-}
-
-tv_genres = {
-    10759: "Action & Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
-    99: "Documentary", 18: "Drama", 10751: "Family", 10762: "Kids", 9648: "Mystery",
-    10763: "News", 10764: "Reality", 10765: "Sci-Fi & Fantasy", 10766: "Soap",
-    10767: "Talk", 10768: "War & Politics", 37: "Western"
-}
-
-movie = Movie()
-tv = TV()
-season = Season()
+# Genres and clients moved to services/tmdb_service.py
 
 OPENROUTER_SETTINGS_FILE = os.environ.get('OPENROUTER_SETTINGS_FILE', 'openrouter_settings.json')
 
@@ -323,14 +306,7 @@ def get_current_year_month():
     today = datetime.date.today()
     return today.year, today.month
 
-def get_movie_poster(movie_title):
-    """Get movie poster from Wikipedia (fallback method)"""
-    movie_title = movie_title.replace(' ', '_')
-    url = f'https://en.wikipedia.org/wiki/{movie_title}'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    img_tag = soup.find('a', {'class': 'image'})
-    return str(img_tag)
+# Wikipedia fallback removed
 
 def split_genres(genre_value):
     """Split comma-separated genre values into normalized genre names."""
@@ -545,7 +521,7 @@ def format_ai_response_to_html(text, watched_lookup=None):
 def api_now_playing():
     """Return a list of movies currently in cinemas this week (TMDB now_playing)."""
     import requests as http_requests
-    api_key = tmdb.api_key
+    api_key = os.environ.get('TMDB_API_KEY')
     if not api_key:
         return jsonify({'movies': []})
     try:
@@ -968,115 +944,38 @@ def discover():
 def add_movie():
     if request.method == "POST":
         try:
-            parent_id = get_user_by_id(session['id'])
             title = request.form["title"]
             title = clean_and_format(title)
             manual_director = request.form["director"].strip()
             year = request.form["year"]
             date = request.form["date"]
-            genre = ""
-            director = ""
             rating = request.form["rating"]
             rewatch = request.form["rewatch"] # 0 false, 1 true
             tv_show = request.form["tv"] # 0 if movie, 1 if tv show
             which_season = request.form["season"]
             cinema = request.form["cinema"]
             
-            # Use manual director if provided, otherwise auto-fetch
             if manual_director:
-                director = clean_and_capitalize_name(manual_director)
+                manual_director = clean_and_capitalize_name(manual_director)
             
-            try:
-                if tv_show == '1':
-                    res = tv.search(title)
-                    for i, result in enumerate(res):
-                        print(f"Result_{i}", result)
-                        if result['first_air_date'][:4] == str(year):
-                            ids = result['id']
-                            show_season = season.details(ids, which_season)
-                            poster = "https://image.tmdb.org/t/p/w200" + show_season.poster_path
-                            title = title + ', ' + show_season.name
-                            genre_ids = result['genre_ids']
-                            genre = genre.join([tv_genres[genre_id] + ", " for genre_id in genre_ids])
-                            genre = genre[:-2]
-                            
-                            # Get TV show creator/director only if not manually provided
-                            if not director:
-                                try:
-                                    tv_details = tv.details(ids)
-                                    print(tv_details)
-                                    if hasattr(tv_details, 'created_by') and tv_details.created_by:
-                                        director = tv_details.created_by[0]['name']
-                                    else:
-                                        # Try to get credits for TV show
-                                        try:
-                                            api_key = tmdb.api_key
-                                            credits_url = f"https://api.themoviedb.org/3/tv/{ids}/credits?api_key={api_key}"
-                                            credits_response = requests.get(credits_url)
-                                            if credits_response.status_code == 200:
-                                                credits_data = credits_response.json()
-                                                for crew_member in credits_data.get('crew', []):
-                                                    if crew_member['job'] in ['Director', 'Creator', 'Executive Producer']:
-                                                        director = crew_member['name']
-                                                        break
-                                        except:
-                                            pass
-                                        
-                                        if not director:
-                                            director = "Various Directors"
-                                except:
-                                    director = "Unknown"
-                            print(genre)
-                            break
-                else:
-                    res = movie.search(title)
-                    for i, result in enumerate(res):
-                        print(f"Result_{i}", result)
-                        if result['release_date'][:4] == str(year):
-                            poster = "https://image.tmdb.org/t/p/w200/" + result['poster_path']
-                            genre_ids = result['genre_ids']
-                            genre = genre.join([movie_genres[genre_id] + ", " for genre_id in genre_ids])
-                            genre = genre[:-2]
-                            
-                            # Get movie director only if not manually provided
-                            if not director:
-                                try:
-                                    movie_details = movie.details(result['id'])
-                                    # Try to get credits using the tmdbv3api
-                                    credits = movie_details.credits
-                                    if credits and 'crew' in credits:
-                                        for crew_member in credits['crew']:
-                                            if crew_member['job'] == 'Director':
-                                                director = crew_member['name']
-                                                break
-                                except:
-                                    # Fallback: try manual API call for credits
-                                    try:
-                                        api_key = tmdb.api_key
-                                        credits_url = f"https://api.themoviedb.org/3/movie/{result['id']}/credits?api_key={api_key}"
-                                        credits_response = requests.get(credits_url)
-                                        if credits_response.status_code == 200:
-                                            credits_data = credits_response.json()
-                                            for crew_member in credits_data.get('crew', []):
-                                                if crew_member['job'] == 'Director':
-                                                    director = crew_member['name']
-                                                    break
-                                    except:
-                                        pass
-
-                                if not director:
-                                    director = "Unknown"
-                            break
-            except:
-                html = get_movie_poster(title)
-                if html != 'None':
-                    soup = BeautifulSoup(html, 'html.parser')
-                    img_tag = soup.find('img')
-                    src_link = img_tag['src']   
-                    poster = src_link
-                else: 
-                    res = movie.search(title)
-                    poster = res[0]['poster_path']
+            if tv_show == '1':
+                try:
+                    season_num = int(which_season) if which_season else 1
+                except ValueError:
+                    season_num = 1
+                details = tmdb_service.get_tv_details(title, year, season_num, manual_director)
+            else:
+                details = tmdb_service.get_movie_details(title, year, manual_director)
+                
+            if details:
+                poster = details["poster"]
+                genre = details["genre"]
+                director = details["director"]
+                title = details["title"]
+            else:
+                poster = "https://via.placeholder.com/200x300?text=No+Poster"
+                genre = "Unknown"
+                director = manual_director or "Unknown"
             
             print(title, director, year, date, genre, rating, rewatch, tv_show, session['id'])
             insert_movies(title, director, genre, year, date, rating, rewatch, tv_show, poster, session['id'], cinema)
@@ -1121,22 +1020,14 @@ def edit_movie():
         p_year = request.form['year']
         rating = request.form['rating']
         tv_show = request.form['tv']
-        try:
-            if tv_show == '1':
-                res = tv.search(title)
-            else:
-                res = movie.search(title)
-            poster = "https://image.tmdb.org/t/p/w200/" + res[0]['poster_path']
-        except:
-            html = get_movie_poster(title)
-            if html != 'None':
-                soup = BeautifulSoup(html, 'html.parser')
-                img_tag = soup.find('img')
-                src_link = img_tag['src']   
-                poster = src_link
-            else: 
-                res = movie.search(title)
-                poster = res[0]['poster_path']
+        
+        if tv_show == '1':
+            details = tmdb_service.get_tv_details(title, p_year, 1)
+        else:
+            details = tmdb_service.get_movie_details(title, p_year)
+            
+        poster = details["poster"] if details else "https://via.placeholder.com/200x300?text=No+Poster"
+        
         update_movie(movie_id, title, director, p_year, rating, poster)
         clear_user_cache(session['id'])  # Clear cache after updating movie
         flash('Movie updated', category='success')
@@ -1145,6 +1036,8 @@ def edit_movie():
 # ========================================
 # APPLICATION ENTRY POINT
 # ========================================
+
+
 
 if __name__ == '__main__':
     # Use environment variable to control debug mode
