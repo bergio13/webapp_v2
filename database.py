@@ -126,15 +126,17 @@ def get_movies(parent_id):
         logger.error(f"Error fetching movies for {parent_id}: {e}")
         return []
 
-def get_movies_paginated(parent_id, order_column='v_date', page=1, limit=50):
+def get_movies_paginated(parent_id, order_column='v_date', page=1, limit=50, search=None):
     start_index = (page - 1) * limit
     end_index = start_index + limit - 1
     
     try:
-        data = client.table('lista') \
-            .select('*', count='exact') \
-            .eq('parent_id', parent_id) \
-            .order(order_column, desc=True) \
+        query = client.table('lista').select('*', count='exact').eq('parent_id', parent_id)
+        
+        if search:
+            query = query.ilike('movie', f'%{search}%')
+            
+        data = query.order(order_column, desc=True) \
             .range(start_index, end_index) \
             .execute()
             

@@ -611,7 +611,8 @@ def api_movies():
         else:
             return jsonify({'movies': [], 'has_next': False}), 404
             
-    movies, total_count = get_movies_paginated(user_id, page=page, limit=limit)
+    search = request.args.get('search')
+    movies, total_count = get_movies_paginated(user_id, page=page, limit=limit, search=search)
     
     serialized_movies = []
     for m in movies:

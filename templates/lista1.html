@@ -29,8 +29,14 @@ body_class %} list_page{% endblock %} {% block body %}
   <div class="filter-add-section app-toolbar app-toolbar-stack-mobile">
     <h2 class="page-title app-title-terminal app-title-themed app-title-mobile-centered"><span>//</span> Watched List</h2>
 
-    <div class="buttons-container app-toolbar-actions app-toolbar-actions-mobile">
+    <div class="buttons-container app-toolbar-actions app-toolbar-actions-mobile" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 10px; width: 100%; flex-wrap: wrap; margin-top: 10px;">
+      <div style="display: flex; align-items: center; gap: 5px; height: 32px;">
+        <span style="color: var(--neon-cyan); font-family: 'VT323', monospace; font-size: 1.1rem; line-height: 1;">find_title:</span>
+        <input type="text" id="movie-search-input" placeholder="type..." 
+               style="background: rgba(26, 26, 46, 0.6); border: 1px solid rgba(0, 242, 254, 0.2); color: white; padding: 4px 8px; font-family: 'VT323', monospace; font-size: 1.1rem; border-radius: 4px; width: 140px; outline: none; height: 32px; box-sizing: border-box;" />
+      </div>
       <a href="/add_movie" class="add-movie-btn app-toolbar-link app-toolbar-link-mobile"
+         style="margin: 0 !important; display: flex !important; align-items: center !important; height: 32px; font-size: 1.1rem; font-family: 'VT323', monospace; text-decoration: none;"
         >[ + ADD ]</a
       >
     </div>
@@ -176,6 +182,7 @@ body_class %} list_page{% endblock %} {% block body %}
   let currentPage = 2;
   let hasNext = true;
   let isLoading = false;
+  let currentSearch = "";
   
   const observer = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting && hasNext && !isLoading) {
@@ -185,10 +192,25 @@ body_class %} list_page{% endblock %} {% block body %}
   
   const sensor = document.getElementById('infinite-scroll-sensor');
   if (sensor) observer.observe(sensor);
+
+  const searchInput = document.getElementById('movie-search-input');
+  let debounceTimer;
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        currentSearch = e.target.value.trim();
+        currentPage = 1;
+        hasNext = true;
+        document.querySelector(".table-lista1 tbody").innerHTML = "";
+        loadMoreMovies();
+      }, 300);
+    });
+  }
   
   async function loadMoreMovies() {
     isLoading = true;
-    const url = `/api/movies?page=${currentPage}&limit=50`;
+    const url = `/api/movies?page=${currentPage}&limit=50&search=${encodeURIComponent(currentSearch)}`;
     
     try {
       const response = await fetch(url);
