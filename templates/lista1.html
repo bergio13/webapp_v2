@@ -94,6 +94,7 @@ body_class %} list_page{% endblock %} {% block body %}
       </tbody>
     </table>
   </div>
+  <div id="infinite-scroll-sensor" style="height: 10px;"></div>
 
   <p class="legend-terminal app-legend">
     <i class="fa-solid fa-film"></i> cinema &nbsp;&nbsp;
@@ -167,6 +168,78 @@ body_class %} list_page{% endblock %} {% block body %}
     });
     
     rows.forEach(row => tbody.appendChild(row));
+  }
+
+  let currentPage = 2;
+  let hasNext = true;
+  let isLoading = false;
+  
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && hasNext && !isLoading) {
+      loadMoreMovies();
+    }
+  }, { threshold: 0.1 });
+  
+  const sensor = document.getElementById('infinite-scroll-sensor');
+  if (sensor) observer.observe(sensor);
+  
+  async function loadMoreMovies() {
+    isLoading = true;
+    const url = `/api/movies?page=${currentPage}&limit=50`;
+    
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.movies && data.movies.length > 0) {
+        const tbody = document.querySelector(".table-lista1 tbody");
+        
+        data.movies.forEach(movie => {
+          const tr = document.createElement('tr');
+          tr.style.color = "white";
+          
+          const vDate = new Date(movie.v_date);
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const dateStr = `${monthNames[vDate.getUTCMonth()]} ${vDate.getUTCFullYear()}`;
+          
+          let cinemaIcon = movie.cinema == 1 ? '<i class="fa-solid fa-film" style="font-size: 16px"></i>' : '';
+          let rewatchIcon = movie.rewatch == 1 ? '<i class="fa-solid fa-repeat" style="font-size: 16px"></i>' : '';
+          
+          tr.innerHTML = `
+            <td style="padding: 10px">
+              ${dateStr} ${cinemaIcon} ${rewatchIcon}
+            </td>
+            <td style="padding: 10px">
+              <img class="table-poster1 app-table-poster-responsive" src="${movie.poster}" style="width: 50px" loading="lazy" />
+            </td>
+            <td style="padding: 10px">
+              <a href="https://www.google.com/search?q=${encodeURIComponent(movie.movie)}" target="_blank" style="color: inherit">${movie.movie.toUpperCase()}</a>
+            </td>
+            <td style="padding: 10px">${movie.p_year}</td>
+            <td style="padding: 10px">${movie.director.toUpperCase()}</td>
+            <td style="padding: 10px; text-align: center">${movie.rating}</td>
+            <td style="padding: 10px">
+              <button type="button" class="table-button-list app-table-action-danger" 
+                      data-id="${movie.id}" 
+                      data-movie="${movie.movie}" 
+                      data-csrf="${document.querySelector('[name="csrf_token"]') ? document.querySelector('[name="csrf_token"]').value : ''}"
+                      onclick="handleDelete(this)">
+                X
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+        
+        currentPage++;
+      }
+      
+      hasNext = data.has_next;
+    } catch (e) {
+      console.error("Error loading more movies:", e);
+    } finally {
+      isLoading = false;
+    }
   }
 
   window.onload = () => {

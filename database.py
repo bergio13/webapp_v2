@@ -126,6 +126,44 @@ def get_movies(parent_id):
         logger.error(f"Error fetching movies for {parent_id}: {e}")
         return []
 
+def get_movies_paginated(parent_id, order_column='v_date', page=1, limit=50):
+    start_index = (page - 1) * limit
+    end_index = start_index + limit - 1
+    
+    try:
+        data = client.table('lista') \
+            .select('*', count='exact') \
+            .eq('parent_id', parent_id) \
+            .order(order_column, desc=True) \
+            .range(start_index, end_index) \
+            .execute()
+            
+        lista_dicts = []
+        for row in data.data:
+            movie_dict = {
+                "id": row['lista_id'],
+                "movie": row['movie'],
+                "director": row['director'],
+                "genre": row['genre'],
+                "p_year": row['p_year'],
+                "v_date": datetime.strptime(row['v_date'], "%Y-%m-%d").date() if isinstance(row['v_date'], str) else row['v_date'],
+                "rating": row['rating'],
+                "rewatch": row['rewatch'],
+                "tv_show": row['tv_show'],
+                "poster": row['poster'],
+                "cinema": row['cinema']
+            }
+            lista_dicts.append(movie_dict)
+            
+        total_count = getattr(data, 'count', len(lista_dicts))
+        if total_count is None:
+            total_count = len(lista_dicts)
+            
+        return lista_dicts, total_count
+    except Exception as e:
+        logger.error(f"Pagination error for {parent_id}: {e}")
+        return [], 0
+
 def get_monthly_movies(parent_id, month):
     try:
         current_year = datetime.now().year

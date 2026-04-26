@@ -82,6 +82,7 @@ body %} {% block content %}
       </tbody>
     </table>
   </div>
+  <div id="infinite-scroll-sensor" style="height: 10px;"></div>
 
   <p class="legend-terminal app-legend">
     <i class="fa-solid fa-film"></i> cinema &nbsp;&nbsp;
@@ -92,6 +93,70 @@ body %} {% block content %}
 <script src="/static/js/grid.js"></script>
 
 <script>
+  let currentPage = 2;
+  let hasNext = true;
+  let isLoading = false;
+  
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && hasNext && !isLoading) {
+      loadMoreMovies();
+    }
+  }, { threshold: 0.1 });
+  
+  const sensor = document.getElementById('infinite-scroll-sensor');
+  if (sensor) observer.observe(sensor);
+  
+  async function loadMoreMovies() {
+    isLoading = true;
+    const url = `/api/movies?page=${currentPage}&limit=50&username={{ username }}`;
+    
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.movies && data.movies.length > 0) {
+        const tbody = document.querySelector(".table-lista1 tbody");
+        
+        data.movies.forEach(movie => {
+          const tr = document.createElement('tr');
+          // Add styling for friend theme if needed, but simple color: white works
+          tr.style.color = "white";
+          
+          const vDate = new Date(movie.v_date);
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const dateStr = `${monthNames[vDate.getUTCMonth()]} ${vDate.getUTCFullYear()}`;
+          
+          let cinemaIcon = movie.cinema == 1 ? '<i class="fa-solid fa-film" style="font-size: 14px"></i>' : '';
+          let rewatchIcon = movie.rewatch == 1 ? '<i class="fa-solid fa-repeat" style="font-size: 14px"></i>' : '';
+          
+          tr.innerHTML = `
+            <td>
+              ${dateStr} ${cinemaIcon} ${rewatchIcon}
+            </td>
+            <td>
+              <img class="table-poster1 app-table-poster-responsive" src="${movie.poster}" style="width: 50px" loading="lazy" />
+            </td>
+            <td>
+              <a href="https://www.google.com/search?q=${encodeURIComponent(movie.movie)}" target="_blank">${movie.movie.toUpperCase()}</a>
+            </td>
+            <td>${movie.p_year}</td>
+            <td>${movie.director.toUpperCase()}</td>
+            <td style="text-align: center">${movie.rating}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        
+        currentPage++;
+      }
+      
+      hasNext = data.has_next;
+    } catch (e) {
+      console.error("Error loading more movies:", e);
+    } finally {
+      isLoading = false;
+    }
+  }
+
   window.onload = () => {
     document.getElementById("preloader").style.display = "none";
     document.querySelector(".list_list").style.display = "block";

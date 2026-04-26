@@ -588,14 +588,40 @@ def animation():
 def lista():
     year_now, _ = get_current_year_month()
     try:
-        movies = get_movies(session['id'])
-        # sort movies in descendig order by v_date
-        movies.sort(key=lambda movie: movie["v_date"], reverse=True)
+        movies, _ = get_movies_paginated(session['id'], page=1, limit=50)
     except Exception as e:
         app.logger.exception("Failed to load user list: %s", e)
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
     return render_template('lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
+
+@app.route('/api/movies')
+@login_required
+def api_movies():
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 50, type=int)
+    
+    username = request.args.get('username')
+    user_id = session.get('id')
+    
+    if username:
+        user_data = get_user_id(username)
+        if user_data:
+            user_id = user_data[0]['id']
+        else:
+            return jsonify({'movies': [], 'has_next': False}), 404
+            
+    movies, total_count = get_movies_paginated(user_id, page=page, limit=limit)
+    
+    serialized_movies = []
+    for m in movies:
+        m_copy = dict(m)
+        if hasattr(m['v_date'], 'isoformat'):
+            m_copy['v_date'] = m['v_date'].isoformat()
+        serialized_movies.append(m_copy)
+        
+    has_next = (page * limit) < total_count
+    return jsonify({'movies': serialized_movies, 'has_next': has_next})
 
 @app.route('/list/<username>')
 def lista_user(username):
@@ -608,8 +634,7 @@ def lista_user(username):
     id = user[0]['id']
     year_now, _ = get_current_year_month()
     try:
-        movies = get_movies(id)
-        movies.sort(key=lambda movie: movie["v_date"], reverse=True)
+        movies, _ = get_movies_paginated(id, page=1, limit=50)
     except Exception as e:
         app.logger.exception("Failed to load friend list for %s: %s", username, e)
         movies = []
