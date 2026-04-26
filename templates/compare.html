@@ -165,6 +165,44 @@
       gap: 5px;
     }
   }
+
+  .extra-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+    margin-bottom: 30px;
+    font-family: "VT323", monospace;
+    font-size: 1.3rem;
+    background: rgba(179, 157, 219, 0.05);
+    border: 1px dashed rgba(179, 157, 219, 0.2);
+    padding: 15px;
+    border-radius: 6px;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-label {
+    color: var(--friends-grey);
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+
+  .stat-value {
+    color: var(--friends-purple-light);
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+
+  @media (max-width: 600px) {
+    .extra-stats {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
 </style>
 
 <div class="friends">
@@ -192,6 +230,29 @@
         
         <div class="match-score {{ score_class }}">{{ score }}%</div>
         <div class="shared-count">> Based on {{ match_data.shared_count }} shared movie(s)</div>
+
+        <div class="extra-stats">
+          <div class="stat-item">
+            <span class="stat-label">> OVERLAP</span>
+            <span class="stat-value">{{ match_data.library_overlap }}%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">> SIMILARITY</span>
+            <span class="stat-value">{{ match_data.rating_similarity }}%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">> HARSHER CRITIC</span>
+            <span class="stat-value">
+              {% if match_data.harsher_critic == 'You' %}
+                YOU
+              {% elif match_data.harsher_critic == 'Friend' %}
+                {{ friend_username | upper }}
+              {% else %}
+                EQUAL
+              {% endif %}
+            </span>
+          </div>
+        </div>
 
         <div class="movie-comparison-list">
           {% for movie in match_data.shared_movies %}
