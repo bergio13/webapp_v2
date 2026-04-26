@@ -1,0 +1,93 @@
+{% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block body%}
+{% block content %}
+<script src="/static/js/grid.js"></script>
+
+<main class="filterby app-analytics-shell">
+  <div class="grid-container2">
+    <div class="grid-item2 item1">
+      <h1 class="app-title-terminal app-analytics-title"><span>//</span> By {{ groupby }}</h1>
+      {% include '_analytics_wayfinder.html' %}
+    </div>
+
+    <div class="grid-item2 item2 filtered">
+      <div class="row">
+        {% for item in items %}
+        {% set item_id = item.name if item.name is defined else item %}
+        <div class="column-directors" onclick="openTab('{{ item_id }}');">
+          <h4 class="title">{{ item_id }}</h4>
+        </div>
+        <div id="{{ item_id }}" class="containerTab">
+          <span
+            onclick="this.parentElement.style.display='none';"
+            class="closebtn"
+            >&times;</span
+          >
+          <table class="app-grid-table app-analytics-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Movie</th>
+                {% if groupby != 'director' %}<th>Director</th>{% endif %}
+                {% if groupby != 'genre' %}<th>Genre</th>{% endif %}
+                {% if groupby != 'year' %}<th>Year</th>{% endif %}
+                {% if groupby != 'rating' %}<th>Rating</th>{% endif %}
+                {% if allow_delete %}<th style="width: 5%"></th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for movie in movies %}
+                {% set show_movie = false %}
+                {% if groupby == 'director' and movie.director == item_id %}
+                  {% set show_movie = true %}
+                {% elif groupby == 'genre' and item_id in movie.genre.split(', ') %}
+                  {% set show_movie = true %}
+                {% elif groupby == 'rating' and movie.rating|string == item_id|string %}
+                  {% set show_movie = true %}
+                {% elif groupby == 'year' and movie.p_year|string == item_id|string %}
+                  {% set show_movie = true %}
+                {% endif %}
+
+                {% if show_movie %}
+                  {% set tr_style = "" %}
+                  {% if movie['rewatch'] == 1 %}
+                    {% set tr_style = "color: brown" %}
+                  {% elif movie['p_year']|string == now|string %}
+                    {% set tr_style = "color: green" %}
+                  {% endif %}
+
+                  <tr style="{{ tr_style }}">
+                    <td><img class="table-poster1" src="{{ movie['poster'] }}" /></td>
+                    <td>
+                      <a
+                        class="table-link"
+                        href="https://www.google.com/search?q={{ movie['movie'] }}"
+                        target="_blank"
+                      >
+                        {{ movie['movie'].upper() }}</a>
+                    </td>
+                    {% if groupby != 'director' %}<td>{{ movie['director'].upper() }}</td>{% endif %}
+                    {% if groupby != 'genre' %}<td>{{ movie['genre'] }}</td>{% endif %}
+                    {% if groupby != 'year' %}<td>{{ movie['p_year'] }}</td>{% endif %}
+                    {% if groupby != 'rating' %}<td>{{ movie['rating'] }}</td>{% endif %}
+                    
+                    {% if allow_delete %}
+                    <td>
+                      <form action="/remove_movie" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button type="submit" class="table-button-list app-table-action-danger">X</button>
+                        <input type="hidden" name="movie_id" value="{{ movie['id'] }}" />
+                      </form>
+                    </td>
+                    {% endif %}
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %} {% endblock %}
