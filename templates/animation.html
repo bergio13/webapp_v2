@@ -1,16 +1,22 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
-%}
+{% extends "base.html" %}
+{% block title %}Kineto | Archive{% endblock %}
+{% block body_class %} landing-private-lounge{% endblock %}
+{% block content %}
 
 <canvas class="canvas_landing" id="canvas"></canvas>
 
-<script src="static/js/script.js"></script>
-<main>
-  <h1
-    class="animation_title"
-    data-value="KINETO"
-    style="-webkit-background-clip: text; -webkit-text-fill-color: transparent"
-  >
-    KINETO
-  </h1>
+<main class="lounge-container" id="parallax-target">
+  <div class="glass-gate">
+    <h1 class="lounge-title">KINETO</h1>
+    <p class="lounge-subtitle">Private Archive</p>
+
+    <div class="gate-actions" aria-label="Private access actions">
+      <a href="/login" class="gate-link">Enter</a>
+      <span class="divider">/</span>
+      <a href="/register" class="gate-link">Join</a>
+    </div>
+  </div>
 </main>
+
+<script src="static/js/script.js"></script>
 {% endblock %}

@@ -1,11 +1,13 @@
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const ctx = canvas ? canvas.getContext("2d") : null;
 
-//canvas settings
-ctx.fillStyle = "black";
-ctx.linewidth = 10;
+if (canvas && ctx) {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  //canvas settings
+  ctx.fillStyle = "black";
+  ctx.linewidth = 10;
 
 class Particle {
   constructor(effect) {
@@ -28,16 +30,16 @@ class Particle {
       "#7d05f5",
     ];*/
     this.colors = [
-      "#40128B",
-      "#40128B",
-      "#40128B",
-      "#40128B",
-      "#9336B4",
-      "#9336B4",
-      "#9336B4",
-      "#DD58D6",
-      "#DD58D6",
-      "#FFE79B",
+      "#4FD1C5",
+      "#4FD1C5",
+      "#63B3ED",
+      "#63B3ED",
+      "#7F9CF5",
+      "#7F9CF5",
+      "#A3BFFA",
+      "#319795",
+      "#319795",
+      "#4FD1C5",
     ];
     this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
   }
@@ -174,28 +176,30 @@ function animate() {
 
 animate();
 
-//Text animation
-window.addEventListener("load", () => {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  document.querySelector("h1").onmouseover = (event) => {
-    let iterations = 0;
+const prefersReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+).matches;
+const isFinePointer = window.matchMedia("(pointer: fine)").matches;
 
-    const interval = setInterval(() => {
-      event.target.innerText = event.target.innerText
-        .split("")
-        .map((letter, index) => {
-          if (index < iterations) {
-            return event.target.dataset.value[index];
-          }
+if (!prefersReducedMotion && isFinePointer) {
+  document.addEventListener("mousemove", (e) => {
+    const gate = document.getElementById("parallax-target");
+    const canvasElement = document.querySelector(".canvas_landing");
+    if (!gate || !canvasElement) return;
 
-          return letters[Math.floor(Math.random() * 26)];
-        })
-        .join("");
+    const xAxis = (window.innerWidth / 2 - e.pageX) / 80;
+    const yAxis = (window.innerHeight / 2 - e.pageY) / 80;
 
-      if (iterations >= event.target.dataset.value.length) {
-        clearInterval(interval);
-      }
-      iterations += 1 / 4;
-    }, 100);
-  };
-});
+    // Gate moves toward the cursor while the canvas shifts opposite for depth.
+    gate.style.transform = `translate(${-xAxis}px, ${-yAxis}px)`;
+    canvasElement.style.transform = `translate(${xAxis * 1.5}px, ${yAxis * 1.5}px)`;
+  });
+
+  document.addEventListener("mouseleave", () => {
+    const gate = document.getElementById("parallax-target");
+    const canvasElement = document.querySelector(".canvas_landing");
+    if (gate) gate.style.transform = "translate(0px, 0px)";
+    if (canvasElement) canvasElement.style.transform = "translate(0px, 0px)";
+  });
+}
+}
