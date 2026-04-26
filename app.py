@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, flash, redirect, session
+from flask import Flask, render_template, jsonify, request, flash, redirect, session, Response, stream_with_context
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
 import os
@@ -498,11 +498,18 @@ def get_ai_movie_recommendation(
     history_profile='balanced',
 ):
     """Get AI-powered movie recommendations using the recommendation service."""
+    # Check cache
+    genres_str = ','.join(sorted(preferred_genres or []))
+    cache_key = f"ai_rec_{user_request}_{recommendation_mode}_{history_profile}_{genres_str}"
+    cached_val = cache.get(cache_key)
+    if cached_val:
+        return cached_val
+
     api_key = os.environ.get('OPENROUTER_API_KEY')
     if not api_key:
         return "<p>Sorry, recommendation service is not configured.</p><p><strong>Error:</strong> OPENROUTER_API_KEY is not configured.</p>"
 
-    return service_get_ai_movie_recommendation(
+    result = service_get_ai_movie_recommendation(
         user_request,
         user_history,
         recommendation_mode=recommendation_mode,
@@ -515,6 +522,9 @@ def get_ai_movie_recommendation(
         discover_config=_build_discover_config(),
         logger=app.logger,
     )
+    if result and not "Error:" in result and not "rate-limited" in result:
+        cache.set(cache_key, result, timeout=3600)
+    return result
 
 
 def format_ai_response_to_html(text, watched_lookup=None):
@@ -594,6 +604,14 @@ def lista():
         movies = []
         flash('Something went wrong, please refresh the page', category='error')
     return render_template('lista1.html', movies=movies, months=months, year_now=year_now, dict_months=dict_months)
+
+@app.route('/api/watched_lookup')
+@login_required
+def api_watched_lookup():
+    watched_set = get_watched_title_year_lookup(session['id'])
+    lookup_list = [{"title": t, "year": y} for t, y in watched_set]
+    return jsonify(lookup_list)
+
 
 @app.route('/api/movies')
 @login_required
@@ -912,6 +930,69 @@ def compare_taste(username):
     match_data = get_taste_match(session['id'], friend_id)
     
     return render_template('compare.html', friend_username=username, match_data=match_data, session=session)
+
+
+@app.route('/api/recommend_stream', methods=['POST'])
+@login_required
+@limiter.limit("10 per minute")
+def recommend_stream():
+    data = request.get_json() or {}
+    user_request = data.get('user_request', '').strip()
+    recommendation_mode = data.get('recommendation_mode', 'similar').strip().lower()
+    history_profile = data.get('history_profile', 'balanced').strip().lower()
+    selected_genres = data.get('preferred_genres', [])
+    
+    if not user_request:
+        return jsonify({"error": "Prompt required"}), 400
+
+    genres_str = ','.join(sorted(selected_genres))
+    cache_key = f"ai_rec_{user_request}_{recommendation_mode}_{history_profile}_{genres_str}"
+    
+    cached_val = cache.get(cache_key)
+    if cached_val:
+        def stream_cached():
+            import json
+            yield f"data: {json.dumps({'token': cached_val})}\n\n"
+        return Response(stream_with_context(stream_cached()), mimetype='text/event-stream')
+
+    user_history = get_user_watch_history_summary(session['id'], history_profile=history_profile)
+    
+    api_key = os.environ.get('OPENROUTER_API_KEY')
+    settings = _build_openrouter_settings()
+    discover_config = _build_discover_config()
+
+    from recommendation_service import get_ai_movie_recommendation_stream
+
+    def generate():
+        import json
+        accumulated = ""
+        try:
+            for chunk in get_ai_movie_recommendation_stream(
+                user_request,
+                user_history,
+                recommendation_mode=recommendation_mode,
+                preferred_genres=selected_genres,
+                history_profile=history_profile,
+                api_key=api_key,
+                app_base_url=os.environ.get('APP_BASE_URL', 'http://localhost:5000'),
+                settings=settings,
+                discover_config=discover_config,
+                logger=app.logger
+            ):
+                if chunk.startswith("Error:"):
+                    yield f"data: {json.dumps({'error': chunk})}\n\n"
+                    return
+                accumulated += chunk
+                yield f"data: {json.dumps({'token': chunk})}\n\n"
+            
+            if accumulated and not "Error:" in accumulated:
+                cache.set(cache_key, accumulated, timeout=3600)
+                
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+
 
 @app.route('/discover', methods=['GET', 'POST'])
 @login_required

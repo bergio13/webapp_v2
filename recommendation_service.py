@@ -451,6 +451,144 @@ def _post_openrouter_with_deadline(headers, payload, settings, logger=None, dead
     )
 
 
+
+def get_ai_movie_recommendation_stream(
+    user_request,
+    user_history,
+    recommendation_mode="similar",
+    preferred_genres=None,
+    history_profile="balanced",
+    *,
+    api_key,
+    app_base_url,
+    settings,
+    discover_config,
+    logger=None,
+):
+    """Yield AI-powered movie recommendation tokens using OpenRouter streaming."""
+    if not api_key:
+        yield "Error: OPENROUTER_API_KEY is not configured."
+        return
+
+    recommendation_mode = (recommendation_mode or "similar").strip().lower()
+    if recommendation_mode not in discover_config.mode_prompts:
+        recommendation_mode = "similar"
+
+    selected_genres = []
+    for genre in preferred_genres or []:
+        cleaned_genre = str(genre).strip()
+        if (
+            cleaned_genre
+            and cleaned_genre in discover_config.available_genres
+            and cleaned_genre not in selected_genres
+        ):
+            selected_genres.append(cleaned_genre)
+
+    mode_label = discover_config.mode_labels.get(recommendation_mode, "Similar")
+    mode_prompt = discover_config.mode_prompts[recommendation_mode]
+    genre_prompt = ", ".join(selected_genres) if selected_genres else "No explicit genre pre-filter selected."
+
+    history_profile = (history_profile or "balanced").strip().lower()
+    if history_profile not in discover_config.history_profile_prompts:
+        history_profile = "balanced"
+    history_label = discover_config.history_profile_labels.get(history_profile, "Balanced Mix")
+    history_prompt = discover_config.history_profile_prompts[history_profile]
+
+    prompt = f"""You are a movie recommendation expert. Based on the user's watch history and their request, provide 3-5 specific movie recommendations.
+
+User's Recent Watch History:
+{user_history}
+
+User's Request: {user_request}
+
+Recommendation Mode: {mode_label}
+Mode Instructions: {mode_prompt}
+History Lens: {history_label}
+History Lens Instructions: {history_prompt}
+Preferred Genres: {genre_prompt}
+
+Please provide movie recommendations in the following format:
+1. **Movie Title (Year) - Director**
+   Genre: [genres]
+   Why I recommend it: [brief explanation based on their history and request]
+
+2. **Movie Title (Year) - Director**
+   Genre: [genres]
+   Why I recommend it: [brief explanation based on their history and request]
+
+[Continue for 3-5 movies]
+
+Keep recommendations diverse and consider the user's rating patterns and favorite genres.
+If preferred genres are provided, prioritize those genres in all recommendations.
+Avoid recommending exact title+year combinations already listed in watch history when possible.
+Explain why each movie fits their taste based on their watch history."""
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": app_base_url,
+        "X-Title": "Kineto",
+    }
+    model_candidates = _build_openrouter_model_candidates(settings)
+    if not model_candidates:
+        yield "Error: No OpenRouter model candidates configured"
+        return
+
+    import json
+    import requests
+
+    for model_id in model_candidates:
+        request_payload = {
+            "model": model_id,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_completion_tokens": settings.max_completion_tokens,
+            "max_tokens": settings.max_completion_tokens,
+            "stream": True,
+        }
+        request_payload["provider"] = _build_openrouter_provider_preferences(settings)
+        if settings.service_tier:
+            request_payload["service_tier"] = settings.service_tier
+
+        try:
+            response = requests.post(
+                settings.api_url,
+                headers=headers,
+                json=request_payload,
+                timeout=settings.request_timeout,
+                stream=True,
+            )
+            response.raise_for_status()
+
+            for line in response.iter_lines():
+                if line:
+                    decoded_line = line.decode('utf-8')
+                    if decoded_line.startswith('data: '):
+                        data_str = decoded_line[6:].strip()
+                        if data_str == '[DONE]':
+                            break
+                        try:
+                            data_json = json.loads(data_str)
+                            if "error" in data_json:
+                                yield f"Error: {data_json['error'].get('message', 'OpenRouter error')}"
+                                return
+                            choices = data_json.get('choices', [])
+                            if choices:
+                                delta = choices[0].get('delta', {})
+                                token = delta.get('content', '')
+                                if token:
+                                    yield token
+                        except Exception:
+                            pass
+            return
+
+        except Exception as e:
+            if logger:
+                logger.warning(f"Streaming failed for model {model_id}: {e}")
+            continue
+    
+    yield "Error: All OpenRouter model candidates failed to stream."
+
+
 def get_ai_movie_recommendation(
     user_request,
     user_history,
@@ -710,6 +848,13 @@ def format_ai_response_to_html(text, watched_lookup=None):
             line = re.sub(r"\*(.*?)\*", r"<em>\1</em>", line)
             html_lines.append(f"<p>{line}</p>")
         elif line and not re.match(r"^\d+\.", line):
+            if in_list and (line.startswith("I hope") or line.startswith("Enjoy") or "recommendations" in line.lower() or "enjoy" in line.lower()):
+                if current_item_open:
+                    html_lines.append("</li>")
+                    current_item_open = False
+                html_lines.append("</ol>")
+                in_list = False
+                
             line = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", line)
             line = re.sub(r"\*(.*?)\*", r"<em>\1</em>", line)
             if line:

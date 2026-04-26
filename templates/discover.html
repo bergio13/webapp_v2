@@ -113,15 +113,15 @@ body_class %} discover_page{% endblock %} {% block content %}
       </aside>
     </section>
 
-    {% if ai_response %}
-    <section class="cyber-card glass-panel discover-card response-card">
+    <section class="cyber-card glass-panel discover-card response-card" id="response-section" style="display: {% if ai_response %}block{% else %}none{% endif %};">
       <div class="response-headline">
         <h2>OUTPUT_RECOMMENDATIONS</h2>
-        <p>
+        <p id="response-meta-text">
+          {% if ai_response %}
           Mode: {{ discover_mode_labels.get(recommendation_mode, 'Similar') }} |
-          History Lens: {{ discover_history_profile_labels.get(history_profile,
-          'Balanced Mix') }} | Genres: {% if selected_genres %}{{
-          selected_genres | join(', ') }}{% else %}Any{% endif %}
+          History Lens: {{ discover_history_profile_labels.get(history_profile, 'Balanced Mix') }} | 
+          Genres: {% if selected_genres %}{{ selected_genres | join(', ') }}{% else %}Any{% endif %}
+          {% endif %}
         </p>
         <p class="badge-legend">
           <span class="already-watched-badge">Already watched</span>
@@ -129,9 +129,8 @@ body_class %} discover_page{% endblock %} {% block content %}
         </p>
       </div>
 
-      <div class="formatted-recommendations">{{ ai_response | safe }}</div>
+      <div class="formatted-recommendations" id="formatted-recommendations">{% if ai_response %}{{ ai_response | safe }}{% endif %}</div>
     </section>
-    {% endif %}
   </div>
 </main>
 
@@ -475,17 +474,19 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .formatted-recommendations {
-    margin-top: 12px;
-    max-height: 620px;
+    margin-top: 15px;
+    max-height: 650px;
     overflow-y: auto;
-    background: rgba(11, 18, 27, 0.8);
-    border: 1px solid rgba(100, 181, 246, 0.22);
-    border-radius: 10px;
-    padding: 14px;
+    background: rgba(11, 18, 27, 0.85);
+    border: 1px solid rgba(126, 181, 196, 0.25);
+    border-radius: 12px;
+    padding: 20px;
     color: var(--discover-light);
     font-family: "VT323", "Courier New", monospace;
-    font-size: 1.16rem;
-    line-height: 1.45;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(126, 181, 196, 0.4) transparent;
   }
 
   .formatted-recommendations strong {
@@ -502,52 +503,69 @@ body_class %} discover_page{% endblock %} {% block content %}
     counter-reset: discover-counter;
     padding-left: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
   }
 
   .formatted-recommendations ol li {
     counter-increment: discover-counter;
-    margin-bottom: 12px;
-    border-left: 3px solid rgba(100, 181, 246, 0.48);
+    border: 1px solid rgba(126, 181, 196, 0.2);
     border-radius: 8px;
-    padding: 10px 10px 10px 14px;
-    background: rgba(20, 32, 46, 0.7);
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(20, 32, 46, 0.9) 0%, rgba(13, 23, 33, 0.7) 100%);
     position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s ease-in-out;
+  }
+
+  .formatted-recommendations ol li:hover {
+    border-color: rgba(126, 181, 196, 0.5);
+    background: linear-gradient(135deg, rgba(24, 38, 54, 0.9) 0%, rgba(16, 27, 38, 0.7) 100%);
+    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.15);
+    transform: translateY(-2px);
   }
 
   .formatted-recommendations ol li::before {
     content: counter(discover-counter);
     position: absolute;
-    top: -8px;
-    left: -8px;
-    width: 20px;
-    height: 20px;
-    border-radius: 999px;
-    background: var(--discover-cyan);
-    color: #fff;
+    top: -12px;
+    left: -12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #111a24;
+    border: 2px solid var(--discover-cyan);
+    color: var(--discover-cyan);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: bold;
+    box-shadow: 0 0 10px rgba(126, 181, 196, 0.4);
   }
 
   .formatted-recommendations ol li > strong:first-child {
     display: block;
-    margin-bottom: 6px;
-    border-bottom: 1px solid rgba(100, 181, 246, 0.2);
-    padding-bottom: 5px;
+    margin-bottom: 10px;
+    border-bottom: 1px dashed rgba(126, 181, 196, 0.3);
+    padding-bottom: 8px;
+    font-size: 1.45rem;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
   }
 
   .formatted-recommendations ol li p {
-    margin: 4px 0;
+    margin: 6px 0;
   }
 
   .formatted-recommendations ol li p:last-child {
-    margin-top: 7px;
-    padding: 6px 8px;
+    margin-top: 10px;
+    padding: 8px 12px;
     border-radius: 6px;
-    background: rgba(179, 157, 219, 0.14);
-    border-left: 2px solid rgba(179, 157, 219, 0.55);
+    background: rgba(179, 157, 219, 0.12);
+    border-left: 3px solid var(--discover-purple);
   }
 
   .already-watched-badge {
@@ -615,20 +633,151 @@ body_class %} discover_page{% endblock %} {% block content %}
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.querySelector(".recommendation-form");
     const submitButton = document.getElementById("submit-button");
+    const responseSection = document.getElementById("response-section");
+    const formattedRecs = document.getElementById("formatted-recommendations");
+    const responseMeta = document.getElementById("response-meta-text");
+
+    let watchedMovies = [];
+    fetch('/api/watched_lookup')
+      .then(res => res.json())
+      .then(data => { watchedMovies = data; })
+      .catch(err => console.error("Failed to load watched lookup", err));
+
+    function formatToHtml(text, watchedLookup = []) {
+      const lines = text.split("\n");
+      const htmlLines = [];
+      let inList = false;
+      let currentItemOpen = false;
+
+      for (let rawLine of lines) {
+        let line = rawLine.trim();
+
+        let titleMatch = line.match(/^\d+\.\s*\*\*(.*?)\*\*/);
+        if (titleMatch) {
+          if (!inList) {
+            htmlLines.push("<ol>");
+            inList = true;
+          }
+          if (currentItemOpen) {
+            htmlLines.push("</li>");
+          }
+          let heading = titleMatch[1];
+          let recommendedTitle = null;
+          let recommendedYear = null;
+          let headingMatch = heading.trim().match(/^(.*?)\s*\((\d{4})\)/);
+          if (headingMatch) {
+            recommendedTitle = headingMatch[1].trim();
+            recommendedYear = parseInt(headingMatch[2]);
+          }
+          let normalizedTitle = recommendedTitle ? recommendedTitle.replace(/\s+/g, " ").trim().toLowerCase() : "";
+          let showDedupBadge = false;
+
+          if (normalizedTitle && recommendedYear) {
+            showDedupBadge = watchedLookup.some(w => w.title === normalizedTitle && w.year === recommendedYear);
+          }
+          let dedupBadge = showDedupBadge ? ' <span class="already-watched-badge">Already watched</span>' : "";
+          htmlLines.push(`<li><strong>${heading}</strong>${dedupBadge}`);
+          currentItemOpen = true;
+        } else if (line.startsWith("Genre:") || line.startsWith("Why I recommend it:")) {
+          line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+          htmlLines.push(`<p>${line}</p>`);
+        } else if (line && !line.match(/^\d+\./)) {
+          if (inList && (line.startsWith("I hope") || line.startsWith("Enjoy") || line.toLowerCase().includes("recommendations") || line.toLowerCase().includes("enjoy"))) {
+            if (currentItemOpen) {
+              htmlLines.push("</li>");
+              currentItemOpen = false;
+            }
+            htmlLines.push("</ol>");
+            inList = false;
+          }
+
+          line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+          if (line) {
+            htmlLines.push(`<p>${line}</p>`);
+          }
+        }
+      }
+
+      if (currentItemOpen) htmlLines.push("</li>");
+      if (inList) htmlLines.push("</ol>");
+
+      return htmlLines.join("\n");
+    }
 
     if (form && submitButton) {
-      form.addEventListener("submit", function () {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        
         submitButton.classList.add("loading");
         submitButton.disabled = true;
         submitButton.textContent = "[ GENERATING... ]";
 
-        setTimeout(function () {
-          if (submitButton.classList.contains("loading")) {
-            submitButton.classList.remove("loading");
-            submitButton.disabled = false;
-            submitButton.textContent = "[ GENERATE RECOMMENDATIONS ]";
+        const formData = new FormData(form);
+        const requestPayload = {
+          user_request: formData.get('user_request'),
+          recommendation_mode: formData.get('recommendation_mode'),
+          history_profile: formData.get('history_profile'),
+          preferred_genres: formData.getAll('preferred_genres')
+        };
+
+        const modeLabel = document.querySelector(`input[name="recommendation_mode"]:checked`).nextElementSibling.textContent;
+        const profileLabel = document.querySelector(`input[name="history_profile"]:checked`).nextElementSibling.textContent;
+        const genres = requestPayload.preferred_genres.join(', ') || 'Any';
+        responseMeta.innerHTML = `Mode: ${modeLabel} | History Lens: ${profileLabel} | Genres: ${genres}`;
+        
+        responseSection.style.display = "block";
+        formattedRecs.innerHTML = '<div class="loader app-preloader-spinner" style="margin: 20px auto;"></div>';
+
+        try {
+          const response = await fetch('/api/recommend_stream', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': formData.get('csrf_token')
+            },
+            body: JSON.stringify(requestPayload)
+          });
+
+          if (!response.ok) {
+             throw new Error("Failed to connect to recommendation server.");
           }
-        }, 30000);
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let accumulatedText = "";
+
+          while(true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+            
+            for (let line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = JSON.parse(line.substring(6));
+                if (data.error) {
+                   formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">${data.error}</p>`;
+                   throw new Error(data.error);
+                }
+                accumulatedText += data.token;
+                formattedRecs.innerHTML = formatToHtml(accumulatedText, watchedMovies);
+              }
+            }
+          }
+
+        } catch (error) {
+          console.error(error);
+          if (formattedRecs.innerHTML.includes('loader')) {
+             formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">Error: ${error.message || "An unexpected error occurred."}</p>`;
+          }
+        } finally {
+          submitButton.classList.remove("loading");
+          submitButton.disabled = false;
+          submitButton.textContent = "[ GENERATE RECOMMENDATIONS ]";
+        }
       });
     }
   });
