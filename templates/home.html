@@ -324,7 +324,7 @@
 
       <!-- HERO HOLOGRAM -->
       {% if highest_rated %}
-      <div class="cyber-card glass-panel" style="margin-bottom: 20px; padding: 0; overflow: hidden; display: flex; align-items: center; min-height: 200px;">
+      <div class="cyber-card glass-panel panel-smoke-heavy" style="margin-bottom: 20px; padding: 0; overflow: hidden; display: flex; align-items: center; min-height: 200px;">
         <div class="scanline-overlay"></div>
         <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('{{highest_rated['poster']}}'); background-size: cover; background-position: center; filter: blur(20px) brightness(0.4); z-index: 0;"></div>
         
@@ -343,21 +343,21 @@
 
       <!-- STATS ROW -->
       <div class="stats-row">
-        <div class="cyber-card glass-panel">
+        <div class="cyber-card glass-panel panel-smoke-heavy">
           <p class="stat-label">Total Logs</p>
           <p class="stat-value">{{ total }}</p>
         </div>
-        <div class="cyber-card glass-panel">
+        <div class="cyber-card glass-panel panel-smoke-heavy">
           <p class="stat-label">Avg Rating</p>
           <p class="stat-value">{{ avg_rating }}</p>
         </div>
-        <div class="cyber-card glass-panel">
+        <div class="cyber-card glass-panel panel-smoke-heavy">
           <p class="stat-label">Cinema Trips</p>
           <p class="stat-value">{{ cinema }}</p>
         </div>
       </div>
 
-      <div class="table-container app-table-shell glass-panel">
+      <div class="table-container app-table-shell glass-panel panel-smoke-heavy">
         <table class="table-home" id="table-home">
       <thead>
         <tr style="text-align: left">
@@ -447,7 +447,7 @@
   </div>
   </div> <!-- end main column -->  <!-- SIDEBAR COLUMN -->
   <div class="sidebar-column">
-    <div class="cyber-card glass-panel" style="height:100%;min-height:480px;display:flex;flex-direction:column;align-items:center;padding:1rem 0.8rem;gap:6px;">
+    <div class="cyber-card glass-panel panel-smoke-heavy" style="height:100%;min-height:480px;display:flex;flex-direction:column;align-items:center;padding:1rem 0.8rem;gap:6px;">
       <h3 style="font-family:'VT323',monospace;color:var(--ocean-blue);margin:0;border-bottom:1px dashed rgba(126,181,196,0.3);padding-bottom:8px;font-size:1.15rem;opacity:0.85;width:100%;text-align:center;flex-shrink:0;">// NOW IN CINEMAS</h3>
 
       <!-- Poster carousel (takes most space) -->
