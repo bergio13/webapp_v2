@@ -51,7 +51,13 @@ def get_movie_details(title, year, manual_director=None):
             best_match = res[0]
             
         poster_path = best_match.get('poster_path')
-        poster = f"https://image.tmdb.org/t/p/w200/{poster_path}" if poster_path else "https://via.placeholder.com/200x300?text=No+Poster"
+        poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/200x300?text=No+Poster"
+        rating = best_match.get('vote_average')
+        if rating is not None:
+            try:
+                rating = round(float(rating), 1)
+            except (TypeError, ValueError):
+                rating = None
         
         genre_ids = best_match.get('genre_ids', [])
         genre_list = [movie_genres.get(gid, "") for gid in genre_ids if movie_genres.get(gid)]
@@ -88,7 +94,8 @@ def get_movie_details(title, year, manual_director=None):
             "poster": poster,
             "genre": genre,
             "director": director,
-            "title": best_match.get('title', title)
+            "title": best_match.get('title', title),
+            "rating": rating,
         }
     except Exception as e:
         print(f"Error in tmdb_service.get_movie_details: {e}")
@@ -96,7 +103,8 @@ def get_movie_details(title, year, manual_director=None):
             "poster": "https://via.placeholder.com/200x300?text=Error",
             "genre": "Unknown",
             "director": manual_director or "Unknown",
-            "title": title
+            "title": title,
+            "rating": None,
         }
 
 def get_tv_details(title, year, season_num, manual_director=None):
@@ -131,11 +139,11 @@ def get_tv_details(title, year, season_num, manual_director=None):
         try:
             show_season = season_api.details(ids, season_num or 1)
             poster_path = show_season.poster_path
-            poster = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else f"https://image.tmdb.org/t/p/w200/{best_match.get('poster_path')}"
+            poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else f"https://image.tmdb.org/t/p/w500{best_match.get('poster_path') or ''}"
             full_title = f"{title}, {show_season.name}" if show_season.name else title
         except:
             poster_path = best_match.get('poster_path')
-            poster = f"https://image.tmdb.org/t/p/w200/{poster_path}" if poster_path else "https://via.placeholder.com/200x300?text=No+Poster"
+            poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/200x300?text=No+Poster"
             full_title = title
             
         genre_ids = best_match.get('genre_ids', [])

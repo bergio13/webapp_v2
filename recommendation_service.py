@@ -2,9 +2,12 @@ import random
 import re
 import time
 from dataclasses import dataclass
+from html import escape
 from typing import Optional, Sequence
 
 import requests
+
+from services.tmdb_service import get_movie_details as tmdb_get_movie_details
 
 
 @dataclass(frozen=True)
@@ -92,6 +95,102 @@ def extract_title_year_from_heading(heading):
         return None, None
 
     return match.group(1).strip(), int(match.group(2))
+
+
+def extract_movie_details_from_heading(heading):
+    """Extract title, year, and director from a recommendation heading text."""
+    if not heading:
+        return None, None, None
+
+    match = re.match(r"^(.*?)\s*\((\d{4})\)\s*[-–—]\s*(.*?)\s*$", heading.strip())
+    if match:
+        return match.group(1).strip(), int(match.group(2)), match.group(3).strip()
+
+    title, year = extract_title_year_from_heading(heading)
+    return title, year, None
+
+
+def _normalize_watch_lookup(watched_lookup):
+    normalized = set()
+    for item in watched_lookup or []:
+        if not item:
+            continue
+        if isinstance(item, dict):
+            title = item.get("title")
+            year = item.get("year")
+        else:
+            try:
+                title, year = item
+            except Exception:
+                continue
+
+        normalized_title = normalize_title_for_match(title)
+        parsed_year = parse_year(year)
+        if normalized_title and parsed_year:
+            normalized.add((normalized_title, parsed_year))
+    return normalized
+
+
+def _format_recommendation_rating(rating):
+    if rating is None:
+        return "Curated Pick"
+
+    try:
+        rating_value = float(rating)
+    except (TypeError, ValueError):
+        return "Curated Pick"
+
+    if rating_value <= 0:
+        return "Curated Pick"
+
+    return f"TMDB {rating_value:.1f}/10"
+
+
+def _render_recommendation_card(item, watched_lookup):
+    title = item.get("title") or "Untitled Recommendation"
+    year = item.get("year")
+    director = item.get("director") or "Unknown Director"
+    genre = item.get("genre") or "Genre unavailable"
+    why = item.get("why") or "No rationale provided."
+
+    poster_details = {}
+    if title and year:
+        try:
+            poster_details = tmdb_get_movie_details(title, year, manual_director=director) or {}
+        except Exception:
+            poster_details = {}
+
+    poster = poster_details.get("poster") or "https://via.placeholder.com/500x750?text=No+Poster"
+    poster_title = poster_details.get("title") or title
+    display_rating = _format_recommendation_rating(poster_details.get("rating"))
+    normalized_lookup = watched_lookup or set()
+    is_watched = False
+    if title and year:
+        is_watched = (normalize_title_for_match(title), parse_year(year)) in normalized_lookup
+
+    watched_badge = ' <span class="already-watched-badge">Already watched</span>' if is_watched else ""
+    year_text = str(year) if year else "Year unavailable"
+
+    return (
+        '<article class="movie-frame">'
+        f'<img src="{escape(poster)}" alt="{escape(poster_title)}" class="movie-poster" loading="lazy">'
+        '<div class="frame-overlay">'
+        '<div class="overlay-content">'
+        f'<h3 class="frame-title">{escape(title)}</h3>'
+        f'<div class="frame-meta"><span class="meta-item">{escape(year_text)}</span><span class="meta-item divider">•</span><span class="meta-item">{escape(director)}</span></div>'
+        f'<div class="frame-genre">{escape(genre)}</div>'
+        f'<div class="frame-rating">{escape(display_rating)}</div>'
+        f'<div class="frame-summary"><strong>Why it fits:</strong> {escape(why)}</div>'
+        '<div class="frame-actions">'
+        f'<button class="action-btn" type="button" title="Log Watch" aria-label="Log Watch for {escape(title)}"><i class="fa-solid fa-eye"></i></button>'
+        f'<button class="action-btn" type="button" title="Like" aria-label="Like {escape(title)}"><i class="fa-solid fa-heart"></i></button>'
+        f'<button class="action-btn" type="button" title="Add to List" aria-label="Add {escape(title)} to list"><i class="fa-solid fa-plus"></i></button>'
+        '</div>'
+        f'<div class="frame-badge-row">{watched_badge}</div>'
+        '</div>'
+        '</div>'
+        '</article>'
+    )
 
 
 def build_watched_title_year_lookup(movies):
@@ -507,7 +606,7 @@ History Lens: {history_label}
 History Lens Instructions: {history_prompt}
 Preferred Genres: {genre_prompt}
 
-Please provide movie recommendations in the following format:
+Please provide exactly 4 movie recommendations in the following format:
 1. **Movie Title (Year) - Director**
    Genre: [genres]
    Why I recommend it: [brief explanation based on their history and request]
@@ -516,7 +615,7 @@ Please provide movie recommendations in the following format:
    Genre: [genres]
    Why I recommend it: [brief explanation based on their history and request]
 
-[Continue for 3-5 movies]
+[Continue for exactly 4 movies]
 
 Keep recommendations diverse and consider the user's rating patterns and favorite genres.
 If preferred genres are provided, prioritize those genres in all recommendations.
@@ -811,58 +910,71 @@ Explain why each movie fits their taste based on their watch history."""
 
 
 def format_ai_response_to_html(text, watched_lookup=None):
-    """Convert AI response text to HTML with better formatting."""
-    watched_lookup = watched_lookup or set()
+    """Convert AI response text into glass-frame movie cards."""
+    watched_lookup = _normalize_watch_lookup(watched_lookup)
 
-    lines = text.split("\n")
-    html_lines = []
-    in_list = False
-    current_item_open = False
+    items = []
+    footer_lines = []
+    current_item = None
 
-    for raw_line in lines:
+    for raw_line in (text or "").splitlines():
         line = raw_line.strip()
+        if not line:
+            continue
 
         title_match = re.match(r"^\d+\.\s*\*\*(.*?)\*\*", line)
         if title_match:
-            if not in_list:
-                html_lines.append("<ol>")
-                in_list = True
+            if current_item:
+                items.append(current_item)
 
-            if current_item_open:
-                html_lines.append("</li>")
+            heading = title_match.group(1).strip()
+            title, year, director = extract_movie_details_from_heading(heading)
+            current_item = {
+                "title": title or heading,
+                "year": year,
+                "director": director,
+                "genre": "",
+                "why": "",
+                "extra": [],
+            }
+            continue
 
-            heading = title_match.group(1)
-            recommended_title, recommended_year = extract_title_year_from_heading(heading)
-            normalized_title = normalize_title_for_match(recommended_title)
-            show_dedup_badge = (
-                normalized_title
-                and recommended_year
-                and (normalized_title, recommended_year) in watched_lookup
-            )
-            dedup_badge = " <span class=\"already-watched-badge\">Already watched</span>" if show_dedup_badge else ""
+        if current_item is None:
+            footer_lines.append(line)
+            continue
 
-            html_lines.append(f"<li><strong>{heading}</strong>{dedup_badge}")
-            current_item_open = True
-        elif line.startswith("Genre:") or line.startswith("Why I recommend it:"):
-            line = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", line)
-            line = re.sub(r"\*(.*?)\*", r"<em>\1</em>", line)
-            html_lines.append(f"<p>{line}</p>")
-        elif line and not re.match(r"^\d+\.", line):
-            if in_list and (line.startswith("I hope") or line.startswith("Enjoy") or "recommendations" in line.lower() or "enjoy" in line.lower()):
-                if current_item_open:
-                    html_lines.append("</li>")
-                    current_item_open = False
-                html_lines.append("</ol>")
-                in_list = False
-                
-            line = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", line)
-            line = re.sub(r"\*(.*?)\*", r"<em>\1</em>", line)
-            if line:
-                html_lines.append(f"<p>{line}</p>")
+        if line.startswith("Genre:"):
+            current_item["genre"] = line.split(":", 1)[1].strip()
+        elif line.startswith("Why I recommend it:"):
+            current_item["why"] = line.split(":", 1)[1].strip()
+        elif line.startswith("Why"):
+            current_item["why"] = f"{current_item['why']} {line}".strip()
+        else:
+            current_item["extra"].append(line)
 
-    if current_item_open:
-        html_lines.append("</li>")
-    if in_list:
-        html_lines.append("</ol>")
+    if current_item:
+        items.append(current_item)
 
-    return "\n".join(html_lines)
+    items = items[:4]
+
+    if not items:
+        return f'<div class="movie-gallery movie-gallery-empty"><p class="recommendation-empty">{escape(text or "")}</p></div>'
+
+    html_cards = []
+    for item in items:
+        if len(html_cards) >= 4:
+            break
+        if item["extra"]:
+            extra_text = " ".join(item["extra"]).strip()
+            if extra_text:
+                item["why"] = f"{item['why']} {extra_text}".strip() if item["why"] else extra_text
+        html_cards.append(_render_recommendation_card(item, watched_lookup))
+
+    html_output = ["<section class=\"movie-gallery\">", *html_cards, "</section>"]
+
+    if footer_lines:
+        footer = " ".join(footer_lines).strip()
+        if footer:
+            html_output.append(f'<p class="recommendation-epilogue">{escape(footer)}</p>')
+
+    return "\n".join(html_output)

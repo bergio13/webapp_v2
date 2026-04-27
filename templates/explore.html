@@ -6,32 +6,21 @@ body_class %} explore_page{% endblock %}{% block content%}
     <h2 class="explore-title app-title-terminal"><span>//</span> Trending on Kineto</h2>
     <section class="carta-list explore-cards" id="scrollableSection">
       {% for m in movies %}
-      <article class="carta">
-        <header class="carta-header">
-          <img class="img-carta" src="{{m.poster}}" />
-          <img class="img-carta-back" src="{{m.poster}}" />
-          {% if m.movie|length < 29 %}
-          <h5>
-            <a
-              class="carta-link"
-              href="https://www.google.com/search?q={{m['movie']}}"
-              >{{m.movie.upper()}}</a
-            >
-          </h5>
-          {% else %}
-          <h5 style="font-size: 14px">
-            <a
-              class="carta-link"
-              href="https://www.google.com/search?q={{m['movie']}}"
-              >{{m.movie.upper()}}</a
-            >
-          </h5>
-          {% endif %}
-          <p style="font-size: 14px; margin-top: 0; color: white">
-            {{m.director }} ({{m.p_year}})
-          </p>
-        </header>
-      </article>
+      <a href="https://www.google.com/search?q={{m['movie']}}" target="_blank" style="text-decoration: none;">
+        <article class="movie-frame">
+          <img src="{{m.poster}}" alt="{{m.movie}}" class="movie-poster" loading="lazy">
+          <div class="frame-overlay">
+            <div class="overlay-content">
+              <h3 class="frame-title">{{m.movie.upper()}}</h3>
+              <div class="frame-meta">
+                <span class="meta-item">{{m.p_year}}</span>
+                <span class="meta-item divider">•</span>
+                <span class="meta-item">{{m.director}}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </a>
       {% endfor %}
     </section>
   </section>

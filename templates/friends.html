@@ -68,21 +68,31 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
   }
 
   .friend-card {
-    background: rgba(26, 26, 46, 0.8);
+    background: rgba(31, 27, 39, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(179, 157, 219, 0.2);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 24px 20px;
     text-align: center;
-    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 210px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     text-decoration: none;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   }
 
   .friend-card:hover {
-    border-color: var(--friends-purple);
-    background: rgba(122, 77, 194, 0.2);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 20px rgba(179, 157, 219, 0.15);
+    border-color: rgba(179, 157, 219, 0.6);
+    background: rgba(179, 157, 219, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(179, 157, 219, 0.25);
   }
+
 
   .friend-avatar {
     width: 60px;
@@ -103,10 +113,33 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
     font-size: 1.3rem;
     color: var(--friends-light);
     letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .friend-card:hover .friend-name {
     color: var(--friends-purple-light);
+  }
+
+  .friend-card-link {
+    text-decoration: none;
+    display: block;
+    min-width: 0;
+  }
+
+  .friend-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .friend-actions form {
+    margin: 0;
   }
 
   /* Header Layout */
@@ -274,23 +307,275 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
     margin-top: 2rem;
   }
 
+  .recent-logs-shell {
+    border: 1px solid rgba(179, 157, 219, 0.18);
+    border-radius: 18px;
+    padding: 18px;
+    background:
+      radial-gradient(circle at 8% 12%, rgba(179, 157, 219, 0.12), transparent 42%),
+      linear-gradient(145deg, rgba(22, 20, 36, 0.82), rgba(30, 24, 48, 0.66));
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .recent-logs-shell::before,
+  .recent-logs-shell::after {
+    content: "";
+    position: absolute;
+    top: 94px;
+    bottom: 16px;
+    width: 34px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+
+  .recent-logs-shell.can-scroll-left::before {
+    left: 0;
+    opacity: 1;
+    background: linear-gradient(90deg, rgba(18, 16, 30, 1), rgba(18, 16, 30, 0));
+  }
+
+  .recent-logs-shell.can-scroll-right::after {
+    right: 0;
+    opacity: 1;
+    background: linear-gradient(270deg, rgba(18, 16, 30, 1), rgba(18, 16, 30, 0));
+  }
+
+  .recent-logs-shell .section-title {
+    margin-bottom: 0.65rem;
+  }
+
+  .recent-logs-shell .section-subtitle {
+    margin: 0 0 0.95rem;
+    color: rgba(224, 231, 238, 0.72);
+    font-family: "VT323", monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.7px;
+  }
+
   .carta-list {
     background: rgba(26, 26, 46, 0.4);
-    border-radius: 10px;
-    padding: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(179, 157, 219, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .carta-list::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .recent-logs-track {
+    padding: 12px 8px 14px;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .recent-logs-track::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .recent-logs-track::-webkit-scrollbar-track {
+    background: rgba(17, 16, 30, 0.45);
+    border-radius: 999px;
+  }
+
+  .recent-logs-track::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, rgba(179, 157, 219, 0.45), rgba(126, 181, 196, 0.45));
+    border-radius: 999px;
+  }
+
+  .recent-log-link {
+    display: block;
+    width: 210px;
+    min-width: 210px;
+    text-decoration: none;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    transition: transform 0.25s ease;
+  }
+
+  .recent-log-link:hover {
+    transform: translateY(-4px);
+  }
+
+  .recent-log-link .movie-frame {
+    width: 100%;
+    min-width: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(179, 157, 219, 0.22);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.42);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .recent-logs-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 0.7rem;
+  }
+
+  .recent-logs-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .recent-logs-button {
+    appearance: none;
+    border: 1px solid rgba(179, 157, 219, 0.25);
+    background: rgba(31, 27, 39, 0.72);
+    color: var(--friends-light);
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    font-family: "VT323", monospace;
+    font-size: 1rem;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .recent-logs-button:hover {
+    background: rgba(179, 157, 219, 0.18);
+    border-color: rgba(179, 157, 219, 0.45);
+    transform: translateY(-2px);
+  }
+
+  .recent-logs-button:focus-visible {
+    outline: 2px solid rgba(209, 196, 233, 0.75);
+    outline-offset: 2px;
+  }
+
+  .recent-logs-hint {
+    margin: 0;
+    color: rgba(224, 231, 238, 0.72);
+    font-family: "VT323", monospace;
+    font-size: 0.92rem;
+    letter-spacing: 0.65px;
+    text-align: center;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+
+  .recent-logs-hint.is-hidden {
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+  }
+
+  .recent-log-link:hover .movie-frame {
+    border-color: rgba(179, 157, 219, 0.45);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(179, 157, 219, 0.2);
+  }
+
+  .recent-log-link .frame-overlay {
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0.9rem 0.8rem 0.75rem;
+    overflow: hidden;
+  }
+
+  .recent-log-link .overlay-content {
+    width: 100%;
+    max-width: 100%;
+    display: grid;
+    grid-template-rows: auto auto auto auto;
+    gap: 0.28rem;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .recent-log-link .frame-title {
+    margin: 0;
+    font-size: 1.18rem;
+    line-height: 1.05;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .recent-log-link .frame-meta {
+    margin: 0;
+    min-width: 0;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    font-size: 0.82rem;
+  }
+
+  .recent-log-link .frame-meta .meta-item {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .recent-log-link .frame-meta .meta-item:first-child,
+  .recent-log-link .frame-meta .meta-item:nth-child(2) {
+    flex: 0 0 auto;
+  }
+
+  .recent-log-link .frame-meta .meta-item:last-child {
+    flex: 1 1 auto;
+  }
+
+  .recent-log-link .frame-rating {
+    margin: 0;
+    min-height: 1rem;
+    color: #ffe28d;
+    font-family: "VT323", monospace;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+
+  .recent-log-user {
+    margin: 0;
+    color: var(--friends-purple-light);
+    font-family: "VT323", monospace;
+    font-size: 0.9rem;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .carta {
-    background: rgba(26, 26, 46, 0.95) !important;
-    border: 1px solid rgba(179, 157, 219, 0.15) !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    background: rgba(31, 27, 39, 0.6) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(179, 157, 219, 0.2) !important;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
   }
 
   .carta:hover {
-    border-color: var(--friends-purple-light) !important;
-    box-shadow: 0 8px 25px rgba(179, 157, 219, 0.2);
-    transform: translateY(-5px);
+    border-color: rgba(179, 157, 219, 0.6) !important;
+    box-shadow: 0 15px 35px rgba(179, 157, 219, 0.3) !important;
+    transform: translateY(-10px) !important;
   }
 
   .carta-link {
@@ -359,6 +644,11 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
     .friend-card {
       padding: 14px;
     }
+
+    .friend-actions {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
     .friend-avatar {
       width: 52px;
       height: 52px;
@@ -387,6 +677,38 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
     }
     .img-carta-back {
       display: none;
+    }
+
+    .recent-logs-shell {
+      padding: 12px;
+    }
+
+    .recent-logs-nav {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .recent-logs-controls {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .recent-logs-hint {
+      text-align: left;
+    }
+
+    .recent-logs-track {
+      padding: 8px 4px 10px;
+      gap: 10px;
+    }
+
+    .recent-log-link {
+      width: 172px;
+      min-width: 172px;
+    }
+
+    .recent-log-link .frame-title {
+      font-size: 1.02rem;
     }
   }
 </style>
@@ -443,12 +765,12 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
       <div class="friends-grid">
         {% for friend in friends %}
         <div class="friend-card" style="position: relative;">
-          <a href="/list/{{ friend.f_username }}" style="text-decoration: none; display: block;">
+          <a href="/list/{{ friend.f_username }}" class="friend-card-link">
             <div class="friend-avatar">{{ friend.f_username[0].upper() }}</div>
             <div class="friend-name">{{ friend.f_username }}</div>
           </a>
-          
-          <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 15px;">
+
+          <div class="friend-actions">
             <a href="/compare/{{ friend.f_username }}" class="compare-btn">[ COMPARE ]</a>
             <form method="post" action="/unfollow" style="margin: 0;">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -470,41 +792,44 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
     <!-- Activity Feed -->
     {% if activity|length > 0 %}
     <div class="popular-section">
-      <h2 class="section-title"><span>//</span> RECENT_LOGS</h2>
-      <section class="carta-list" id="scrollableSection">
+      <div class="recent-logs-shell">
+        <div class="recent-logs-nav">
+          <div>
+            <h2 class="section-title"><span>//</span> RECENT_LOGS</h2>
+            <p class="section-subtitle">Fresh activity from people you follow</p>
+          </div>
+          <div class="recent-logs-controls" aria-label="Recent log navigation">
+            <button type="button" class="recent-logs-button" data-scroll-dir="-1">[ LEFT ]</button>
+            <button type="button" class="recent-logs-button" data-scroll-dir="1">[ RIGHT ]</button>
+          </div>
+        </div>
+        <p class="recent-logs-hint" id="recentLogsHint">Use mouse wheel, trackpad, or arrow keys to browse</p>
+      <section class="carta-list recent-logs-track" id="scrollableSection" tabindex="0" aria-label="Recent logs carousel">
         {% for act in activity %}
-        <article class="carta">
-          <header class="carta-header">
-            <img class="img-carta" src="{{act.poster}}" />
-            <img class="img-carta-back" src="{{act.poster}}" />
-            <div style="text-align: center; margin-top: 8px; font-family: 'VT323', monospace;">
-              <span style="color: var(--friends-purple-light); font-size: 1.1rem;">> {{act.f_username}}</span><br>
-              <span style="color: var(--ocean-grey); font-size: 0.9rem;">rated {{act.rating}}/10</span>
+        <a href="https://www.google.com/search?q={{act['movie']}}" target="_blank" class="recent-log-link">
+          <article class="movie-frame">
+            <img src="{{act.poster}}" alt="{{act.movie}}" class="movie-poster" loading="lazy">
+            <div class="frame-overlay">
+              <div class="overlay-content">
+                <h3 class="frame-title">{{act.movie.upper()}}</h3>
+                <div class="frame-meta">
+                  <span class="meta-item">{{act.p_year}}</span>
+                  <span class="meta-item divider">•</span>
+                  <span class="meta-item">{{act.director}}</span>
+                </div>
+                <div class="frame-rating">
+                  {{act.rating}}/10
+                </div>
+                <p class="recent-log-user">
+                  > {{act.f_username}}
+                </p>
+              </div>
             </div>
-            {% if act.movie|length < 29 %}
-            <h5 style="margin-top: 5px;">
-              <a
-                class="carta-link"
-                href="https://www.google.com/search?q={{act['movie']}}"
-                >{{act.movie.upper()}}</a
-              >
-            </h5>
-            {% else %}
-            <h5 style="font-size: 14px; margin-top: 5px;">
-              <a
-                class="carta-link"
-                href="https://www.google.com/search?q={{act['movie']}}"
-                >{{act.movie.upper()}}</a
-              >
-            </h5>
-            {% endif %}
-            <p style="font-size: 14px; margin-top: 0; color: var(--ocean-grey)">
-              {{act.director }} ({{act.p_year}})
-            </p>
-          </header>
-        </article>
+          </article>
+        </a>
         {% endfor %}
       </section>
+      </div>
     </div>
     {% endif %}
   </main>
@@ -512,31 +837,83 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
   <script>
     const scrollableSection = document.getElementById("scrollableSection");
     if (scrollableSection) {
-      let isScrolling = false;
-      let targetScrollLeft = 0;
+      const shell = scrollableSection.closest(".recent-logs-shell");
+      const hint = document.getElementById("recentLogsHint");
+      let hasInteracted = false;
+
+      const hideHint = () => {
+        if (hasInteracted) {
+          return;
+        }
+        hasInteracted = true;
+        if (hint) {
+          hint.classList.add("is-hidden");
+        }
+      };
+
+      const updateFadeState = () => {
+        if (!shell) {
+          return;
+        }
+
+        const maxScroll = scrollableSection.scrollWidth - scrollableSection.clientWidth;
+        const atStart = scrollableSection.scrollLeft <= 2;
+        const atEnd = scrollableSection.scrollLeft >= (maxScroll - 2);
+
+        shell.classList.toggle("can-scroll-left", !atStart);
+        shell.classList.toggle("can-scroll-right", maxScroll > 6 && !atEnd);
+      };
+
+      const scrollByViewport = (direction) => {
+        const card = scrollableSection.querySelector(".recent-log-link");
+        const cardWidth = card ? card.getBoundingClientRect().width : 220;
+        const gap = 16;
+        const amount = Math.max(220, Math.round(cardWidth + gap) * 2);
+        scrollableSection.scrollBy({ left: direction * amount, behavior: "smooth" });
+        hideHint();
+      };
+
+      document.querySelectorAll(".recent-logs-button[data-scroll-dir]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const direction = parseInt(button.dataset.scrollDir, 10) || 1;
+          scrollByViewport(direction);
+        });
+      });
 
       scrollableSection.addEventListener("wheel", (event) => {
-        event.preventDefault();
-        const scrollAmount = event.deltaY;
-        targetScrollLeft += scrollAmount;
+        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+          return;
+        }
 
-        if (!isScrolling) {
-          requestAnimationFrame(scrollSmooth);
-          isScrolling = true;
+        event.preventDefault();
+        scrollableSection.scrollBy({ left: event.deltaY, behavior: "auto" });
+        hideHint();
+      }, { passive: false });
+
+      scrollableSection.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          scrollByViewport(1);
+        } else if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          scrollByViewport(-1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          scrollableSection.scrollTo({ left: 0, behavior: "smooth" });
+          hideHint();
+        } else if (event.key === "End") {
+          event.preventDefault();
+          scrollableSection.scrollTo({ left: scrollableSection.scrollWidth, behavior: "smooth" });
+          hideHint();
         }
       });
 
-      function scrollSmooth() {
-        scrollableSection.scrollLeft +=
-          (targetScrollLeft - scrollableSection.scrollLeft) * 0.1;
+      scrollableSection.addEventListener("pointerdown", hideHint);
+      scrollableSection.addEventListener("touchstart", hideHint, { passive: true });
+      scrollableSection.addEventListener("scroll", updateFadeState, { passive: true });
+      window.addEventListener("resize", updateFadeState);
 
-        if (Math.abs(targetScrollLeft - scrollableSection.scrollLeft) < 0.1) {
-          scrollableSection.scrollLeft = targetScrollLeft;
-          isScrolling = false;
-        } else {
-          requestAnimationFrame(scrollSmooth);
-        }
-      }
+      updateFadeState();
     }
   </script>
 

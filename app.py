@@ -613,6 +613,32 @@ def api_watched_lookup():
     return jsonify(lookup_list)
 
 
+@app.route('/api/movie_details')
+@login_required
+@limiter.limit("300 per hour")
+def api_movie_details():
+    title = (request.args.get('title') or '').strip()
+    year_raw = (request.args.get('year') or '').strip()
+    manual_director = (request.args.get('director') or '').strip() or None
+
+    if not title:
+        return jsonify({'error': 'title is required'}), 400
+
+    try:
+        year = int(year_raw) if year_raw else None
+    except ValueError:
+        year = None
+
+    details = tmdb_service.get_movie_details(title, year, manual_director)
+    return jsonify(details or {
+        'poster': 'https://via.placeholder.com/200x300?text=No+Poster',
+        'genre': 'Unknown',
+        'director': manual_director or 'Unknown',
+        'title': title,
+        'rating': None,
+    })
+
+
 @app.route('/api/movies')
 @login_required
 def api_movies():

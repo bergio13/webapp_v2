@@ -7,6 +7,7 @@ body_class %} discover_page{% endblock %} {% block content %}
 
 <canvas class="canvas_discover" id="canvas"></canvas>
 <script src="{{ url_for('static', filename='js/script_discover.js') }}"></script>
+<script src="https://kit.fontawesome.com/a735d6df86.js" crossorigin="anonymous"></script>
 
 <main class="discover-main">
   <div class="discover-wrap">
@@ -447,6 +448,9 @@ body_class %} discover_page{% endblock %} {% block content %}
   .response-card {
     margin-top: 16px;
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 
   .response-headline h2 {
@@ -477,95 +481,337 @@ body_class %} discover_page{% endblock %} {% block content %}
     margin-top: 15px;
     max-height: 650px;
     overflow-y: auto;
-    background: rgba(11, 18, 27, 0.85);
-    border: 1px solid rgba(126, 181, 196, 0.25);
-    border-radius: 12px;
-    padding: 20px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
     color: var(--discover-light);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.25rem;
+    font-family: inherit;
+    font-size: 1rem;
     line-height: 1.5;
     scrollbar-width: thin;
     scrollbar-color: rgba(126, 181, 196, 0.4) transparent;
   }
 
-  .formatted-recommendations strong {
-    color: #ffffff;
-    font-weight: normal;
+  .movie-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: clamp(1rem, 1.8vw, 1.5rem);
+    padding: 0.25rem 0 0;
+    max-width: 1280px;
+    margin: 0 auto;
+    align-items: start;
   }
 
-  .formatted-recommendations em {
-    color: var(--discover-purple);
-  }
-
-  .formatted-recommendations ol {
-    list-style: none;
-    counter-reset: discover-counter;
-    padding-left: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-
-  .formatted-recommendations ol li {
-    counter-increment: discover-counter;
-    border: 1px solid rgba(126, 181, 196, 0.2);
-    border-radius: 8px;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, rgba(20, 32, 46, 0.9) 0%, rgba(13, 23, 33, 0.7) 100%);
+  .movie-frame {
     position: relative;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: all 0.25s ease-in-out;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(30, 30, 40, 0.55);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
+    cursor: pointer;
   }
 
-  .formatted-recommendations ol li:hover {
-    border-color: rgba(126, 181, 196, 0.5);
-    background: linear-gradient(135deg, rgba(24, 38, 54, 0.9) 0%, rgba(16, 27, 38, 0.7) 100%);
-    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.15);
+  .movie-frame:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.62);
+  }
+
+  .movie-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: filter 0.4s ease, transform 0.4s ease;
+  }
+
+  .movie-frame:hover .movie-poster {
+    filter: brightness(0.72) saturate(1.15);
+    transform: scale(1.05);
+  }
+
+  .frame-overlay {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    max-width: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: 1.1rem 1rem 0.9rem;
+    background: linear-gradient(to top, rgba(10, 14, 20, 0.96) 0%, rgba(10, 14, 20, 0.58) 62%, transparent 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-sizing: border-box;
+    transform: translateY(24px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .movie-frame:hover .frame-overlay {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .overlay-content {
+    display: grid;
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+    gap: 0.32rem;
+    min-height: 0;
+    max-height: 100%;
+    width: 100%;
+    transform: translateY(14px);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    transition-delay: 0.05s;
+    overflow: hidden;
+  }
+
+  .movie-frame:hover .overlay-content {
+    transform: translateY(0);
+  }
+
+  .frame-title {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.1;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .frame-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: nowrap;
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 0.86rem;
+    color: rgba(255, 255, 255, 0.72);
+    margin: 0;
+    min-height: 1.1rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .frame-meta .meta-item {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .frame-meta .meta-item:first-child {
+    max-width: 3.2rem;
+    flex: 0 0 auto;
+  }
+
+  .frame-meta .meta-item:nth-child(2) {
+    flex: 0 0 auto;
+  }
+
+  .frame-meta .meta-item:last-child {
+    flex: 1 1 auto;
+  }
+
+  .frame-genre {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    margin: 0;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid rgba(126, 181, 196, 0.18);
+    background: rgba(126, 181, 196, 0.1);
+    color: var(--discover-light);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.45px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .frame-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--discover-gold);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 0.86rem;
+    letter-spacing: 0.6px;
+    margin: 0;
+    min-height: 1rem;
+  }
+
+  .frame-summary {
+    color: rgba(255, 255, 255, 0.84);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 0.84rem;
+    line-height: 1.22;
+    margin: 0;
+    padding-right: 0.2rem;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.65);
+    max-height: 4.2em;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-break: break-word;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(126, 181, 196, 0.42) transparent;
+  }
+
+  .frame-summary::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .frame-summary::-webkit-scrollbar-thumb {
+    background: rgba(126, 181, 196, 0.42);
+    border-radius: 999px;
+  }
+
+  .frame-summary::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .frame-summary strong {
+    color: #ffffff;
+    font-weight: 400;
+  }
+
+  .frame-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 0.55rem;
+    margin-top: auto;
+    min-height: 0;
+  }
+
+  .frame-badge-row {
+    margin-top: 0.35rem;
+    min-height: 0.95rem;
+    overflow: hidden;
+  }
+
+  .action-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    color: #ffffff;
+    padding: 0.5rem;
+    min-height: 34px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .action-btn:hover {
+    background: #ffffff;
+    color: #0a0e14;
     transform: translateY(-2px);
   }
 
-  .formatted-recommendations ol li::before {
-    content: counter(discover-counter);
-    position: absolute;
-    top: -12px;
-    left: -12px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #111a24;
-    border: 2px solid var(--discover-cyan);
-    color: var(--discover-cyan);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(126, 181, 196, 0.4);
+  .action-btn:focus-visible {
+    outline: 2px solid var(--discover-cyan);
+    outline-offset: 2px;
   }
 
-  .formatted-recommendations ol li > strong:first-child {
-    display: block;
-    margin-bottom: 10px;
-    border-bottom: 1px dashed rgba(126, 181, 196, 0.3);
-    padding-bottom: 8px;
-    font-size: 1.45rem;
-    color: #ffffff;
-    letter-spacing: 0.5px;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  .stream-card-empty {
+    border: 1px dashed rgba(126, 181, 196, 0.3);
+    background:
+      linear-gradient(145deg, rgba(25, 34, 48, 0.9), rgba(16, 23, 32, 0.95));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 24px rgba(0, 0, 0, 0.35);
+    cursor: default;
   }
 
-  .formatted-recommendations ol li p {
-    margin: 6px 0;
+  .stream-card-empty:hover {
+    transform: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 24px rgba(0, 0, 0, 0.35);
   }
 
-  .formatted-recommendations ol li p:last-child {
-    margin-top: 10px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    background: rgba(179, 157, 219, 0.12);
-    border-left: 3px solid var(--discover-purple);
+  .stream-skeleton {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 0.9rem;
+    box-sizing: border-box;
+  }
+
+  .stream-skeleton-bars {
+    align-self: end;
+    display: grid;
+    gap: 0.42rem;
+  }
+
+  .stream-skeleton-bar {
+    height: 9px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(126, 181, 196, 0.16), rgba(158, 150, 184, 0.24), rgba(126, 181, 196, 0.16));
+    background-size: 220% 100%;
+    animation: discoverSkeletonPulse 1.35s ease-in-out infinite;
+  }
+
+  .stream-skeleton-bar:nth-child(1) { width: 82%; }
+  .stream-skeleton-bar:nth-child(2) { width: 64%; }
+  .stream-skeleton-bar:nth-child(3) { width: 74%; }
+
+  .stream-skeleton-label {
+    margin-top: 0.52rem;
+    color: rgba(208, 221, 229, 0.72);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.6px;
+  }
+
+  @keyframes discoverSkeletonPulse {
+    0% {
+      background-position: 100% 0;
+      opacity: 0.65;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      background-position: -100% 0;
+      opacity: 0.65;
+    }
+  }
+
+  .movie-frame.stream-slot-enter {
+    animation: discoverSlotReveal 0.38s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  @keyframes discoverSlotReveal {
+    0% {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .movie-gallery-empty,
+  .recommendation-epilogue {
+    color: var(--discover-light);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.2rem;
+  }
+
+  .recommendation-epilogue {
+    margin: 1rem 0 0;
+    color: var(--discover-muted);
   }
 
   .already-watched-badge {
@@ -577,9 +823,13 @@ body_class %} discover_page{% endblock %} {% block content %}
     color: #ffea9f;
     padding: 2px 8px;
     font-family: "VT323", "Courier New", monospace;
-    font-size: 0.88rem;
-    letter-spacing: 0.8px;
+    font-size: 0.74rem;
+    letter-spacing: 0.45px;
     text-transform: uppercase;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   @media (max-width: 980px) {
@@ -623,8 +873,34 @@ body_class %} discover_page{% endblock %} {% block content %}
       padding: 10px;
     }
 
-    .formatted-recommendations ol li {
-      padding: 8px 8px 8px 12px;
+    .movie-gallery {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .movie-frame {
+      transform: none;
+    }
+
+    .movie-poster {
+      filter: brightness(0.78) saturate(1.08);
+    }
+
+    .frame-overlay {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .overlay-content {
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .movie-frame.stream-slot-enter {
+      animation: none;
     }
   }
 </style>
@@ -636,6 +912,12 @@ body_class %} discover_page{% endblock %} {% block content %}
     const responseSection = document.getElementById("response-section");
     const formattedRecs = document.getElementById("formatted-recommendations");
     const responseMeta = document.getElementById("response-meta-text");
+    const movieDetailsCache = new Map();
+    const movieDetailsRequestCache = new Map();
+    const streamState = {
+      text: "",
+      renderQueued: false,
+    };
 
     let watchedMovies = [];
     fetch('/api/watched_lookup')
@@ -643,67 +925,386 @@ body_class %} discover_page{% endblock %} {% block content %}
       .then(data => { watchedMovies = data; })
       .catch(err => console.error("Failed to load watched lookup", err));
 
-    function formatToHtml(text, watchedLookup = []) {
+    const normalizeText = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const normalizedCacheKey = (title, year) => `${normalizeText(title).toLowerCase()}::${year || ""}`;
+    const escapeHtml = (value) => String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+    const buildWatchedLookup = (watchedLookup = []) => {
+      return new Set(
+        watchedLookup
+          .filter((item) => item && item.title && item.year)
+          .map((item) => `${normalizeText(item.title).toLowerCase()}::${item.year}`),
+      );
+    };
+
+    const parseStreamedRecommendations = (rawText, watchedLookup = []) => {
+      const text = String(rawText || "").replace(/\r\n/g, "\n");
       const lines = text.split("\n");
-      const htmlLines = [];
-      let inList = false;
-      let currentItemOpen = false;
+      const watchedSet = buildWatchedLookup(watchedLookup);
+      const results = [];
+      let current = null;
 
-      for (let rawLine of lines) {
-        let line = rawLine.trim();
+      const pushCurrent = () => {
+        if (!current || !current.title) {
+          return;
+        }
 
-        let titleMatch = line.match(/^\d+\.\s*\*\*(.*?)\*\*/);
-        if (titleMatch) {
-          if (!inList) {
-            htmlLines.push("<ol>");
-            inList = true;
-          }
-          if (currentItemOpen) {
-            htmlLines.push("</li>");
-          }
-          let heading = titleMatch[1];
-          let recommendedTitle = null;
-          let recommendedYear = null;
-          let headingMatch = heading.trim().match(/^(.*?)\s*\((\d{4})\)/);
-          if (headingMatch) {
-            recommendedTitle = headingMatch[1].trim();
-            recommendedYear = parseInt(headingMatch[2]);
-          }
-          let normalizedTitle = recommendedTitle ? recommendedTitle.replace(/\s+/g, " ").trim().toLowerCase() : "";
-          let showDedupBadge = false;
+        const normalizedTitle = normalizeText(current.title).toLowerCase();
+        const isWatched = current.year ? watchedSet.has(`${normalizedTitle}::${current.year}`) : false;
+        const whyText = current.whyLines.join(" ").trim() || "No rationale provided yet.";
 
-          if (normalizedTitle && recommendedYear) {
-            showDedupBadge = watchedLookup.some(w => w.title === normalizedTitle && w.year === recommendedYear);
-          }
-          let dedupBadge = showDedupBadge ? ' <span class="already-watched-badge">Already watched</span>' : "";
-          htmlLines.push(`<li><strong>${heading}</strong>${dedupBadge}`);
-          currentItemOpen = true;
-        } else if (line.startsWith("Genre:") || line.startsWith("Why I recommend it:")) {
-          line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
-          htmlLines.push(`<p>${line}</p>`);
-        } else if (line && !line.match(/^\d+\./)) {
-          if (inList && (line.startsWith("I hope") || line.startsWith("Enjoy") || line.toLowerCase().includes("recommendations") || line.toLowerCase().includes("enjoy"))) {
-            if (currentItemOpen) {
-              htmlLines.push("</li>");
-              currentItemOpen = false;
+        results.push({
+          title: current.title,
+          year: current.year,
+          director: current.director,
+          genre: current.genre,
+          rating: current.rating,
+          why: whyText,
+          isWatched,
+          key: `${normalizedTitle}::${current.year}`,
+        });
+      };
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) {
+          continue;
+        }
+
+        const numberedMatch = line.match(/^([1-4])\.\s+(.+)$/);
+        if (numberedMatch) {
+          const heading = numberedMatch[2].trim().replace(/^\*\*(.*)\*\*$/, "$1").trim();
+          if (/\(\d{4}\)/.test(heading)) {
+            if (current) {
+              pushCurrent();
+              if (results.length >= 4) {
+                break;
+              }
             }
-            htmlLines.push("</ol>");
-            inList = false;
-          }
 
-          line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
-          if (line) {
-            htmlLines.push(`<p>${line}</p>`);
+            const headingMatch = heading.match(/^(.*?)\s*\((\d{4})\)\s*[-–—]\s*(.*?)\s*$/);
+            current = {
+              title: headingMatch ? headingMatch[1].trim() : heading,
+              year: headingMatch ? headingMatch[2] : "",
+              director: headingMatch ? headingMatch[3].trim() : "Unknown Director",
+              genre: "Genre unavailable",
+              rating: "Curated Pick",
+              whyLines: [],
+            };
+            continue;
           }
+        }
+
+        if (!current) {
+          continue;
+        }
+
+        if (/^genre\s*:/i.test(line)) {
+          const val = line.split(":", 2)[1];
+          if (val) current.genre = val.trim();
+          continue;
+        }
+
+        if (/^rating\s*:/i.test(line)) {
+          const val = line.split(":", 2)[1];
+          if (val) current.rating = val.trim();
+          continue;
+        }
+
+        if (/^why(\s+i\s+recommend\s+it)?\s*:/i.test(line)) {
+          const val = line.split(":", 2)[1];
+          if (val) current.whyLines.push(val.trim());
+          continue;
+        }
+
+        if (!/^\*\*/.test(line)) {
+          current.whyLines.push(line);
         }
       }
 
-      if (currentItemOpen) htmlLines.push("</li>");
-      if (inList) htmlLines.push("</ol>");
+      if (current && results.length < 4) {
+        pushCurrent();
+      }
 
-      return htmlLines.join("\n");
+      return results.slice(0, 4);
+    };
+
+    const buildSkeletonGallery = () => {
+      const cards = Array.from({ length: 4 }, (_, index) => `
+        <article class="movie-frame stream-card-empty" data-slot-index="${index}" data-state="empty">
+          <div class="stream-skeleton">
+            <div></div>
+            <div class="stream-skeleton-bars">
+              <span class="stream-skeleton-bar"></span>
+              <span class="stream-skeleton-bar"></span>
+              <span class="stream-skeleton-bar"></span>
+              <p class="stream-skeleton-label">Slot ${index + 1} loading...</p>
+            </div>
+          </div>
+        </article>
+      `).join("");
+
+      return `<section class="movie-gallery" id="stream-gallery">${cards}</section><p class="recommendation-epilogue" id="stream-status">Streaming recommendations...</p>`;
+    };
+
+    const buildFilledCardMarkup = (item, details) => {
+      const displayTitle = (details && details.title) || item.title || "Untitled Recommendation";
+      const displayDirector = (details && details.director) || item.director || "Unknown Director";
+      const displayGenre = (details && details.genre) || item.genre || "Genre unavailable";
+      const displayRating = (details && typeof details.rating === "number")
+        ? `TMDB ${details.rating.toFixed(1)}/10`
+        : (item.rating || "Curated Pick");
+      const poster = (details && details.poster) || "https://via.placeholder.com/500x750?text=Loading+Poster";
+      const badge = item.isWatched ? '<span class="already-watched-badge">Already watched</span>' : "";
+
+      return `
+        <img src="${escapeHtml(poster)}" alt="${escapeHtml(displayTitle)}" class="movie-poster" loading="lazy">
+        <div class="frame-overlay">
+          <div class="overlay-content">
+            <h3 class="frame-title">${escapeHtml(displayTitle)}</h3>
+            <div class="frame-meta">
+              <span class="meta-item">${escapeHtml(item.year || "Year unavailable")}</span>
+              <span class="meta-item divider">•</span>
+              <span class="meta-item">${escapeHtml(displayDirector)}</span>
+            </div>
+            <div class="frame-genre">${escapeHtml(displayGenre)}</div>
+            <div class="frame-rating">${escapeHtml(displayRating)}</div>
+            <div class="frame-summary"><strong>Why it fits:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}</div>
+            <div class="frame-actions">
+              <button class="action-btn" type="button" title="Log Watch" aria-label="Log Watch for ${escapeHtml(item.title)}"><i class="fa-solid fa-eye"></i></button>
+              <button class="action-btn" type="button" title="Like" aria-label="Like ${escapeHtml(item.title)}"><i class="fa-solid fa-heart"></i></button>
+              <button class="action-btn" type="button" title="Add to List" aria-label="Add ${escapeHtml(item.title)} to list"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <div class="frame-badge-row">${badge}</div>
+          </div>
+        </div>
+      `;
+    };
+
+    async function fetchMovieDetails(title, year, director) {
+      const safeTitle = (title || "").trim();
+      if (!safeTitle) {
+        return null;
+      }
+
+      const cacheKey = `${safeTitle.toLowerCase()}::${year || ""}`;
+      if (movieDetailsCache.has(cacheKey)) {
+        return movieDetailsCache.get(cacheKey);
+      }
+
+      if (movieDetailsRequestCache.has(cacheKey)) {
+        return movieDetailsRequestCache.get(cacheKey);
+      }
+
+      const params = new URLSearchParams({ title: safeTitle });
+      if (year) params.set("year", String(year));
+      if (director) params.set("director", String(director));
+
+      const requestPromise = (async () => {
+        try {
+          const response = await fetch(`/api/movie_details?${params.toString()}`);
+          if (!response.ok) {
+            if (response.status === 429) {
+              return {
+                poster: "https://via.placeholder.com/500x750?text=Loading+Poster",
+                genre: "Genre unavailable",
+                director: director || "Unknown Director",
+                title: safeTitle,
+                rating: null,
+              };
+            }
+            return null;
+          }
+
+          const data = await response.json();
+          movieDetailsCache.set(cacheKey, data);
+          return data;
+        } catch (_err) {
+          return null;
+        } finally {
+          movieDetailsRequestCache.delete(cacheKey);
+        }
+      })();
+
+      movieDetailsRequestCache.set(cacheKey, requestPromise);
+      return requestPromise;
+    }
+
+    const setSlotEmpty = (slot, index) => {
+      slot.className = "movie-frame stream-card-empty";
+      slot.dataset.state = "empty";
+      slot.dataset.slotIndex = String(index);
+      delete slot.dataset.itemKey;
+      delete slot.dataset.title;
+      delete slot.dataset.year;
+      delete slot.dataset.director;
+      delete slot.dataset.posterHydrated;
+      delete slot.dataset.posterPending;
+      slot.innerHTML = `
+        <div class="stream-skeleton">
+          <div></div>
+          <div class="stream-skeleton-bars">
+            <span class="stream-skeleton-bar"></span>
+            <span class="stream-skeleton-bar"></span>
+            <span class="stream-skeleton-bar"></span>
+            <p class="stream-skeleton-label">Slot ${index + 1} loading...</p>
+          </div>
+        </div>
+      `;
+    };
+
+    const ensureStreamingShell = () => {
+      let gallery = formattedRecs.querySelector("#stream-gallery");
+      if (!gallery) {
+        formattedRecs.innerHTML = buildSkeletonGallery();
+        gallery = formattedRecs.querySelector("#stream-gallery");
+      }
+      return gallery;
+    };
+
+    const updateStreamStatus = (message) => {
+      const status = formattedRecs.querySelector("#stream-status");
+      if (status) {
+        status.textContent = message;
+      }
+    };
+
+    const hydrateSingleCard = async (card, item) => {
+      if (!item || card.dataset.posterHydrated === "1" || card.dataset.posterPending === "1") {
+        return;
+      }
+
+      card.dataset.posterPending = "1";
+      const activeKey = card.dataset.itemKey;
+
+      try {
+        const details = await fetchMovieDetails(item.title, item.year, item.director);
+        if (!details || card.dataset.itemKey !== activeKey) {
+          return;
+        }
+
+        movieDetailsCache.set(normalizedCacheKey(item.title, item.year), details);
+        card.innerHTML = buildFilledCardMarkup(item, details);
+        card.dataset.director = details.director || item.director || "";
+      } finally {
+        delete card.dataset.posterPending;
+        card.dataset.posterHydrated = "1";
+      }
+    };
+
+    const paintSlot = (slot, item, index) => {
+      if (!item) {
+        setSlotEmpty(slot, index);
+        return;
+      }
+
+      if (slot.dataset.state === "filled" && slot.dataset.itemKey === item.key) {
+        const summaryNode = slot.querySelector(".frame-summary");
+        if (summaryNode) {
+          summaryNode.innerHTML = `<strong>Why it fits:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}`;
+        }
+
+        const genreNode = slot.querySelector(".frame-genre");
+        if (genreNode && item.genre && item.genre !== "Genre unavailable") {
+          genreNode.textContent = item.genre;
+        }
+
+        slot.dataset.whyText = item.why;
+        slot.dataset.genreText = item.genre;
+        return;
+      }
+
+      const cachedDetails = movieDetailsCache.get(normalizedCacheKey(item.title, item.year));
+      const needsRepaint =
+        slot.dataset.state !== "filled" ||
+        slot.dataset.itemKey !== item.key ||
+        slot.dataset.whyText !== item.why ||
+        slot.dataset.genreText !== item.genre;
+
+      if (!needsRepaint) {
+        return;
+      }
+
+      slot.className = "movie-frame";
+      slot.dataset.state = "filled";
+      slot.dataset.slotIndex = String(index);
+      slot.dataset.itemKey = item.key;
+      slot.dataset.whyText = item.why;
+      slot.dataset.genreText = item.genre;
+      slot.dataset.title = item.title;
+      slot.dataset.year = item.year;
+      slot.dataset.director = item.director;
+      delete slot.dataset.posterHydrated;
+      delete slot.dataset.posterPending;
+      slot.innerHTML = buildFilledCardMarkup(item, cachedDetails);
+
+      if (!cachedDetails) {
+        slot.classList.add("stream-slot-enter");
+        slot.style.animationDelay = `${index * 120}ms`;
+        window.setTimeout(() => {
+          slot.classList.remove("stream-slot-enter");
+          slot.style.animationDelay = "";
+        }, 550 + (index * 120));
+      }
+
+      void hydrateSingleCard(slot, item);
+    };
+
+    const renderStreamSlots = () => {
+      const parsedItems = parseStreamedRecommendations(streamState.text, watchedMovies);
+      const gallery = ensureStreamingShell();
+      const slots = Array.from(gallery.querySelectorAll(".movie-frame[data-slot-index]"));
+
+      slots.forEach((slot, index) => {
+        const item = parsedItems[index] || null;
+        paintSlot(slot, item, index);
+      });
+
+      if (!parsedItems.length && streamState.text.trim().length > 0) {
+        updateStreamStatus("Generating first card...");
+      } else {
+        updateStreamStatus(`Loaded ${parsedItems.length}/4 recommendations`);
+      }
+    };
+
+    const queueStreamRender = () => {
+      if (streamState.renderQueued) {
+        return;
+      }
+
+      streamState.renderQueued = true;
+      requestAnimationFrame(() => {
+        streamState.renderQueued = false;
+        renderStreamSlots();
+      });
+    };
+
+    async function hydrateCardPosters() {
+      const cards = Array.from(formattedRecs.querySelectorAll('.movie-frame[data-title]')).filter(
+        (card) => card.dataset.posterHydrated !== "1" && card.dataset.posterPending !== "1",
+      );
+      if (!cards.length) {
+        return;
+      }
+
+      await Promise.all(cards.map(async (card) => {
+        const item = {
+          title: card.dataset.title || "",
+          year: card.dataset.year || "",
+          director: card.dataset.director || "",
+          key: `${normalizeText(card.dataset.title).toLowerCase()}::${card.dataset.year || ""}`,
+          why: card.dataset.whyText || "",
+          genre: card.dataset.genreText || "",
+          isWatched: card.querySelector(".already-watched-badge") !== null,
+          rating: card.querySelector(".frame-rating") ? card.querySelector(".frame-rating").textContent : "Curated Pick",
+        };
+        await hydrateSingleCard(card, item);
+      }));
     }
 
     if (form && submitButton) {
@@ -728,7 +1329,9 @@ body_class %} discover_page{% endblock %} {% block content %}
         responseMeta.innerHTML = `Mode: ${modeLabel} | History Lens: ${profileLabel} | Genres: ${genres}`;
         
         responseSection.style.display = "block";
-        formattedRecs.innerHTML = '<div class="loader app-preloader-spinner" style="margin: 20px auto;"></div>';
+        streamState.text = "";
+        streamState.renderQueued = false;
+        formattedRecs.innerHTML = buildSkeletonGallery();
 
         try {
           const response = await fetch('/api/recommend_stream', {
@@ -746,39 +1349,77 @@ body_class %} discover_page{% endblock %} {% block content %}
 
           const reader = response.body.getReader();
           const decoder = new TextDecoder();
-          let accumulatedText = "";
+          let sseBuffer = "";
 
           while(true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
-            
-            for (let line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = JSON.parse(line.substring(6));
-                if (data.error) {
-                   formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">${data.error}</p>`;
-                   throw new Error(data.error);
-                }
-                accumulatedText += data.token;
-                formattedRecs.innerHTML = formatToHtml(accumulatedText, watchedMovies);
+            sseBuffer += decoder.decode(value, { stream: true });
+            const events = sseBuffer.split("\n\n");
+            sseBuffer = events.pop() || "";
+
+            for (const eventBlock of events) {
+              const payloadRaw = eventBlock
+                .split("\n")
+                .filter((line) => line.startsWith("data: "))
+                .map((line) => line.slice(6))
+                .join("\n")
+                .trim();
+
+              if (!payloadRaw) {
+                continue;
+              }
+
+              let data;
+              try {
+                data = JSON.parse(payloadRaw);
+              } catch (_parseError) {
+                // Ignore malformed fragments; complete events continue to stream.
+                continue;
+              }
+
+              if (data.error) {
+                 formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">${data.error}</p>`;
+                 throw new Error(data.error);
+              }
+
+              if (typeof data.token === "string") {
+                streamState.text += data.token;
+                queueStreamRender();
               }
             }
           }
 
+          sseBuffer += decoder.decode();
+          const trailing = sseBuffer.trim();
+          if (trailing.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(trailing.split("\n").filter((line) => line.startsWith("data: ")).map((line) => line.slice(6)).join("\n"));
+              if (typeof data.token === "string") {
+                streamState.text += data.token;
+              }
+            } catch (_parseError) {
+              // Ignore trailing partial event payloads.
+            }
+          }
+
+          renderStreamSlots();
+          updateStreamStatus("Done. 4 recommendation slots ready.");
+
         } catch (error) {
           console.error(error);
-          if (formattedRecs.innerHTML.includes('loader')) {
-             formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">Error: ${error.message || "An unexpected error occurred."}</p>`;
-          }
+          formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">Error: ${error.message || "An unexpected error occurred."}</p>`;
         } finally {
           submitButton.classList.remove("loading");
           submitButton.disabled = false;
           submitButton.textContent = "[ GENERATE RECOMMENDATIONS ]";
         }
       });
+    }
+
+    if (formattedRecs.querySelector(".movie-frame")) {
+      void hydrateCardPosters();
     }
   });
 </script>

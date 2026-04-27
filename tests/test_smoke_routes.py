@@ -17,8 +17,16 @@ def test_discover_post_renders_recommendations_for_logged_in_user(client, app_mo
     with client.session_transaction() as active_session:
         active_session["loggedin"] = True
         active_session["id"] = 42
+        active_session["_user_id"] = "42"
+        active_session["_fresh"] = True
 
     captured = {}
+
+    monkeypatch.setattr(
+        app_module,
+        "get_user_by_id",
+        lambda *_args, **_kwargs: [{"id": 42, "username": "test", "email": "test@example.com"}],
+    )
 
     monkeypatch.setattr(
         app_module,
@@ -104,6 +112,20 @@ class DummyOpenRouterErrorResponse:
 
 
 def test_openrouter_response_is_formatted_to_html(app_module, monkeypatch):
+    import recommendation_service
+
+    monkeypatch.setattr(
+        recommendation_service,
+        "tmdb_get_movie_details",
+        lambda title, year, manual_director=None: {
+            "poster": "https://image.tmdb.org/t/p/w200/test.jpg",
+            "genre": "Sci-Fi",
+            "director": manual_director or "Ridley Scott",
+            "title": title,
+            "rating": 8.5,
+        },
+    )
+
     def fake_post(url, headers=None, json=None, timeout=None):
         assert url == "https://openrouter.ai/api/v1/chat/completions"
         assert headers["Authorization"] == "Bearer test-openrouter-key"
@@ -133,11 +155,27 @@ def test_openrouter_response_is_formatted_to_html(app_module, monkeypatch):
 
     response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
 
-    assert "<ol>" in response_html
-    assert "Blade Runner (1982) - Ridley Scott" in response_html
+    assert "movie-gallery" in response_html
+    assert "movie-frame" in response_html
+    assert "Blade Runner" in response_html
+    assert "1982" in response_html
 
 
 def test_openrouter_prompt_uses_selected_mode_and_genres(app_module, monkeypatch):
+    import recommendation_service
+
+    monkeypatch.setattr(
+        recommendation_service,
+        "tmdb_get_movie_details",
+        lambda title, year, manual_director=None: {
+            "poster": "https://image.tmdb.org/t/p/w200/test.jpg",
+            "genre": "Drama, Mystery",
+            "director": manual_director or "Christopher Nolan",
+            "title": title,
+            "rating": 8.2,
+        },
+    )
+
     captured_prompt = {}
 
     def fake_post(url, headers=None, json=None, timeout=None):
@@ -167,10 +205,25 @@ def test_openrouter_prompt_uses_selected_mode_and_genres(app_module, monkeypatch
     assert "Recommendation Mode: Comfort" in captured_prompt["value"]
     assert "History Lens: All-Time Profile" in captured_prompt["value"]
     assert "Preferred Genres: Drama, Mystery" in captured_prompt["value"]
-    assert "The Prestige (2006) - Christopher Nolan" in response_html
+    assert "The Prestige" in response_html
+    assert "2006" in response_html
 
 
 def test_openrouter_response_with_content_array_is_formatted(app_module, monkeypatch):
+    import recommendation_service
+
+    monkeypatch.setattr(
+        recommendation_service,
+        "tmdb_get_movie_details",
+        lambda title, year, manual_director=None: {
+            "poster": "https://image.tmdb.org/t/p/w200/test.jpg",
+            "genre": "Sci-Fi",
+            "director": manual_director or "Denis Villeneuve",
+            "title": title,
+            "rating": 8.1,
+        },
+    )
+
     def fake_post(*_args, **_kwargs):
         return DummyOpenRouterResponse(
             {
@@ -193,8 +246,10 @@ def test_openrouter_response_with_content_array_is_formatted(app_module, monkeyp
 
     response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
 
-    assert "<ol>" in response_html
-    assert "Arrival (2016) - Denis Villeneuve" in response_html
+    assert "movie-gallery" in response_html
+    assert "movie-frame" in response_html
+    assert "Arrival" in response_html
+    assert "2016" in response_html
 
 
 def test_openrouter_error_payload_returns_clear_error(app_module, monkeypatch):
@@ -235,6 +290,20 @@ def test_openrouter_429_returns_user_friendly_rate_limit_message(app_module, mon
 
 
 def test_openrouter_switches_to_fallback_model_on_primary_rate_limit(app_module, monkeypatch):
+    import recommendation_service
+
+    monkeypatch.setattr(
+        recommendation_service,
+        "tmdb_get_movie_details",
+        lambda title, year, manual_director=None: {
+            "poster": "https://image.tmdb.org/t/p/w200/test.jpg",
+            "genre": "Sci-Fi",
+            "director": manual_director or "Denis Villeneuve",
+            "title": title,
+            "rating": 8.1,
+        },
+    )
+
     monkeypatch.setattr(app_module, "OPENROUTER_MAX_ATTEMPTS", 1)
     monkeypatch.setattr(app_module, "OPENROUTER_MODEL_ID", "primary/free-model:free")
     monkeypatch.setattr(app_module, "OPENROUTER_MODEL_FALLBACKS", ["fallback/free-model:free"])
@@ -266,7 +335,9 @@ def test_openrouter_switches_to_fallback_model_on_primary_rate_limit(app_module,
 
     response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
 
-    assert "Arrival (2016) - Denis Villeneuve" in response_html
+    assert "movie-gallery" in response_html
+    assert "Arrival" in response_html
+    assert "2016" in response_html
     assert seen_models == ["primary/free-model:free", "fallback/free-model:free"]
 
 
