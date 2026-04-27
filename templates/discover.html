@@ -6,6 +6,7 @@ body_class %} discover_page{% endblock %} {% block content %}
 />
 
 <canvas class="canvas_discover" id="canvas"></canvas>
+<div class="discover-atmosphere" aria-hidden="true"></div>
 <script src="{{ url_for('static', filename='js/script_discover.js') }}"></script>
 <script src="https://kit.fontawesome.com/a735d6df86.js" crossorigin="anonymous"></script>
 
@@ -15,6 +16,7 @@ body_class %} discover_page{% endblock %} {% block content %}
       <h1 class="app-title-terminal home-title glitch-text">
         <span>//</span> Discover
       </h1>
+      <p class="discover-intro">Describe the mood you want, choose how adventurous the picks should be, and stream recommendations as they arrive.</p>
     </header>
 
     <section class="discover-grid">
@@ -24,7 +26,7 @@ body_class %} discover_page{% endblock %} {% block content %}
 
           <div class="form-group">
             <label for="user_request" class="form-label"
-              >&gt; RECOMMENDATION_PROMPT</label
+              >&gt; WHAT ARE YOU IN THE MOOD FOR?</label
             >
             <textarea
               id="user_request"
@@ -39,7 +41,8 @@ body_class %} discover_page{% endblock %} {% block content %}
           </div>
 
           <div class="form-group">
-            <span class="form-label">&gt; RECOMMENDATION_MODE</span>
+            <span class="form-label">&gt; RECOMMENDATION STYLE</span>
+            <p class="form-helper">How closely should picks match your usual taste profile?</p>
             <div class="option-grid mode-grid">
               {% for mode_key, mode_label in discover_mode_labels.items() %}
               <label class="choice-card">
@@ -49,14 +52,18 @@ body_class %} discover_page{% endblock %} {% block content %}
                   value="{{ mode_key }}"
                   {{ "checked" if recommendation_mode == mode_key else "" }}
                 />
-                <span class="choice-title">{{ mode_label }}</span>
+                <span class="choice-title">
+                  <span class="choice-main">{{ mode_label }}</span>
+                  <span class="choice-sub">{% if mode_key == 'explore' %}Push beyond your usual picks{% elif mode_key == 'similar' %}Closest to your established taste{% elif mode_key == 'comfort' %}Safe familiar territory{% else %}Tune recommendation distance{% endif %}</span>
+                </span>
               </label>
               {% endfor %}
             </div>
           </div>
 
           <div class="form-group">
-            <span class="form-label">&gt; HISTORY_LENS</span>
+            <span class="form-label">&gt; TASTE MEMORY WINDOW</span>
+            <p class="form-helper">Decide which part of your watch history should influence results most.</p>
             <div class="option-grid lens-grid">
               {% for profile_key, profile_label in
               discover_history_profile_labels.items() %}
@@ -67,14 +74,18 @@ body_class %} discover_page{% endblock %} {% block content %}
                   value="{{ profile_key }}"
                   {{ "checked" if history_profile == profile_key else "" }}
                 />
-                <span class="choice-title">{{ profile_label }}</span>
+                <span class="choice-title">
+                  <span class="choice-main">{{ profile_label }}</span>
+                  <span class="choice-sub">{% if profile_key == 'recent' %}Bias toward your latest favorites{% elif profile_key == 'balanced' %}Blend recent and long-term taste{% elif profile_key == 'all_time' %}Use your full watch-history identity{% else %}Adjust history influence{% endif %}</span>
+                </span>
               </label>
               {% endfor %}
             </div>
           </div>
 
           <div class="form-group">
-            <span class="form-label">&gt; GENRE_PREFILTER (OPTIONAL)</span>
+            <span class="form-label">&gt; OPTIONAL GENRE FOCUS</span>
+            <p class="form-helper">Leave empty for broad discovery, or select genres to narrow the search space.</p>
             <div class="genre-chip-grid">
               {% for genre in discover_available_genres %}
               <label class="genre-chip">
@@ -95,23 +106,6 @@ body_class %} discover_page{% endblock %} {% block content %}
           </button>
         </form>
       </div>
-
-      <aside class="cyber-card glass-panel discover-card discover-status-card">
-        <h2>Quick Setup</h2>
-        <p class="discover-helper-intro">
-          Choose the two settings that steer recommendation behavior.
-        </p>
-        <ul class="discover-helper-list">
-          <li>
-            <span>Recommendation Mode</span>
-            Explore = adventurous, Similar = close to your taste, Comfort = familiar picks.
-          </li>
-          <li>
-            <span>History Lens</span>
-            Recent Favorites = latest likes, Balanced Mix = variety, All-Time Profile = your full history.
-          </li>
-        </ul>
-      </aside>
     </section>
 
     <section class="cyber-card glass-panel discover-card response-card" id="response-section" style="display: {% if ai_response %}block{% else %}none{% endif %};">
@@ -146,15 +140,16 @@ body_class %} discover_page{% endblock %} {% block content %}
     --discover-light: #d0dde5;
     --discover-muted: #9eb0ba;
     --discover-line: rgba(126, 181, 196, 0.18);
+    --discover-panel-bg: rgba(19, 28, 39, 0.44);
+    --discover-panel-border: rgba(126, 181, 196, 0.16);
+    --discover-panel-shadow: 0 14px 36px rgba(0, 0, 0, 0.32);
   }
 
   .discover_page::before {
-    background: linear-gradient(
-      135deg,
-      #1a2634 0%,
-      #1e3a4c 50%,
-      #1a2634 100%
-    ) !important;
+    background:
+      radial-gradient(circle at 14% 12%, rgba(126, 181, 196, 0.13), transparent 36%),
+      radial-gradient(circle at 88% 22%, rgba(122, 168, 152, 0.1), transparent 34%),
+      linear-gradient(145deg, #15212d 0%, #1a2b3c 52%, #162332 100%) !important;
   }
 
   .canvas_discover {
@@ -162,23 +157,47 @@ body_class %} discover_page{% endblock %} {% block content %}
     inset: 0;
     width: 100%;
     height: 100vh;
-    z-index: -1;
+    z-index: 0;
+    pointer-events: none;
     background: transparent;
   }
 
+  .discover-atmosphere {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(126, 181, 196, 0.13), transparent 34%),
+      radial-gradient(circle at 88% 18%, rgba(122, 168, 152, 0.1), transparent 36%),
+      radial-gradient(circle at 52% 84%, rgba(158, 150, 184, 0.08), transparent 40%);
+  }
+
   .discover-main {
+    position: relative;
+    z-index: 1;
     margin-left: 5rem;
     padding: 1rem;
   }
 
   .discover-wrap {
-    max-width: 1200px;
+    max-width: 1240px;
     margin: 0 auto;
   }
 
   .discover-header {
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
     padding: 0 0.5rem;
+  }
+
+  .discover-intro {
+    margin: 0.45rem 0 0;
+    max-width: 860px;
+    color: var(--discover-muted);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.18rem;
+    letter-spacing: 0.45px;
+    line-height: 1.3;
   }
 
   .ascii-top {
@@ -215,73 +234,38 @@ body_class %} discover_page{% endblock %} {% block content %}
 
   .discover-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 300px;
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
     align-items: start;
   }
 
   .discover-card {
-    backdrop-filter: blur(7px);
+    position: relative;
+    background: linear-gradient(150deg, rgba(19, 28, 39, 0.52), rgba(16, 24, 34, 0.42)) !important;
+    border: 1px solid rgba(126, 181, 196, 0.16) !important;
+    border-radius: 16px !important;
+    clip-path: none !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(1px) saturate(1.04) !important;
+    -webkit-backdrop-filter: blur(6px) saturate(1.04) !important;
+    overflow: hidden;
+  }
+
+  .discover-card::before {
+    content: none !important;
   }
 
   .discover-form-card {
-    padding: 18px;
-  }
-
-  .discover-status-card {
-    padding: 14px;
-  }
-
-  .discover-status-card h2 {
-    margin: 0;
-    color: var(--discover-purple);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.55rem;
-    font-weight: normal;
-    letter-spacing: 1px;
-  }
-
-  .discover-helper-intro {
-    margin: 8px 0 10px;
-    color: var(--discover-muted);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.04rem;
-    letter-spacing: 0.6px;
-    line-height: 1.25;
-  }
-
-  .discover-helper-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 8px;
-  }
-
-  .discover-helper-list li {
-    border: 1px dashed rgba(100, 181, 246, 0.24);
-    border-radius: 8px;
-    background: rgba(16, 24, 34, 0.76);
-    padding: 8px 10px;
-    color: var(--discover-muted);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.02rem;
-    letter-spacing: 0.6px;
-    line-height: 1.25;
-  }
-
-  .discover-helper-list span {
-    display: block;
-    margin-bottom: 2px;
-    color: var(--discover-light);
-    font-size: 1.08rem;
-    letter-spacing: 0.75px;
+    padding: 20px;
+    max-width: 980px;
+    width: 100%;
+    margin: 0 auto;
   }
 
   .recommendation-form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
   }
 
   .form-group {
@@ -293,18 +277,27 @@ body_class %} discover_page{% endblock %} {% block content %}
   .form-label {
     color: var(--discover-purple);
     font-family: "VT323", "Courier New", monospace;
-    font-size: 1.25rem;
-    letter-spacing: 1px;
+    font-size: 1.2rem;
+    letter-spacing: 0.9px;
+  }
+
+  .form-helper {
+    margin: -1px 0 3px;
+    color: rgba(208, 221, 229, 0.78);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1rem;
+    letter-spacing: 0.4px;
+    line-height: 1.25;
   }
 
   .form-textarea {
     width: 100%;
     min-height: 120px;
-    border-radius: 8px;
+    border-radius: 12px;
     box-sizing: border-box;
     resize: vertical;
-    border: 1px solid rgba(100, 181, 246, 0.3);
-    background: rgba(15, 22, 32, 0.86);
+    border: 1px solid rgba(126, 181, 196, 0.24);
+    background: rgba(12, 19, 27, 0.8);
     color: var(--discover-light);
     padding: 12px;
     font-family: "VT323", "Courier New", monospace;
@@ -345,26 +338,43 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .choice-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    text-align: center;
-    border: 1px solid rgba(179, 157, 219, 0.35);
-    background: rgba(17, 25, 35, 0.85);
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    min-height: 56px;
+    text-align: left;
+    border: 1px solid rgba(126, 181, 196, 0.26);
+    background: rgba(14, 22, 32, 0.75);
     color: var(--discover-light);
-    padding: 8px;
+    padding: 8px 10px;
     font-family: "VT323", "Courier New", monospace;
     font-size: 1.12rem;
     letter-spacing: 0.7px;
     transition: all 0.22s ease;
     cursor: pointer;
-    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    border-radius: 10px;
+  }
+
+  .choice-main {
+    display: block;
+    color: #e2ecf2;
+    font-size: 1.08rem;
+    letter-spacing: 0.55px;
+    line-height: 1.05;
+  }
+
+  .choice-sub {
+    display: block;
+    color: rgba(176, 190, 197, 0.9);
+    font-size: 0.9rem;
+    letter-spacing: 0.35px;
+    line-height: 1.1;
+    margin-top: 2px;
   }
 
   .choice-card input:checked + .choice-title {
     border-color: var(--discover-cyan);
-    background: rgba(126, 181, 196, 0.15);
+    background: linear-gradient(145deg, rgba(126, 181, 196, 0.22), rgba(126, 181, 196, 0.1));
     color: #d0dde5;
     box-shadow: 0 0 8px rgba(126, 181, 196, 0.25);
   }
@@ -394,8 +404,8 @@ body_class %} discover_page{% endblock %} {% block content %}
     display: inline-flex;
     align-items: center;
     min-height: 40px;
-    border: 1px solid rgba(176, 190, 197, 0.3);
-    background: rgba(17, 25, 35, 0.82);
+    border: 1px solid rgba(126, 181, 196, 0.22);
+    background: rgba(14, 22, 32, 0.7);
     color: var(--discover-muted);
     padding: 4px 15px;
     font-family: "VT323", "Courier New", monospace;
@@ -403,7 +413,7 @@ body_class %} discover_page{% endblock %} {% block content %}
     letter-spacing: 0.6px;
     transition: all 0.22s ease;
     cursor: pointer;
-    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    border-radius: 999px;
   }
 
   .genre-chip input:checked + span {
@@ -416,7 +426,7 @@ body_class %} discover_page{% endblock %} {% block content %}
   .recommend-button {
     align-self: flex-start;
     border: 1px solid var(--discover-cyan);
-    background: rgba(100, 181, 246, 0.15);
+    background: linear-gradient(135deg, rgba(126, 181, 196, 0.24), rgba(126, 181, 196, 0.12));
     color: var(--discover-cyan);
     padding: 12px 24px;
     font-family: "VT323", "Courier New", monospace;
@@ -424,7 +434,7 @@ body_class %} discover_page{% endblock %} {% block content %}
     letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.25s ease;
-    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    border-radius: 12px;
   }
 
   .recommend-button:hover:not(:disabled) {
@@ -446,11 +456,22 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .response-card {
-    margin-top: 16px;
-    padding: 16px;
+    margin-top: 18px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    max-width: 1240px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .discover-form-card,
+  .response-card {
+    background: linear-gradient(150deg, rgba(19, 28, 39, 0.58), rgba(15, 22, 31, 0.46)) !important;
+    border-color: rgba(126, 181, 196, 0.18) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
   }
 
   .response-headline h2 {
@@ -478,13 +499,13 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .formatted-recommendations {
-    margin-top: 15px;
+    margin-top: 12px;
     max-height: 650px;
     overflow-y: auto;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    padding: 0;
+    background: rgba(8, 13, 19, 0.25);
+    border: 1px solid rgba(126, 181, 196, 0.1);
+    border-radius: 12px;
+    padding: 10px;
     color: var(--discover-light);
     font-family: inherit;
     font-size: 1rem;
@@ -497,7 +518,7 @@ body_class %} discover_page{% endblock %} {% block content %}
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     gap: clamp(1rem, 1.8vw, 1.5rem);
-    padding: 0.25rem 0 0;
+    padding: 0.3rem;
     max-width: 1280px;
     margin: 0 auto;
     align-items: start;
@@ -836,10 +857,6 @@ body_class %} discover_page{% endblock %} {% block content %}
     .discover-grid {
       grid-template-columns: 1fr;
     }
-
-    .discover-status-card {
-      order: -1;
-    }
   }
 
   @media (max-width: 600px) {
@@ -853,7 +870,6 @@ body_class %} discover_page{% endblock %} {% block content %}
     }
 
     .discover-form-card,
-    .discover-status-card,
     .response-card {
       padding: 12px;
     }
@@ -979,25 +995,23 @@ body_class %} discover_page{% endblock %} {% block content %}
         const numberedMatch = line.match(/^([1-4])\.\s+(.+)$/);
         if (numberedMatch) {
           const heading = numberedMatch[2].trim().replace(/^\*\*(.*)\*\*$/, "$1").trim();
-          if (/\(\d{4}\)/.test(heading)) {
-            if (current) {
-              pushCurrent();
-              if (results.length >= 4) {
-                break;
-              }
+          if (current) {
+            pushCurrent();
+            if (results.length >= 4) {
+              break;
             }
-
-            const headingMatch = heading.match(/^(.*?)\s*\((\d{4})\)\s*[-–—]\s*(.*?)\s*$/);
-            current = {
-              title: headingMatch ? headingMatch[1].trim() : heading,
-              year: headingMatch ? headingMatch[2] : "",
-              director: headingMatch ? headingMatch[3].trim() : "Unknown Director",
-              genre: "Genre unavailable",
-              rating: "Curated Pick",
-              whyLines: [],
-            };
-            continue;
           }
+
+          const headingMatch = heading.match(/^(.*?)\s*\((\d{4})\)\s*[-–—]\s*(.*?)\s*$/);
+          current = {
+            title: headingMatch ? headingMatch[1].trim() : heading.replace(/\s*[-–—].*$/, "").trim(),
+            year: headingMatch ? headingMatch[2] : "",
+            director: headingMatch ? headingMatch[3].trim() : "Unknown Director",
+            genre: "Genre unavailable",
+            rating: "Curated Pick",
+            whyLines: [],
+          };
+          continue;
         }
 
         if (!current) {
@@ -1111,11 +1125,7 @@ body_class %} discover_page{% endblock %} {% block content %}
           if (!response.ok) {
             if (response.status === 429) {
               return {
-                poster: "https://via.placeholder.com/500x750?text=Loading+Poster",
-                genre: "Genre unavailable",
-                director: director || "Unknown Director",
-                title: safeTitle,
-                rating: null,
+                transientRateLimit: true,
               };
             }
             return null;
@@ -1179,21 +1189,58 @@ body_class %} discover_page{% endblock %} {% block content %}
         return;
       }
 
+      const retryAfter = Number(card.dataset.posterRetryAfter || "0");
+      if (retryAfter && Date.now() < retryAfter) {
+        return;
+      }
+
       card.dataset.posterPending = "1";
       const activeKey = card.dataset.itemKey;
 
       try {
         const details = await fetchMovieDetails(item.title, item.year, item.director);
         if (!details || card.dataset.itemKey !== activeKey) {
+          card.dataset.posterRetryAfter = String(Date.now() + 1500);
+          return;
+        }
+
+        if (details.transientRateLimit) {
+          card.dataset.posterRetryAfter = String(Date.now() + 2000);
           return;
         }
 
         movieDetailsCache.set(normalizedCacheKey(item.title, item.year), details);
-        card.innerHTML = buildFilledCardMarkup(item, details);
+        const posterNode = card.querySelector(".movie-poster");
+        if (posterNode && details.poster) {
+          posterNode.src = details.poster;
+          posterNode.alt = details.title || item.title || "Recommendation Poster";
+        }
+
+        const titleNode = card.querySelector(".frame-title");
+        if (titleNode && details.title) {
+          titleNode.textContent = details.title;
+        }
+
+        const metaItems = card.querySelectorAll(".frame-meta .meta-item");
+        if (metaItems.length >= 3 && details.director) {
+          metaItems[2].textContent = details.director;
+        }
+
+        const genreNode = card.querySelector(".frame-genre");
+        if (genreNode && details.genre) {
+          genreNode.textContent = details.genre;
+        }
+
+        const ratingNode = card.querySelector(".frame-rating");
+        if (ratingNode && typeof details.rating === "number") {
+          ratingNode.textContent = `TMDB ${details.rating.toFixed(1)}/10`;
+        }
+
         card.dataset.director = details.director || item.director || "";
+        delete card.dataset.posterRetryAfter;
+        card.dataset.posterHydrated = "1";
       } finally {
         delete card.dataset.posterPending;
-        card.dataset.posterHydrated = "1";
       }
     };
 
@@ -1323,8 +1370,10 @@ body_class %} discover_page{% endblock %} {% block content %}
           preferred_genres: formData.getAll('preferred_genres')
         };
 
-        const modeLabel = document.querySelector(`input[name="recommendation_mode"]:checked`).nextElementSibling.textContent;
-        const profileLabel = document.querySelector(`input[name="history_profile"]:checked`).nextElementSibling.textContent;
+        const selectedModeCard = document.querySelector(`input[name="recommendation_mode"]:checked`)?.nextElementSibling;
+        const selectedProfileCard = document.querySelector(`input[name="history_profile"]:checked`)?.nextElementSibling;
+        const modeLabel = selectedModeCard?.querySelector('.choice-main')?.textContent?.trim() || selectedModeCard?.textContent?.trim() || 'Similar';
+        const profileLabel = selectedProfileCard?.querySelector('.choice-main')?.textContent?.trim() || selectedProfileCard?.textContent?.trim() || 'Balanced Mix';
         const genres = requestPayload.preferred_genres.join(', ') || 'Any';
         responseMeta.innerHTML = `Mode: ${modeLabel} | History Lens: ${profileLabel} | Genres: ${genres}`;
         
