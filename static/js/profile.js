@@ -198,7 +198,7 @@ function renderTopGenresBar(top6Keys, top6Values) {
         },
       },
     },
-    colors: ["#7868a0"],
+    colors: ["#b78efd"],
     dataLabels: {
       enabled: true,
       offsetY: -20,
@@ -274,7 +274,7 @@ function renderMonthlyMoviesLine(monthValues) {
         show: false,
       },
     },
-    colors: ["#c4a96d"],
+    colors: ["#fcd34d"],
     dataLabels: {
       enabled: true,
     },
@@ -339,7 +339,7 @@ function renderGenresRadar(top10Keys, top10Values) {
       height: chartHeight(350, 280),
       type: "radar",
     },
-    colors: ["#7eb5c4"],
+    colors: ["#22d3ee"],
     xaxis: {
       categories: top10Keys,
     },
@@ -381,7 +381,7 @@ function renderTvVsMoviesChart(stats) {
       width: 1,
       colors: ["#1d2634"],
     },
-    colors: ["#7868a0", "#7eb5c4"],
+    colors: ["#b78efd", "#22d3ee"],
     xaxis: {
       categories: MONTH_LABELS,
       labels: {
@@ -435,7 +435,7 @@ function renderDiversityChart(stats) {
         colors: ["#ffffff"],
       },
     },
-    colors: ["#7eb5c4"],
+    colors: ["#22d3ee"],
     xaxis: {
       categories: ["Unique Directors", "Unique Genres"],
       labels: {
@@ -484,7 +484,7 @@ function renderHabitCountsChart(stats) {
         colors: ["#ffffff"],
       },
     },
-    colors: ["#c4a96d"],
+    colors: ["#fcd34d"],
     xaxis: {
       categories: ["Rewatch Count", "Cinema Visits"],
       labels: {
@@ -527,7 +527,7 @@ function renderLastThreeYearsMonthlyChart(yearlySeries) {
     markers: {
       size: 3,
     },
-    colors: ["#7eb5c4", "#c4a96d", "#7aa898"],
+    colors: ["#22d3ee", "#fcd34d", "#4ade80"],
     xaxis: {
       categories: MONTH_LABELS,
       labels: {

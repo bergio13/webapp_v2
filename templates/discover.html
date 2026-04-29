@@ -150,6 +150,8 @@ body_class %} discover_page{% endblock %} {% block content %}
       radial-gradient(circle at 14% 12%, rgba(126, 181, 196, 0.13), transparent 36%),
       radial-gradient(circle at 88% 22%, rgba(122, 168, 152, 0.1), transparent 34%),
       linear-gradient(145deg, #15212d 0%, #1a2b3c 52%, #162332 100%) !important;
+    filter: blur(1.2px);
+    z-index: 0;
   }
 
   .canvas_discover {
@@ -175,14 +177,17 @@ body_class %} discover_page{% endblock %} {% block content %}
 
   .discover-main {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     margin-left: 5rem;
     padding: 1rem;
+    background: transparent;
   }
 
   .discover-wrap {
     max-width: 1240px;
     margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .discover-header {
@@ -246,8 +251,8 @@ body_class %} discover_page{% endblock %} {% block content %}
     border-radius: 16px !important;
     clip-path: none !important;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(1px) saturate(1.04) !important;
-    -webkit-backdrop-filter: blur(6px) saturate(1.04) !important;
+    backdrop-filter: blur(6px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
     overflow: hidden;
   }
 
@@ -863,6 +868,15 @@ body_class %} discover_page{% endblock %} {% block content %}
     .discover-main {
       margin-left: 0;
       padding: 0.8rem 0.6rem 5rem;
+      width: 100%;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    .discover-wrap {
+      width: 100%;
+      box-sizing: border-box;
+      max-width: 100%;
     }
 
     .discover-header h1 {
@@ -872,6 +886,8 @@ body_class %} discover_page{% endblock %} {% block content %}
     .discover-form-card,
     .response-card {
       padding: 12px;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .mode-grid,
@@ -887,10 +903,13 @@ body_class %} discover_page{% endblock %} {% block content %}
     .formatted-recommendations {
       max-height: 500px;
       padding: 10px;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .movie-gallery {
       grid-template-columns: 1fr;
+      max-width: 100%;
     }
   }
 
