@@ -146,11 +146,7 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .discover_page::before {
-    background:
-      radial-gradient(circle at 14% 12%, rgba(126, 181, 196, 0.13), transparent 36%),
-      radial-gradient(circle at 88% 22%, rgba(122, 168, 152, 0.1), transparent 34%),
-      linear-gradient(145deg, #15212d 0%, #1a2b3c 52%, #162332 100%) !important;
-    filter: blur(1.2px);
+    background: #1a1a1a !important;
     z-index: 0;
   }
 
@@ -169,10 +165,7 @@ body_class %} discover_page{% endblock %} {% block content %}
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background:
-      radial-gradient(circle at 10% 20%, rgba(126, 181, 196, 0.13), transparent 34%),
-      radial-gradient(circle at 88% 18%, rgba(122, 168, 152, 0.1), transparent 36%),
-      radial-gradient(circle at 52% 84%, rgba(158, 150, 184, 0.08), transparent 40%);
+    background: transparent;
   }
 
   .discover-main {
@@ -713,42 +706,10 @@ body_class %} discover_page{% endblock %} {% block content %}
     font-weight: 400;
   }
 
-  .frame-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.35rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    padding-top: 0.55rem;
-    margin-top: auto;
-    min-height: 0;
-  }
-
   .frame-badge-row {
     margin-top: 0.35rem;
     min-height: 0.95rem;
     overflow: hidden;
-  }
-
-  .action-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 8px;
-    color: #ffffff;
-    padding: 0.5rem;
-    min-height: 34px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .action-btn:hover {
-    background: #ffffff;
-    color: #0a0e14;
-    transform: translateY(-2px);
-  }
-
-  .action-btn:focus-visible {
-    outline: 2px solid var(--discover-cyan);
-    outline-offset: 2px;
   }
 
   .stream-card-empty {
@@ -1108,11 +1069,6 @@ body_class %} discover_page{% endblock %} {% block content %}
             <div class="frame-genre">${escapeHtml(displayGenre)}</div>
             <div class="frame-rating">${escapeHtml(displayRating)}</div>
             <div class="frame-summary"><strong>Why it fits:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}</div>
-            <div class="frame-actions">
-              <button class="action-btn" type="button" title="Log Watch" aria-label="Log Watch for ${escapeHtml(item.title)}"><i class="fa-solid fa-eye"></i></button>
-              <button class="action-btn" type="button" title="Like" aria-label="Like ${escapeHtml(item.title)}"><i class="fa-solid fa-heart"></i></button>
-              <button class="action-btn" type="button" title="Add to List" aria-label="Add ${escapeHtml(item.title)} to list"><i class="fa-solid fa-plus"></i></button>
-            </div>
             <div class="frame-badge-row">${badge}</div>
           </div>
         </div>

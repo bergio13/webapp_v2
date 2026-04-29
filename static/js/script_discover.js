@@ -77,13 +77,14 @@ class Particle {
 function init() {
   particlesArray = [];
   let numberOfParticles = (canvas.height * canvas.width) / 12000;
+  const colors = ['#3d5a6e', '#4a6d7c', '#2d4654', '#5a7d8a'];
   for (let i = 0; i < numberOfParticles; i++) {
     let size = (Math.random() * 2) + 1;
     let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
     let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
     let directionX = (Math.random() * 1.5) - 0.75;
     let directionY = (Math.random() * 1.5) - 0.75;
-    let color = '#b39ddb'; // var(--discover-purple)
+    let color = colors[Math.floor(Math.random() * colors.length)];
 
     particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
   }
@@ -99,7 +100,7 @@ function connect() {
       
       if (distance < (canvas.width/8) * (canvas.height/8)) {
         opacityValue = 1 - (distance/20000);
-        ctx.strokeStyle = 'rgba(100, 181, 246,' + opacityValue + ')';
+        ctx.strokeStyle = 'rgba(74, 109, 124,' + opacityValue + ')';
         ctx.lineWidth = 1;
         ctx.shadowBlur = 0; // Don't blur lines for performance
         ctx.beginPath();
