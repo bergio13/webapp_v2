@@ -974,7 +974,7 @@ body_class %} discover_page{% endblock %} {% block content %}
 
         const numberedMatch = line.match(/^([1-4])\.\s+(.+)$/);
         if (numberedMatch) {
-          const heading = numberedMatch[2].trim().replace(/^\*\*(.*)\*\*$/, "$1").trim();
+          const heading = numberedMatch[2].trim().replace(/\*\*/g, "").trim();
           if (current) {
             pushCurrent();
             if (results.length >= 4) {
