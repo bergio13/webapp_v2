@@ -1,6 +1,6 @@
 import os
 import requests
-from tmdbv3api import TMDb, Movie, TV, Season
+from tmdbv3api import TMDb, Movie, TV, Season, Search
 
 # Initialize TMDb
 tmdb = TMDb()
@@ -9,6 +9,7 @@ tmdb.api_key = os.environ.get('TMDB_API_KEY')
 movie_api = Movie()
 tv_api = TV()
 season_api = Season()
+search_api = Search()
 
 movie_genres = {
     28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
@@ -192,3 +193,47 @@ def get_tv_details(title, year, season_num, manual_director=None):
             "director": manual_director or "Unknown",
             "title": title
         }
+
+def search_titles(query, is_tv=False):
+    """
+    Quick search for autocomplete suggestions.
+    Returns a list of dicts with title, year, poster, and type.
+    """
+    try:
+        res = search_api.multi({"query": query})
+        results = []
+        for item in res:
+            media_type = item.get('media_type')
+            
+            # Skip if it's a person or if is_tv is strictly requested and this is a movie (or vice versa if we wanted to enforce it)
+            # Actually, the user wants to search both regardless, but maybe we prioritize what they selected, 
+            # or just show everything and let them pick. We will show everything.
+            if media_type not in ['movie', 'tv']:
+                continue
+
+            if media_type == 'tv':
+                date = item.get('first_air_date', '')
+                year = date[:4] if date else ''
+                title = item.get('name', '')
+            else:
+                date = item.get('release_date', '')
+                year = date[:4] if date else ''
+                title = item.get('title', '')
+                
+            poster_path = item.get('poster_path')
+            poster = f"https://image.tmdb.org/t/p/w92{poster_path}" if poster_path else "https://via.placeholder.com/92x138?text=No+Poster"
+            
+            results.append({
+                "title": title, 
+                "year": year, 
+                "poster": poster,
+                "type": media_type
+            })
+            
+            if len(results) >= 5:
+                break
+                
+        return results
+    except Exception as e:
+        print(f"Error in tmdb_service.search_titles: {e}")
+        return []

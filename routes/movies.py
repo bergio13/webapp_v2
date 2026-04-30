@@ -72,6 +72,18 @@ def add_movie():
 
     return render_template("add_movie.html")
 
+@movies_bp.route("/search_tmdb", methods=["GET"])
+@login_required
+@limiter.limit("100 per hour")
+def search_tmdb():
+    query = request.args.get("q", "")
+    tv_show = request.args.get("tv", "0")
+    if not query or len(query) < 2:
+        return jsonify([])
+    
+    results = tmdb_service.search_titles(query, is_tv=(tv_show == "1"))
+    return jsonify(results)
+
 
 # ---------------------------------------------------------------------------
 # Remove

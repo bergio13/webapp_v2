@@ -34,31 +34,32 @@ content %}
 
   .add-movie-main .field {
     margin-bottom: 1.5rem;
+    position: relative;
   }
 
   .add-movie-main .input,
   .add-movie-main .number,
   .add-movie-main .month {
-    font-family: "VT323", "Courier New", monospace;
+    font-family: inherit;
     font-size: 1.3rem;
     outline: none;
     border: none;
     width: 100%;
     padding: 0.5rem 0;
     background: none;
-    color: white;
+    color: var(--text-secondary);
   }
 
   .add-movie-main .input:valid,
   .add-movie-main .number:valid,
   .add-movie-main .month:valid {
-    color: gold;
+    color: var(--text-secondary);
   }
 
   .add-movie-main .label {
-    font-family: "VT323", "Courier New", monospace;
+    font-family: inherit;
     font-size: 1.2rem;
-    color: #b0bec5;
+    color: var(--text-primary);
   }
 
   .add-movie-main .field-group {
@@ -72,10 +73,10 @@ content %}
     align-items: center;
     gap: 1.5rem;
     margin-bottom: 1.5rem;
-    font-family: "VT323", "Courier New", monospace;
+    font-family: inherit;
     font-size: 1.2rem;
-    color: #b0bec5;
-    border-bottom: 2px dashed var(--text-primary);
+    color: var(--text-primary);
+    border-bottom: 2px dashed var(--app-panel-border);
     padding-bottom: 0.8rem;
   }
 
@@ -92,29 +93,29 @@ content %}
   }
 
   .add-movie-main .radio-option input[type="radio"] {
-    accent-color: #00ff00;
+    accent-color: var(--theme-accent);
     width: 18px;
     height: 18px;
     cursor: pointer;
   }
 
   .add-movie-main .button {
-    font-family: "VT323", "Courier New", monospace;
+    font-family: inherit;
     font-size: 1.4rem;
     letter-spacing: 1px;
     padding: 0.8rem 2rem;
     margin-top: 1rem;
     background: transparent;
-    color: #00ff00;
-    border: 2px solid #00ff00;
+    color: var(--theme-accent);
+    border: 2px solid var(--theme-accent);
+    border-radius: 99px;
     cursor: pointer;
     transition: all 0.3s ease;
   }
 
   .add-movie-main .button:hover {
-    background: rgba(0, 255, 0, 0.2);
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5), inset 0 0 8px rgba(0, 255, 0, 0.3);
-    text-shadow: 0 0 8px #00ff00;
+    background: var(--theme-accent-soft);
+    box-shadow: 0 0 10px rgba(131, 111, 255, 0.4);
     transform: scale(1.02);
   }
 
@@ -122,14 +123,94 @@ content %}
     margin-top: -0.5rem;
     margin-bottom: 1.5rem;
     padding-left: 1rem;
-    border-left: 3px solid #00ff00;
+    border-left: 3px solid var(--theme-accent);
   }
 
-  .terminal-prefix {
-    color: #00ff00;
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
+  .autocomplete-items {
+    position: absolute;
+    border: 1px solid var(--app-panel-border);
+    z-index: 99;
+    top: 100%;
+    margin-top: 4px;
+    left: 0;
+    right: 0;
+    background-color: var(--app-panel-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: inherit;
+    box-shadow: var(--app-panel-shadow);
+  }
+
+  .autocomplete-items::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .autocomplete-items::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .autocomplete-items::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  .autocomplete-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+  }
+
+  .autocomplete-item:last-child {
+    border-bottom: none;
+  }
+
+  .autocomplete-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: white;
+  }
+
+  .autocomplete-item img {
+    width: 40px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  }
+
+  .autocomplete-item .item-title {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-weight: bold;
+    transition: color 0.2s ease;
+  }
+
+  .autocomplete-item:hover .item-title {
+    color: var(--theme-accent);
+  }
+
+  .autocomplete-item .item-year {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-top: 4px;
+  }
+
+  .autocomplete-item .item-type {
+    font-size: 0.75rem;
+    background: var(--theme-accent-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 10px;
+    color: var(--theme-accent);
+    text-transform: uppercase;
+    font-weight: bold;
+    border: 1px solid rgba(131, 111, 255, 0.3);
   }
 
   @media (max-width: 600px) {
@@ -170,12 +251,12 @@ content %}
 
 
 <main class="add-movie-main">
-  <h1>[ ADD_MOVIE ]</h1>
   <form method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="field">
-      <input type="text" class="input" id="title" name="title" placeholder=" " required />
+      <input type="text" class="input" id="title" name="title" placeholder=" " autocomplete="off" required />
       <label for="title" class="label">Title</label>
+      <div id="autocomplete-list" class="autocomplete-items"></div>
     </div>
     <div class="field">
       <input type="number" class="input" id="year" name="year" placeholder=" " max="2030" min="1890" required />
@@ -222,6 +303,73 @@ content %}
     function hideSeasonField() {
       document.getElementById("seasonField").style.display = "none";
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Default date to today if empty
+      const dateInput = document.getElementById('date');
+      if (!dateInput.value) {
+        dateInput.valueAsDate = new Date();
+      }
+
+      const titleInput = document.getElementById('title');
+      const autocompleteList = document.getElementById('autocomplete-list');
+      let timeout = null;
+
+      titleInput.addEventListener('input', function() {
+        clearTimeout(timeout);
+        const query = this.value;
+        
+        if (!query || query.length < 2) {
+          autocompleteList.innerHTML = '';
+          return;
+        }
+
+        timeout = setTimeout(() => {
+          // Send tv parameter just in case backend expects it, but backend will ignore it and return both
+          const isTv = document.getElementById('tv_yes').checked ? "1" : "0";
+          fetch(`/search_tmdb?q=${encodeURIComponent(query)}&tv=${isTv}`)
+            .then(response => response.json())
+            .then(data => {
+              autocompleteList.innerHTML = '';
+              data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                const typeLabel = item.type === 'tv' ? 'TV' : 'Movie';
+                div.innerHTML = `
+                  <img src="${item.poster}" alt="Poster" />
+                  <div class="info">
+                    <div class="item-title">${item.title} <span class="item-type">${typeLabel}</span></div>
+                    <div class="item-year">${item.year}</div>
+                  </div>
+                `;
+                div.addEventListener('click', function() {
+                  titleInput.value = item.title;
+                  document.getElementById('year').value = item.year;
+                  
+                  if (item.type === 'tv') {
+                    document.getElementById('tv_yes').checked = true;
+                    showSeasonField();
+                  } else {
+                    document.getElementById('tv_no').checked = true;
+                    hideSeasonField();
+                  }
+
+                  autocompleteList.innerHTML = '';
+                });
+                autocompleteList.appendChild(div);
+              });
+            })
+            .catch(err => console.error("Error fetching autocomplete:", err));
+        }, 300);
+      });
+
+      // Close autocomplete when clicking outside
+      document.addEventListener('click', function(e) {
+        if (e.target !== titleInput && e.target !== autocompleteList && !autocompleteList.contains(e.target)) {
+          autocompleteList.innerHTML = '';
+        }
+      });
+    });
   </script>
 </main>
 
