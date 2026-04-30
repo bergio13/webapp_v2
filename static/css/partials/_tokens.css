@@ -1,0 +1,173 @@
+/* ==========================================================================
+   _tokens.css — Design Tokens
+   All CSS custom properties (:root). Single source of truth.
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400&display=swap");
+
+:root {
+  font-size: 16px;
+  font-family: "Sono", sans-serif;
+
+  /* --- Base colours --- */
+  --text-primary: #b6b6b6;
+  --text-secondary: #ececec;
+  --text-tertiary: #6649b8;
+  --bg-primary: #23232e;
+  --bg-secondary: #141418;
+
+  /* --- Layout --- */
+  --transition-speed: 600ms;
+  --layout-sidebar-offset: 5rem;
+  --layout-mobile-bottom-nav: 5rem;
+  --layout-mobile-gutter: 0.75rem;
+
+  /* --- Theme accent --- */
+  --theme-accent: #836fff;
+  --theme-accent-muted: #7a73a3;
+  --theme-accent-soft: rgba(131, 111, 255, 0.2);
+  --theme-nav-bg: var(--bg-primary);
+  --theme-nav-hover: var(--bg-secondary);
+  --theme-fg-muted: var(--text-primary);
+  --theme-fg-strong: var(--text-secondary);
+  --theme-icon-primary: #26355d;
+
+  /* --- App panel --- */
+  --app-panel-border: rgba(255, 255, 255, 0.2);
+  --app-panel-bg: rgba(10, 14, 20, 0.35);
+  --app-panel-shadow: 0 0 24px rgba(0, 0, 0, 0.28);
+  --app-panel-title: #ffffff;
+  --app-panel-title-accent: var(--theme-accent);
+
+  /* --- ASCII header --- */
+  --app-ascii-color: var(--app-panel-title-accent);
+  --app-ascii-shadow: none;
+
+  /* --- Loader --- */
+  --app-loader-bg: #131c27;
+  --app-loader-track: rgba(255, 255, 255, 0.25);
+  --app-loader-spin-color: var(--theme-accent);
+
+  /* --- Toolbar --- */
+  --app-toolbar-link-color: var(--app-panel-title-accent);
+  --app-toolbar-link-shadow: none;
+  --app-toolbar-link-hover-color: #ffffff;
+  --app-toolbar-link-hover-shadow: none;
+  --app-toolbar-pill-border: rgba(255, 255, 255, 0.35);
+  --app-toolbar-pill-color: var(--app-panel-title-accent);
+  --app-toolbar-pill-shadow: none;
+  --app-toolbar-pill-hover-border: rgba(255, 255, 255, 0.6);
+  --app-toolbar-pill-hover-color: #ffffff;
+  --app-toolbar-pill-hover-shadow: none;
+
+  /* --- Table --- */
+  --app-table-border: rgba(255, 255, 255, 0.2);
+  --app-table-head-start: rgba(255, 255, 255, 0.15);
+  --app-table-head-end: rgba(255, 255, 255, 0.08);
+  --app-table-head-text: var(--app-panel-title);
+  --app-table-row-border: rgba(255, 255, 255, 0.12);
+  --app-table-row-hover: rgba(255, 255, 255, 0.1);
+  --app-table-cell-text: #ffffff;
+  --app-table-link-hover: var(--app-panel-title-accent);
+  --app-table-shell-border: rgba(255, 255, 255, 0.15);
+  --app-table-shell-bg: rgba(10, 14, 20, 0.24);
+  --app-table-shell-radius: 10px;
+
+  /* --- Legend --- */
+  --app-legend-color: var(--app-panel-title);
+  --app-legend-icon-color: var(--app-panel-title-accent);
+  --app-legend-font-size: 1.1rem;
+
+  /* --- Toolbar mobile sizes --- */
+  --app-toolbar-mobile-link-font-size: 1.1rem;
+  --app-toolbar-mobile-link-font-size-sm: 1rem;
+  --app-toolbar-mobile-link-padding: 10px 16px;
+  --app-toolbar-mobile-link-padding-sm: 8px 12px;
+  --app-toolbar-mobile-pill-font-size: 1rem;
+  --app-toolbar-mobile-pill-font-size-sm: 1rem;
+  --app-toolbar-mobile-pill-padding: 10px 16px;
+  --app-toolbar-mobile-pill-padding-sm: 8px 12px;
+  --app-toolbar-mobile-min-height: 44px;
+  --app-toolbar-stack-gap: 12px;
+  --app-toolbar-actions-gap-mobile: 10px;
+  --app-toolbar-actions-gap-mobile-sm: 8px;
+
+  /* --- Dropdown --- */
+  --app-dropdown-mobile-min-width: 210px;
+  --app-dropdown-mobile-min-width-sm: 190px;
+  --app-dropdown-theme-bg: var(--text-tertiary);
+  --app-dropdown-theme-border: #000000;
+  --app-dropdown-theme-link-color: #000000;
+  --app-dropdown-theme-link-hover-bg: #f1f1f1;
+  --app-dropdown-theme-link-hover-color: #000000;
+  --app-dropdown-theme-link-font-size: 14px;
+  --app-dropdown-theme-input-bg: var(--text-tertiary);
+  --app-dropdown-theme-input-border: #000000;
+  --app-dropdown-theme-input-color: #000000;
+
+  /* --- Title themed --- */
+  --app-title-themed-font-size: 2rem;
+  --app-title-themed-color: var(--app-panel-title);
+  --app-title-themed-letter-spacing: 1.5px;
+  --app-title-themed-margin: 0 0 0.5rem;
+  --app-title-themed-shadow: none;
+  --app-title-themed-accent: var(--app-panel-title-accent);
+  --app-title-themed-accent-opacity: 0.9;
+  --app-title-link-color: var(--app-title-themed-accent);
+  --app-title-link-hover-color: var(--app-toolbar-link-color);
+  --app-title-link-hover-shadow: none;
+  --app-title-link-decoration: none;
+  --app-title-link-transition: all 0.3s ease;
+
+  /* --- Nav tooltip --- */
+  --app-nav-tooltip-bg: rgba(11, 16, 26, 0.94);
+  --app-nav-tooltip-border: rgba(255, 255, 255, 0.22);
+  --app-nav-tooltip-color: #e6edf7;
+  --app-nav-tooltip-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+
+  /* --- Wayfinder --- */
+  --app-wayfinder-bg: rgba(8, 12, 20, 0.45);
+  --app-wayfinder-border: rgba(255, 255, 255, 0.18);
+  --app-wayfinder-radius: 10px;
+  --app-wayfinder-gap: 8px;
+  --app-wayfinder-padding: 8px;
+  --app-wayfinder-link-color: var(--app-panel-title);
+  --app-wayfinder-link-hover-bg: rgba(255, 255, 255, 0.12);
+  --app-wayfinder-link-hover-color: #ffffff;
+  --app-wayfinder-link-active-bg: var(--app-panel-title-accent);
+  --app-wayfinder-link-active-color: #0f172a;
+
+  /* --- Title mobile --- */
+  --app-title-mobile-font-size: 1.8rem;
+  --app-title-mobile-font-size-sm: 1.8rem;
+  --app-title-mobile-margin-top: 15px;
+  --app-title-mobile-margin-bottom: 15px;
+
+  /* --- Panel mobile --- */
+  --app-panel-mobile-padding: 10px;
+  --app-panel-mobile-padding-sm: 5px;
+  --app-panel-mobile-max-width-offset: 20px;
+  --app-panel-mobile-max-width-offset-sm: 10px;
+
+  /* --- Table mobile --- */
+  --app-table-scroll-mobile-padding-bottom: 15px;
+  --app-table-mobile-layout-width: 100%;
+  --app-table-mobile-min-width: 740px;
+  --app-table-mobile-min-width-sm: 680px;
+  --app-table-mobile-cell-font-size: 0.9rem;
+  --app-table-mobile-cell-font-size-sm: 0.85rem;
+  --app-table-mobile-cell-padding: 8px 6px;
+  --app-table-mobile-cell-padding-sm: 6px 4px;
+  --app-table-mobile-poster-width: 40px;
+  --app-table-mobile-poster-width-sm: 35px;
+
+  /* --- Action buttons --- */
+  --app-action-edit-bg: rgba(126, 181, 196, 0.12);
+  --app-action-edit-border: #7eb5c4;
+  --app-action-edit-text: #7eb5c4;
+  --app-action-edit-hover-bg: rgba(126, 181, 196, 0.22);
+  --app-action-danger-bg: rgba(181, 138, 138, 0.15);
+  --app-action-danger-border: #b58a8a;
+  --app-action-danger-text: #b58a8a;
+  --app-action-danger-hover-bg: rgba(181, 138, 138, 0.3);
+}

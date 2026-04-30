@@ -1,0 +1,264 @@
+/* ==========================================================================
+   _nav.css — Sidebar navbar and app-shell nav rules
+   ========================================================================== */
+
+/* --- App-shell integration --- */
+.app-shell .navbar { background-color: var(--theme-nav-bg); }
+
+.app-shell .nav-link {
+  color: var(--theme-fg-muted);
+  box-sizing: border-box;
+  overflow: visible;
+  border-left: 3px solid transparent;
+}
+
+.app-shell .nav-link:hover {
+  background: var(--theme-nav-hover);
+  color: var(--theme-fg-strong);
+}
+
+.app-shell .fa-secondary { color: var(--theme-accent-muted); }
+.app-shell .fa-primary   { color: var(--theme-icon-primary); }
+
+.app-shell .nav-link.active {
+  filter: grayscale(15%) opacity(1);
+  color: var(--theme-fg-strong);
+  border-left-color: var(--theme-accent);
+}
+
+.app-shell .nav-link.active .fa-secondary { color: var(--theme-accent); }
+
+/* Tooltip on hover (desktop only) */
+@media only screen and (min-width: 600px) {
+  .app-shell .navbar:not(:hover) .nav-link[data-nav-label]:hover::after,
+  .app-shell .navbar:not(:hover) .nav-link.active[data-nav-label]::after {
+    content: attr(data-nav-label);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 10px;
+    border: 1px solid var(--app-nav-tooltip-border);
+    border-radius: 8px;
+    background: var(--app-nav-tooltip-bg);
+    color: var(--app-nav-tooltip-color);
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    box-shadow: var(--app-nav-tooltip-shadow);
+    pointer-events: none;
+    z-index: 1200;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .app-shell .nav-link.active { border-left-color: transparent; }
+}
+
+/* --- Sidebar structure --- */
+.navbar {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 5rem;
+  background-color: var(--bg-primary);
+  transition: width 200ms ease;
+  z-index: 1000;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  flex-grow: 1;
+}
+
+.nav-item { width: 100%; }
+.nav-item:last-child { margin-top: auto; }
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  height: 5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  filter: grayscale(100%) opacity(0.7);
+  transition: all var(--transition-speed) ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nav-link:hover {
+  filter: grayscale(0%) opacity(1);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.link-text {
+  display: none;
+  margin-left: 1rem;
+}
+
+.nav-link svg {
+  width: 2rem;
+  margin: 0 1.5rem;
+}
+
+.fa-secondary { color: #836fff; }
+.fa-primary   { color: #26355d; }
+.fa-primary, .fa-secondary { transition: var(--transition-speed); }
+
+.logo {
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  font-size: 1.5rem;
+  letter-spacing: 0.3ch;
+  width: 100%;
+}
+
+.logo svg { transform: rotate(0deg); transition: transform var(--transition-speed); }
+.navbar:hover .logo svg { transform: rotate(-180deg); }
+
+/* Cyber-Command link-text style */
+.navbar .link-text {
+  font-family: "Rajdhani", sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.5px !important;
+  font-weight: 600 !important;
+}
+
+.navbar .nav-link:hover .link-text,
+.navbar .nav-link:hover svg {
+  color: #7eb5c4 !important;
+  text-shadow: 0 0 6px rgba(126, 181, 196, 0.4) !important;
+  filter: drop-shadow(0 0 3px rgba(126, 181, 196, 0.4));
+}
+
+.navbar .nav-link.active .link-text,
+.navbar .nav-link.active svg {
+  color: #7aa898 !important;
+  text-shadow: 0 0 6px rgba(122, 168, 152, 0.4) !important;
+  filter: drop-shadow(0 0 3px rgba(122, 168, 152, 0.4));
+}
+
+.app-shell.theme-home .nav-link.active {
+  background: transparent;
+  border-left: 3px solid #7eb5c4;
+}
+
+.app-shell.theme-home .nav-link.active .link-text,
+.app-shell.theme-home .nav-link.active svg {
+  color: #d0dde5 !important;
+  text-shadow: 0 0 6px rgba(126, 181, 196, 0.35) !important;
+  filter: drop-shadow(0 0 2px rgba(126, 181, 196, 0.3));
+}
+
+.app-shell.theme-home .nav-link.active:hover { background: rgba(19, 28, 39, 0.25); }
+
+/* --- Mobile navbar (bottom bar) --- */
+@media only screen and (max-width: 600px) {
+  .navbar {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 5rem;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .logo { display: none; }
+
+  .navbar-nav {
+    flex-direction: row;
+    height: auto;
+    width: 100%;
+    justify-content: space-around;
+    flex-grow: 0;
+  }
+
+  .nav-item {
+    width: auto;
+    flex-grow: 1;
+  }
+
+  .nav-item:last-child {
+    margin-top: 0;
+    margin-right: auto;
+  }
+
+  .nav-link {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 0;
+    height: calc(var(--layout-mobile-bottom-nav) - 0.35rem);
+  }
+
+  .nav-link svg {
+    margin: 0;
+    width: 1.45rem;
+  }
+
+  .link-text {
+    display: block;
+    opacity: 1;
+    margin-left: 0;
+    font-size: 0.58rem;
+    line-height: 1;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .app-shell .nav-link.active .link-text {
+    font-weight: 700;
+    color: var(--theme-fg-strong);
+  }
+
+  .app-shell.theme-home .nav-link.active { border-left: 3px solid #7eb5c4; }
+
+  .flash-container {
+    top: auto;
+    bottom: calc(var(--layout-mobile-bottom-nav) + env(safe-area-inset-bottom, 0) + var(--layout-mobile-gutter));
+    left: var(--layout-mobile-gutter);
+    right: var(--layout-mobile-gutter);
+    width: auto;
+    transform: none;
+  }
+}
+
+/* --- Desktop sidebar expand --- */
+@media only screen and (min-width: 600px) {
+  .navbar {
+    width: 5rem;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    flex-direction: column;
+  }
+
+  .navbar:hover { width: 13rem; }
+
+  .navbar:hover .link-text {
+    display: inline;
+    transition: opacity var(--transition-speed);
+  }
+}

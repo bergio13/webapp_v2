@@ -134,3 +134,6 @@ old-local/
 local-tools/
 
 .github/
+
+# Quarantined legacy CSS — dead code for local review only, never pushed
+static/css/partials/_legacy.css

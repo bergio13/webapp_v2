@@ -1,0 +1,210 @@
+/* ==========================================================================
+   _themes.css — Theme Overrides
+   ========================================================================== */
+
+.theme-default {
+  --theme-accent: #836fff;
+  --theme-accent-muted: #7a73a3;
+  --theme-accent-soft: rgba(131, 111, 255, 0.24);
+  --theme-nav-bg: #23232e;
+  --theme-nav-hover: #141418;
+  --theme-icon-primary: #26355d;
+}
+
+.theme-home {
+  --theme-accent: #7eb5c4;
+  --theme-accent-muted: #6a97a8;
+  --theme-accent-soft: rgba(126, 181, 196, 0.18);
+  --theme-nav-bg: #1a2634;
+  --theme-nav-hover: #213247;
+  --theme-icon-primary: #2b4569;
+  --app-panel-border: rgba(126, 181, 196, 0.15);
+  --app-panel-bg: rgba(26, 38, 52, 0.5);
+  --app-panel-shadow: 0 0 20px rgba(126, 181, 196, 0.05);
+  --app-panel-title: #d0dde5;
+  --app-panel-title-accent: #7eb5c4;
+}
+
+.theme-list {
+  --theme-accent: #9e96b8;
+  --theme-accent-muted: #8880a2;
+  --theme-accent-soft: rgba(158, 150, 184, 0.18);
+  --theme-nav-bg: #2a2a37;
+  --theme-nav-hover: #21212c;
+  --theme-icon-primary: #3b365f;
+  --app-panel-border: rgba(158, 150, 184, 0.18);
+  --app-panel-bg: rgba(42, 42, 55, 0.95);
+  --app-panel-shadow: 0 0 20px rgba(158, 150, 184, 0.05);
+  --app-panel-title: #d0dde5;
+  --app-panel-title-accent: #9e96b8;
+}
+
+.theme-list.list_page {
+  --neon-cyan: #7eb5c4;
+  --neon-gold: #c4a96d;
+  --list-purple: #7868a0;
+  --list-purple-light: #9e96b8;
+  --list-grey: #9eb0ba;
+  --list-dark: #2a2a37;
+  --list-light: #d0dde5;
+  --list-coral: #b58a8a;
+  --app-panel-border: rgba(158, 150, 184, 0.18);
+  --app-panel-bg: rgba(42, 42, 55, 0.95);
+  --app-panel-shadow: 0 0 20px rgba(158, 150, 184, 0.05);
+  --app-panel-title: var(--list-light);
+  --app-panel-title-accent: var(--list-purple);
+  --app-ascii-color: var(--list-purple-light);
+  --app-ascii-shadow: 0 0 4px rgba(158, 150, 184, 0.2);
+  --app-loader-bg: var(--list-dark);
+  --app-loader-track: rgba(158, 150, 184, 0.25);
+  --app-loader-spin-color: #9e96b8;
+  --app-toolbar-link-color: var(--neon-cyan);
+  --app-toolbar-link-shadow: 0 0 5px rgba(126, 181, 196, 0.35);
+  --app-toolbar-link-hover-color: var(--neon-gold);
+  --app-toolbar-link-hover-shadow: 0 0 8px rgba(196, 169, 109, 0.4);
+  --app-toolbar-pill-border: rgba(126, 181, 196, 0.3);
+  --app-toolbar-pill-color: var(--neon-cyan);
+  --app-toolbar-pill-shadow: 0 0 5px rgba(126, 181, 196, 0.35);
+  --app-toolbar-pill-hover-border: rgba(196, 169, 109, 0.4);
+  --app-toolbar-pill-hover-color: var(--neon-gold);
+  --app-toolbar-pill-hover-shadow: 0 0 8px rgba(196, 169, 109, 0.4);
+  --app-dropdown-theme-bg: rgba(26, 26, 46, 0.95);
+  --app-dropdown-theme-border: rgba(179, 157, 219, 0.3);
+  --app-dropdown-theme-link-color: var(--list-light);
+  --app-dropdown-theme-link-hover-bg: rgba(122, 77, 194, 0.2);
+  --app-dropdown-theme-link-hover-color: var(--list-purple-light);
+  --app-dropdown-theme-link-font-size: 1.1rem;
+  --app-dropdown-theme-input-bg: rgba(26, 26, 46, 0.8);
+  --app-dropdown-theme-input-border: rgba(179, 157, 219, 0.2);
+  --app-dropdown-theme-input-color: var(--list-light);
+  --app-title-themed-font-size: 2rem;
+  --app-title-themed-color: var(--list-purple-light);
+  --app-title-themed-letter-spacing: 2px;
+  --app-title-themed-margin: 0;
+  --app-title-themed-shadow: 0 0 8px rgba(179, 157, 219, 0.4);
+  --app-title-themed-accent: var(--list-purple);
+  --app-title-themed-accent-opacity: 0.8;
+  --app-table-border: rgba(122, 77, 194, 0.15);
+  --app-table-head-start: rgba(122, 77, 194, 0.4);
+  --app-table-head-end: rgba(106, 235, 252, 0.3);
+  --app-table-head-text: var(--list-light);
+  --app-table-row-border: rgba(122, 77, 194, 0.1);
+  --app-table-row-hover: rgba(122, 77, 194, 0.15);
+  --app-table-cell-text: var(--list-light);
+  --app-table-link-hover: var(--list-purple-light);
+  --app-action-danger-bg: rgba(181, 138, 138, 0.12);
+  --app-action-danger-border: var(--list-coral);
+  --app-action-danger-text: var(--list-coral);
+  --app-action-danger-hover-bg: rgba(181, 138, 138, 0.25);
+  --app-legend-color: var(--list-grey);
+  --app-legend-icon-color: var(--list-purple);
+  --app-legend-font-size: 1.1rem;
+}
+
+.theme-list.list_page_friend_theme {
+  --friend-teal: #26a69a;
+  --friend-teal-light: #80cbc4;
+  --friend-cyan: #00bcd4;
+  --friend-gold: #ffd54f;
+  --friend-grey: #b0bec5;
+  --friend-dark: #1a2f2f;
+  --friend-light: #e0f2f1;
+  --friend-coral: #ef5350;
+  --app-panel-border: rgba(128, 203, 196, 0.28);
+  --app-panel-bg: rgba(26, 47, 47, 0.95);
+  --app-panel-shadow: 0 0 30px rgba(38, 166, 154, 0.1);
+  --app-panel-title: var(--friend-light);
+  --app-panel-title-accent: var(--friend-teal-light);
+  --app-ascii-color: var(--friend-teal-light);
+  --app-ascii-shadow: 0 0 5px rgba(128, 203, 196, 0.3);
+  --app-loader-bg: var(--friend-dark);
+  --app-loader-track: rgba(128, 203, 196, 0.3);
+  --app-loader-spin-color: #80cbc4;
+  --app-toolbar-pill-border: rgba(0, 188, 212, 0.4);
+  --app-toolbar-pill-color: var(--friend-cyan);
+  --app-toolbar-pill-shadow: 0 0 8px rgba(0, 188, 212, 0.5);
+  --app-toolbar-pill-hover-border: rgba(255, 213, 79, 0.5);
+  --app-toolbar-pill-hover-color: var(--friend-gold);
+  --app-toolbar-pill-hover-shadow: 0 0 12px rgba(255, 213, 79, 0.6);
+  --app-dropdown-theme-bg: rgba(26, 47, 47, 0.95);
+  --app-dropdown-theme-border: rgba(128, 203, 196, 0.3);
+  --app-dropdown-theme-link-color: var(--friend-light);
+  --app-dropdown-theme-link-hover-bg: rgba(38, 166, 154, 0.2);
+  --app-dropdown-theme-link-hover-color: var(--friend-teal-light);
+  --app-dropdown-theme-link-font-size: 1.1rem;
+  --app-dropdown-theme-input-bg: rgba(26, 47, 47, 0.8);
+  --app-dropdown-theme-input-border: rgba(128, 203, 196, 0.2);
+  --app-dropdown-theme-input-color: var(--friend-light);
+  --app-title-themed-font-size: 2rem;
+  --app-title-themed-color: var(--friend-teal-light);
+  --app-title-themed-letter-spacing: 2px;
+  --app-title-themed-margin: 0;
+  --app-title-themed-shadow: 0 0 8px rgba(128, 203, 196, 0.4);
+  --app-title-themed-accent: var(--friend-teal);
+  --app-title-themed-accent-opacity: 0.8;
+  --app-title-link-color: var(--friend-gold);
+  --app-title-link-hover-color: var(--friend-cyan);
+  --app-title-link-hover-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
+  --app-table-border: rgba(38, 166, 154, 0.15);
+  --app-table-head-start: rgba(38, 166, 154, 0.4);
+  --app-table-head-end: rgba(0, 188, 212, 0.3);
+  --app-table-head-text: var(--friend-light);
+  --app-table-row-border: rgba(38, 166, 154, 0.1);
+  --app-table-row-hover: rgba(38, 166, 154, 0.15);
+  --app-table-cell-text: #ffffff;
+  --app-table-link-hover: var(--friend-teal-light);
+  --app-title-mobile-font-size: 1.6rem;
+  --app-title-mobile-font-size-sm: 1.4rem;
+  --app-table-mobile-layout-width: max-content;
+  --app-table-mobile-min-width: 640px;
+  --app-table-mobile-min-width-sm: 620px;
+  --app-legend-color: var(--friend-grey);
+  --app-legend-icon-color: var(--friend-teal);
+  --app-legend-font-size: 1.1rem;
+}
+
+.theme-discover {
+  --theme-accent: #7eb5c4;
+  --theme-accent-muted: #6a97a8;
+  --theme-accent-soft: rgba(126, 181, 196, 0.18);
+  --theme-nav-bg: #1b2736;
+  --theme-nav-hover: #24374d;
+  --theme-icon-primary: #335376;
+  --app-panel-border: rgba(126, 181, 196, 0.15);
+  --app-panel-bg: rgba(19, 28, 39, 0.78);
+  --app-panel-shadow: 0 0 16px rgba(126, 181, 196, 0.05);
+  --app-panel-title: #d0dde5;
+  --app-panel-title-accent: #7eb5c4;
+}
+
+.theme-friends {
+  --theme-accent: #9e96b8;
+  --theme-accent-muted: #8880a2;
+  --theme-accent-soft: rgba(158, 150, 184, 0.18);
+  --theme-nav-bg: #1d1b2b;
+  --theme-nav-hover: #2a2740;
+  --theme-icon-primary: #463069;
+}
+
+.theme-profile {
+  --theme-accent: #7aa898;
+  --theme-accent-muted: #6a9488;
+  --theme-accent-soft: rgba(122, 168, 152, 0.18);
+  --theme-nav-bg: #1e2932;
+  --theme-nav-hover: #2b3945;
+  --theme-icon-primary: #345847;
+}
+
+.theme-explore {
+  --theme-accent: #6082b6;
+  --theme-accent-muted: #7185a2;
+  --theme-accent-soft: rgba(96, 130, 182, 0.24);
+  --theme-nav-bg: #111820;
+  --theme-nav-hover: #1a2736;
+  --theme-icon-primary: #315073;
+  --app-panel-border: rgba(96, 130, 182, 0.35);
+  --app-panel-bg: rgba(15, 20, 29, 0.48);
+  --app-panel-shadow: 0 0 24px rgba(0, 0, 0, 0.28);
+  --app-panel-title: #ffffff;
+  --app-panel-title-accent: #6082b6;
+}
