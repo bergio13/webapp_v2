@@ -232,7 +232,7 @@
     color: var(--theme-fg-strong);
   }
 
-  .app-shell.theme-home .nav-link.active { border-left: 3px solid #7eb5c4; }
+  .app-shell.theme-home .nav-link.active { border-left-color: transparent; }
 
   .flash-container {
     top: auto;

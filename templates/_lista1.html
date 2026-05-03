@@ -13,6 +13,9 @@ body %} {% block content %}
   crossorigin="anonymous"
 ></script>
 
+<canvas class="canvas_list" id="canvas"></canvas>
+<script src="/static/js/canvas_bg.js"></script>
+
 <!-- Preloader -->
 <div id="preloader" class="app-preloader">
   <div class="loader app-preloader-spinner"></div>
@@ -161,6 +164,21 @@ body %} {% block content %}
     document.getElementById("preloader").style.display = "none";
     document.querySelector(".list_list").style.display = "block";
   };
+</script>
+
+<script>
+  initCanvasBg({
+    canvasId: "canvas",
+    mode: "flow",
+    particleCount: 300,
+    colors: ["#26605a", "#338078", "#1a4a44", "#40968c"],
+    curve: 1.8,
+    zoom: 0.14,
+    cellSize: 20,
+    speedRange: [0.3, 1.4],
+    trailRange: [40, 380],
+    lineWidth: 1
+  });
 </script>
 
 {% endblock %} {% endblock %}

@@ -245,9 +245,12 @@
   }
 </style>
 
+<canvas class="canvas_watchlist" id="canvas"></canvas>
+<script src="/static/js/canvas_bg.js"></script>
+
 <div class="watchlist-container">
   <h2 class="section-title">
-    <span>//</span> {% if is_shared %}Shared   Watchlist [ {{ friend_username }} ]{% else %}My Watchlist{% endif %}
+    <span>//</span> {% if is_shared %}Shared Watchlist [ {{ friend_username }} ]{% else %}My Watchlist{% endif %}
   </h2>
 
   <div class="add-form-container">
@@ -351,6 +354,21 @@
         autocompleteList.innerHTML = '';
       }
     });
+  });
+</script>
+
+<script>
+  initCanvasBg({
+    canvasId: "canvas",
+    mode: "flow",
+    particleCount: 300,
+    colors: ["#3d5a6e", "#4a6d7c", "#2d4654", "#5a7d8a"],
+    curve: 1.8,
+    zoom: 0.18,
+    cellSize: 18,
+    speedRange: [0.4, 1.8],
+    trailRange: [30, 300],
+    lineWidth: 1
   });
 </script>
 

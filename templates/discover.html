@@ -5,9 +5,10 @@ body_class %} discover_page{% endblock %} {% block content %}
   rel="stylesheet"
 />
 
+
 <canvas class="canvas_discover" id="canvas"></canvas>
 <div class="discover-atmosphere" aria-hidden="true"></div>
-<script src="{{ url_for('static', filename='js/script_discover.js') }}"></script>
+<script src="/static/js/canvas_bg.js"></script>
 <script src="https://kit.fontawesome.com/a735d6df86.js" crossorigin="anonymous"></script>
 
 <main class="discover-main">
@@ -1445,6 +1446,20 @@ body_class %} discover_page{% endblock %} {% block content %}
     if (formattedRecs.querySelector(".movie-frame")) {
       void hydrateCardPosters();
     }
+  });
+</script>
+<script>
+  initCanvasBg({
+    canvasId: "canvas",
+    mode: "flow",
+    particleCount: 300,
+    colors: ["#2d5a6e", "#3a6d80", "#1f4654", "#4a8898"],
+    curve: 2.5,
+    zoom: 0.2,
+    cellSize: 16,
+    speedRange: [0.5, 2.0],
+    trailRange: [30, 250],
+    lineWidth: 1
   });
 </script>
 {% endblock %}

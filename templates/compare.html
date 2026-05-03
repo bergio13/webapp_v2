@@ -22,17 +22,13 @@
   }
 
   .friends {
-    background-color: #323232 !important;
-    background-image: radial-gradient(#7a4dc2 0.7px, #323232 0.7px) !important;
-    background-size: 14px 14px !important;
+    background: transparent !important;
     min-height: 100vh;
     padding-bottom: 50px;
   }
 
   .friends_page::before {
-    background-color: #323232 !important;
-    background-image: radial-gradient(#7a4dc2 0.7px, #323232 0.7px) !important;
-    background-size: 14px 14px !important;
+    background: transparent !important;
   }
 
   .section-title {
@@ -205,6 +201,8 @@
   }
 </style>
 
+<canvas class="canvas_friends" id="canvas"></canvas>
+<script src="/static/js/canvas_bg.js"></script>
 <div class="friends">
   <main class="main-container main-friends" style="padding-top: 2rem;">
     
@@ -283,4 +281,16 @@
   </main>
 </div>
 {% endblock %}
+<script>
+  initCanvasBg({
+    canvasId: "canvas",
+    mode: "dots",
+    particleCount: 400,
+    colors: ["#7a4dc2", "#9a6de8", "#6b3faa", "#b39ddb", "#5c35a0"],
+    driftSpeed: 0.2,
+    sizeRange: [0.5, 1.8],
+    alphaRange: [0.25, 0.7],
+    glowSize: 5
+  });
+</script>
 {% endblock %}

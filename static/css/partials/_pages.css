@@ -31,7 +31,7 @@
   }
 */
 .list_page::before {
-  background: #2a2a37;
+  background: transparent;
 }
 
 /*
@@ -900,6 +900,52 @@ body.landing-private-lounge::before {
   height: 99.99%;
 }
 
+.canvas_friends {
+  background: linear-gradient(135deg, #1d1b2b 0%, #2a2740 50%, #1d1b2b 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.canvas_list {
+  background: linear-gradient(135deg, #22222e 0%, #2e2a3c 50%, #22222e 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.canvas_watchlist {
+  background: linear-gradient(135deg, #22222e 0%, #2a3040 50%, #22222e 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.canvas_profile {
+  background: linear-gradient(135deg, #22262e 0%, #283238 50%, #22262e 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+/* Pages with canvas backgrounds need transparent ::before */
+.friends_page::before,
+.watchlist_page::before {
+  background: transparent !important;
+}
+
 /* -----------------------------------Form styling----------------------------------------------------------------- */
 form {
   max-width: 500px;
@@ -1214,25 +1260,11 @@ select option {
     "header"
     "main";
   height: 100%;
-  /*background: -webkit-linear-gradient(94deg, #202c42 6%, #295fbd 90%);
-  background: linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
-  /*background-color: #17141d;*/
-  background-color: #323232;
-  opacity: 1;
-  background-image: radial-gradient(
-    #7a4dc2 0.7000000000000001px,
-    #323232 0.7000000000000001px
-  );
-  background-size: 14px 14px;
+  background: transparent;
 }
 
 .friends_page::before {
-  background-color: #323232;
-  background-image: radial-gradient(
-    #7a4dc2 0.7000000000000001px,
-    #323232 0.7000000000000001px
-  );
-  background-size: 14px 14px;
+  background: transparent;
 }
 
 .header-friends {
@@ -1243,15 +1275,7 @@ select option {
   display: flex;
   justify-content: space-between;
   padding: 0 30px 0 30px;
-  /*background-image: linear-gradient(94deg, #202c42 6%, #295fbd 90%);*/
-  /*background: #17141d;*/
-  background-color: #323232;
-  opacity: 1;
-  background-image: radial-gradient(
-    #7a4dc2 0.7000000000000001px,
-    #323232 0.7000000000000001px
-  );
-  background-size: 14px 14px;
+  background: transparent;
 }
 
 .main-friends {
@@ -1998,7 +2022,7 @@ select option {
 @media only screen and (max-width: 600px) {
   .app-shell.theme-home .nav-link.active {
     background: transparent;
-    border-left: 3px solid #7eb5c4;
+    border-left-color: transparent;
   }
 }
 
