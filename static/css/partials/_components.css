@@ -740,6 +740,7 @@
 .app-preloader-spinner {
   border: 8px solid var(--app-loader-track);
   border-top: 8px solid var(--app-loader-spin-color);
+}
 .alert {
   color: var(--bg-primary);
   padding: 1rem;
@@ -786,53 +787,98 @@ ul.add li {
 
 .flash-container {
   position: fixed;
-  top: 1rem;
+  top: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-  width: min(92vw, 460px);
-  z-index: 1000;
+  width: min(92vw, 420px);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .flash-message {
-  padding: 15px 20px;
-  background-color: #333;
+  padding: 14px 20px 14px 24px;
+  background-color: rgba(19, 28, 39, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: white;
-  border-radius: 5px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
   position: relative;
   opacity: 0.95;
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
-  transform: translateY(-10px);
-  animation: slideDown 0.3s forwards;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateY(-20px);
+  animation: slideDown 0.4s forwards;
   box-sizing: border-box;
+  font-family: "VT323", "Courier New", monospace;
+  font-size: 1.25rem;
+  letter-spacing: 0.5px;
+  border-left: 5px solid transparent;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flash-message span::before {
+  content: "> ";
+  opacity: 0.6;
 }
 
 .flash-message.success {
-  background-color: #3aab3e;
+  border-left-color: var(--ocean-green, #7aa898);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 2px 0 10px rgba(122, 168, 152, 0.2);
+}
+
+.flash-message.success span {
+  color: var(--ocean-green, #7aa898);
 }
 
 .flash-message.error {
-  background-color: #f44336;
+  border-left-color: var(--ocean-coral, #b58a8a);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 2px 0 10px rgba(181, 138, 138, 0.2);
 }
 
-.flash-message.info {
-  background-color: #2196f3;
+.flash-message.error span {
+  color: var(--ocean-coral, #b58a8a);
+}
+
+.flash-message.info, .flash-message.message {
+  border-left-color: var(--ocean-blue, #7eb5c4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 2px 0 10px rgba(126, 181, 196, 0.2);
+}
+
+.flash-message.info span, .flash-message.message span {
+  color: var(--ocean-blue, #7eb5c4);
 }
 
 .flash-message.warning {
-  background-color: #ff9800;
+  border-left-color: #c4a96d;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 2px 0 10px rgba(196, 169, 109, 0.2);
+}
+
+.flash-message.warning span {
+  color: #c4a96d;
 }
 
 .flash-message .close-btn {
   background: none;
   border: none;
-  font-size: 16px;
-  top: 5px;
-  right: 10px;
-  color: white;
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
+  padding: 0 0 0 15px;
+  line-height: 1;
+  transition: color 0.2s ease, transform 0.2s ease;
+  font-family: inherit;
+}
+
+.flash-message .close-btn:hover {
+  color: white;
+  transform: scale(1.1);
 }
 
 @keyframes slideDown {

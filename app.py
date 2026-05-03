@@ -25,6 +25,7 @@ from routes.main import main_bp
 from routes.movies import movies_bp
 from routes.profile import profile_bp
 from routes.social import social_bp
+from routes.watchlist import watchlist_bp
 
 
 def create_app(config_class=Config) -> Flask:
@@ -66,6 +67,7 @@ def create_app(config_class=Config) -> Flask:
     app.register_blueprint(profile_bp)
     app.register_blueprint(social_bp)
     app.register_blueprint(movies_bp)
+    app.register_blueprint(watchlist_bp)
 
     # ----------------------------------------------------------------
     # Start-up diagnostics (info-level, not print)

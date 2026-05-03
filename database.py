@@ -501,3 +501,66 @@ def delete_token(token):
         client.table('tokens').delete().eq('token', token).execute()
     except Exception as e:
         logger.error(f"Error deleting token: {e}")
+
+#############################################
+####### WATCHLISTS ##########################
+#############################################
+
+def get_or_create_personal_watchlist(user_id):
+    try:
+        data = client.table('watchlists').select('*').eq('user1_id', user_id).is_('user2_id', 'null').execute()
+        if data.data:
+            return data.data[0]
+        else:
+            new_list = client.table('watchlists').insert({"user1_id": user_id}).execute()
+            return new_list.data[0]
+    except Exception as e:
+        logger.error(f"Error getting/creating personal watchlist: {e}")
+        return None
+
+def get_or_create_shared_watchlist(user1_id, user2_id):
+    try:
+        # Check both ordering permutations
+        data = client.table('watchlists').select('*').eq('user1_id', user1_id).eq('user2_id', user2_id).execute()
+        if data.data: return data.data[0]
+        data = client.table('watchlists').select('*').eq('user1_id', user2_id).eq('user2_id', user1_id).execute()
+        if data.data: return data.data[0]
+        
+        new_list = client.table('watchlists').insert({"user1_id": min(user1_id, user2_id), "user2_id": max(user1_id, user2_id)}).execute()
+        return new_list.data[0]
+    except Exception as e:
+        logger.error(f"Error getting/creating shared watchlist: {e}")
+        return None
+
+def get_watchlist_items(watchlist_id):
+    try:
+        # Fetch items and join with user to get added_by username
+        data = client.table('watchlist_items').select('*, users!inner(username)').eq('watchlist_id', watchlist_id).order('created_at', desc=True).execute()
+        items = []
+        for row in data.data:
+            item = row.copy()
+            item['added_by_name'] = row['users']['username']
+            items.append(item)
+        return items
+    except Exception as e:
+        logger.error(f"Error fetching watchlist items: {e}")
+        return []
+
+def add_to_watchlist(watchlist_id, added_by, title, director, year, poster):
+    try:
+        client.table('watchlist_items').insert({
+            "watchlist_id": watchlist_id,
+            "added_by": added_by,
+            "title": title,
+            "director": director,
+            "p_year": year,
+            "poster": poster
+        }).execute()
+    except Exception as e:
+        logger.error(f"Error adding to watchlist: {e}")
+
+def remove_from_watchlist(item_id):
+    try:
+        client.table('watchlist_items').delete().eq('id', item_id).execute()
+    except Exception as e:
+        logger.error(f"Error removing from watchlist: {e}")

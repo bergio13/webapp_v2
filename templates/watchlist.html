@@ -1,0 +1,357 @@
+{% extends 'base.html' %} 
+{% block title %}{% if is_shared %}Shared Watchlist{% else %}Watchlist{% endif %}{% endblock %} 
+{% block body_class %} watchlist_page theme-list{% endblock %}
+{% block content %}
+
+<!-- VT323 Terminal Font -->
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
+
+<style>
+  .watchlist-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 80vh;
+  }
+
+  .section-title {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 2.5rem;
+    color: var(--ocean-light, #d0dde5);
+    letter-spacing: 2px;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .section-title span {
+    color: var(--ocean-blue, #7eb5c4);
+  }
+
+  /* Add Form Styling */
+  .add-form-container {
+    background: rgba(26, 38, 52, 0.5);
+    border: 1px solid rgba(126, 181, 196, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    position: relative;
+    backdrop-filter: blur(10px);
+  }
+
+  .w-form {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .w-input-group {
+    flex: 1;
+    position: relative;
+  }
+
+  .w-input {
+    box-sizing: border-box;
+    width: 100%;
+    background: rgba(19, 28, 39, 0.8);
+    border: 1px solid rgba(126, 181, 196, 0.3);
+    color: white;
+    font-family: "VT323", monospace;
+    font-size: 1.2rem;
+    padding: 12px 15px;
+    border-radius: 6px;
+    outline: none;
+  }
+
+  .w-input:focus {
+    border-color: var(--ocean-blue, #7eb5c4);
+    box-shadow: 0 0 10px rgba(126, 181, 196, 0.2);
+  }
+
+  .w-btn {
+    box-sizing: border-box;
+    font-family: "VT323", monospace;
+    font-size: 1.2rem;
+    background: rgba(129, 199, 132, 0.15);
+    border: 1px solid #81c784;
+    color: #81c784;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .w-btn:hover {
+    background: rgba(129, 199, 132, 0.35);
+    box-shadow: 0 4px 10px rgba(129, 199, 132, 0.2);
+  }
+
+  /* Grid Display */
+  .w-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+  }
+
+  .w-card {
+    background: rgba(19, 28, 39, 0.6);
+    border: 1px solid rgba(126, 181, 196, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .w-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--ocean-blue, #7eb5c4);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 0 15px rgba(126, 181, 196, 0.2);
+  }
+
+  .w-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(126, 181, 196, 0.2);
+  }
+
+  .w-info {
+    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .w-title {
+    font-family: "VT323", monospace;
+    font-size: 1.4rem;
+    color: white;
+    margin: 0 0 5px 0;
+    line-height: 1.2;
+  }
+
+  .w-meta {
+    font-family: "VT323", monospace;
+    font-size: 1rem;
+    color: var(--ocean-grey, #9eb0ba);
+    margin: 0 0 15px 0;
+  }
+
+  .w-added-by {
+    font-family: "VT323", monospace;
+    font-size: 0.9rem;
+    color: var(--ocean-blue, #7eb5c4);
+    margin: 0 0 15px 0;
+    opacity: 0.8;
+  }
+
+  .w-remove-form {
+    margin-top: auto;
+  }
+
+  .w-remove-btn {
+    width: 100%;
+    font-family: "VT323", monospace;
+    font-size: 1rem;
+    background: rgba(229, 115, 115, 0.1);
+    border: 1px dashed #e57373;
+    color: #e57373;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .w-remove-btn:hover {
+    background: rgba(229, 115, 115, 0.25);
+    border-style: solid;
+    color: white;
+  }
+
+  /* Autocomplete */
+  .autocomplete-items {
+    position: absolute;
+    border: 1px solid rgba(126, 181, 196, 0.3);
+    z-index: 99;
+    top: 100%;
+    margin-top: 4px;
+    left: 0;
+    right: 0;
+    background-color: rgba(19, 28, 39, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: inherit;
+  }
+
+  .autocomplete-items::-webkit-scrollbar { width: 6px; }
+  .autocomplete-items::-webkit-scrollbar-thumb { background: rgba(126, 181, 196, 0.4); border-radius: 4px; }
+
+  .autocomplete-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(126, 181, 196, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .autocomplete-item:hover {
+    background-color: rgba(126, 181, 196, 0.15);
+  }
+
+  .autocomplete-item img {
+    width: 35px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .ac-title { font-family: "VT323", monospace; font-size: 1.2rem; color: white; }
+  .ac-year { font-family: "VT323", monospace; font-size: 1rem; color: var(--ocean-grey); margin-top: 2px;}
+
+  .empty-state {
+    text-align: center;
+    font-family: "VT323", monospace;
+    font-size: 1.5rem;
+    color: var(--ocean-grey);
+    padding: 40px;
+    border: 1px dashed rgba(126, 181, 196, 0.3);
+    border-radius: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .w-form { 
+      flex-direction: column; 
+      align-items: stretch; 
+      gap: 12px;
+    }
+    .w-input-group {
+      width: 100%;
+    }
+    .w-btn { 
+      width: 100%; 
+    }
+    .w-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+    .watchlist-container { padding: 1rem; }
+    .section-title { font-size: 1.8rem; flex-wrap: wrap; }
+  }
+</style>
+
+<div class="watchlist-container">
+  <h2 class="section-title">
+    <span>//</span> {% if is_shared %}SHARED_WATCHLIST [ {{ friend_username }} ]{% else %}MY_WATCHLIST{% endif %}
+  </h2>
+
+  <div class="add-form-container">
+    <form method="post" action="/watchlist/add" class="w-form" id="addForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      {% if is_shared %}
+      <input type="hidden" name="friend_id" value="{{ friend_id }}" />
+      {% endif %}
+      
+      <!-- Hidden fields populated by autocomplete -->
+      <input type="hidden" id="year" name="year" />
+      <input type="hidden" id="tv" name="tv" value="0" />
+
+      <div class="w-input-group">
+        <input type="text" id="title" name="title" class="w-input" placeholder="Search for a movie to add..." autocomplete="off" required />
+        <div id="autocomplete-list" class="autocomplete-items"></div>
+      </div>
+      
+      <button type="submit" class="w-btn">[ + ADD ]</button>
+    </form>
+  </div>
+
+  {% if items|length > 0 %}
+  <div class="w-grid">
+    {% for item in items %}
+    <div class="w-card">
+      <img src="{{ item.poster }}" alt="{{ item.title }}" class="w-poster" onerror="this.src='https://via.placeholder.com/200x300?text=No+Poster'">
+      <div class="w-info">
+        <h3 class="w-title">{{ item.title }}</h3>
+        <p class="w-meta">{{ item.director }} • {{ item.p_year }}</p>
+        
+        {% if is_shared %}
+        <p class="w-added-by">> added by {{ item.added_by_name }}</p>
+        {% endif %}
+
+        <form method="post" action="/watchlist/remove" class="w-remove-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="item_id" value="{{ item.id }}" />
+          {% if is_shared %}
+          <input type="hidden" name="friend_id" value="{{ friend_id }}" />
+          {% endif %}
+          <button type="submit" class="w-remove-btn" onclick="return confirm('Remove from watchlist?');">[ REMOVE ]</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    > WATCHLIST_EMPTY <br>
+    <span style="font-size: 1.1rem; opacity: 0.7;">Search above to add movies to your list.</span>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const titleInput = document.getElementById('title');
+    const autocompleteList = document.getElementById('autocomplete-list');
+    let timeout = null;
+
+    titleInput.addEventListener('input', function() {
+      clearTimeout(timeout);
+      const query = this.value;
+      
+      if (!query || query.length < 2) {
+        autocompleteList.innerHTML = '';
+        return;
+      }
+
+      timeout = setTimeout(() => {
+        fetch(`/search_tmdb?q=${encodeURIComponent(query)}&tv=0`) // Mostly movies for watchlist
+          .then(response => response.json())
+          .then(data => {
+            autocompleteList.innerHTML = '';
+            data.forEach(item => {
+              const div = document.createElement('div');
+              div.className = 'autocomplete-item';
+              div.innerHTML = `
+                <img src="${item.poster}" alt="Poster" />
+                <div style="flex:1">
+                  <div class="ac-title">${item.title}</div>
+                  <div class="ac-year">${item.year || 'Unknown Year'}</div>
+                </div>
+              `;
+              div.addEventListener('click', function() {
+                titleInput.value = item.title;
+                document.getElementById('year').value = item.year || '';
+                document.getElementById('tv').value = item.type === 'tv' ? '1' : '0';
+                autocompleteList.innerHTML = '';
+              });
+              autocompleteList.appendChild(div);
+            });
+          })
+          .catch(err => console.error("Error fetching autocomplete:", err));
+      }, 300);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (e.target !== titleInput && e.target !== autocompleteList && !autocompleteList.contains(e.target)) {
+        autocompleteList.innerHTML = '';
+      }
+    });
+  });
+</script>
+
+{% endblock %}

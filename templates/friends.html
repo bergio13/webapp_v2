@@ -129,9 +129,10 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
   }
 
   .friend-actions {
-    display: grid;
-    grid-template-columns: 1fr auto;
+    display: flex;
+    justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     margin-top: 4px;
     min-width: 0;
@@ -280,6 +281,26 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
     color: white !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(179, 157, 219, 0.2);
+  }
+
+  .watchlist-btn {
+    font-family: "VT323", monospace !important;
+    font-size: 0.75rem;
+    background: transparent !important;
+    border: 1px dashed rgba(126, 181, 196, 0.5) !important;
+    color: rgba(126, 181, 196, 0.8) !important;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .watchlist-btn:hover {
+    background: rgba(126, 181, 196, 0.15) !important;
+    color: var(--ocean-blue, #7eb5c4) !important;
+    border-style: solid !important;
   }
 
   .unfollow-btn {
@@ -775,6 +796,7 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
           </a>
 
           <div class="friend-actions">
+            <a href="/watchlist/shared/{{ friend.user_id }}" class="watchlist-btn">[ WATCHLIST ]</a>
             <a href="/compare/{{ friend.f_username }}" class="compare-btn">[ COMPARE ]</a>
             <form method="post" action="/unfollow" style="margin: 0;">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
