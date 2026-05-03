@@ -168,13 +168,26 @@ if (canvas && ctx) {
   const effect = new Effect(canvas);
   effect.render(ctx);
 
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    effect.render(ctx);
+  let lastTime = 0;
+  const fps = 60;
+  const nextFrame = 1000 / fps;
+  let timer = 0;
+
+  function animate(timeStamp) {
+    const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp;
+
+    if (timer > nextFrame) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      effect.render(ctx);
+      timer = 0;
+    } else {
+      timer += deltaTime;
+    }
     requestAnimationFrame(animate);
   }
 
-  animate();
+  animate(0);
 
   const prefersReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",

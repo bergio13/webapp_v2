@@ -335,13 +335,86 @@ def get_taste_match(user_id, friend_id):
         user_movies = get_movies(user_id)
         friend_movies = get_movies(friend_id)
         
-        # 1. Create fast lookups and determine unique libraries
-        user_dict = {f"{m['movie'].lower()}_{m['p_year']}": m['rating'] for m in user_movies}
-        friend_dict = {f"{m['movie'].lower()}_{m['p_year']}": m['rating'] for m in friend_movies}
+        # 1. Deduplicate within each user's library using a strong primary key (title + director + year)
+        def get_primary_key(m):
+            return f"{m['movie'].lower().strip()}_{m.get('director', '').lower().strip()}_{m['p_year']}"
         
-        shared_keys = set(user_dict.keys()).intersection(set(friend_dict.keys()))
-        total_unique_movies = len(set(user_dict.keys()).union(set(friend_dict.keys())))
-        shared_count = len(shared_keys)
+        user_movies_clean = {}
+        for m in user_movies:
+            k = get_primary_key(m)
+            if k not in user_movies_clean or m['rating'] > user_movies_clean[k]['rating']:
+                user_movies_clean[k] = m
+
+        friend_movies_clean = {}
+        for m in friend_movies:
+            k = get_primary_key(m)
+            if k not in friend_movies_clean or m['rating'] > friend_movies_clean[k]['rating']:
+                friend_movies_clean[k] = m
+
+        # 2. Find matches
+        shared_movie_pairs = []
+        user_matched_keys = set()
+        friend_matched_keys = set()
+
+        # Pass 1: Match by Title + Director + Year
+        for u_key, u_m in user_movies_clean.items():
+            if u_key in friend_movies_clean:
+                f_m = friend_movies_clean[u_key]
+                user_matched_keys.add(u_key)
+                friend_matched_keys.add(u_key)
+                shared_movie_pairs.append((u_m, f_m))
+
+        # Pass 2: Match by Director + Year alone (Fallback to handle language differences)
+        user_dir_year_map = {}
+        for u_key, m in user_movies_clean.items():
+            if u_key not in user_matched_keys:
+                director = m.get('director', '').lower().strip()
+                year = m['p_year']
+                if director and year and director != "unknown":
+                    dy_key = f"{director}_{year}"
+                    user_dir_year_map[dy_key] = m
+
+        # Helper for Pass 2 verification
+        import difflib
+        def verify_movie_match(m1, m2):
+            # 1. Poster Match (Strongest signal)
+            p1 = m1.get('poster', '')
+            p2 = m2.get('poster', '')
+            if p1 and p2 and p1 == p2 and 'tmdb.org' in p1:
+                return True
+                
+            # 2. Title Similarity (Handles slight variations or subtitles)
+            t1 = m1['movie'].lower().strip()
+            t2 = m2['movie'].lower().strip()
+            if len(t1) > 3 and len(t2) > 3:
+                if t1 in t2 or t2 in t1:
+                    return True
+            ratio = difflib.SequenceMatcher(None, t1, t2).ratio()
+            if ratio > 0.65:
+                return True
+                
+            # 3. Genre Match (Good signal since they already share director & year)
+            g1 = m1.get('genre', '').lower().strip()
+            g2 = m2.get('genre', '').lower().strip()
+            if g1 and g2 and g1 != "unknown" and g1 == g2:
+                return True
+                
+            return False
+
+        for f_key, m in friend_movies_clean.items():
+            if f_key not in friend_matched_keys:
+                director = m.get('director', '').lower().strip()
+                year = m['p_year']
+                if director and year and director != "unknown":
+                    dy_key = f"{director}_{year}"
+                    if dy_key in user_dir_year_map:
+                        u_m = user_dir_year_map[dy_key]
+                        if verify_movie_match(u_m, m):
+                            shared_movie_pairs.append((u_m, m))
+                            friend_matched_keys.add(f_key) # mark as matched
+
+        total_unique_movies = len(user_movies_clean) + len(friend_movies_clean) - len(shared_movie_pairs)
+        shared_count = len(shared_movie_pairs)
         
         if shared_count == 0:
             return {
@@ -354,22 +427,20 @@ def get_taste_match(user_id, friend_id):
         user_rating_sum = 0
         friend_rating_sum = 0
 
-        for m in friend_movies:
-            key = f"{m['movie'].lower()}_{m['p_year']}"
-            if key in shared_keys:
-                u_rating = user_dict[key]
-                f_rating = m['rating']
-                
-                diff = abs(u_rating - f_rating)
-                sum_squared_diff += diff ** 2
-                
-                user_rating_sum += u_rating
-                friend_rating_sum += f_rating
-                
-                shared_movies.append({
-                    "movie": m['movie'], "poster": m['poster'], "year": m['p_year'],
-                    "u_rating": u_rating, "f_rating": f_rating, "diff": diff
-                })
+        for u_m, f_m in shared_movie_pairs:
+            u_rating = u_m['rating']
+            f_rating = f_m['rating']
+            
+            diff = abs(u_rating - f_rating)
+            sum_squared_diff += diff ** 2
+            
+            user_rating_sum += u_rating
+            friend_rating_sum += f_rating
+            
+            shared_movies.append({
+                "movie": f_m['movie'], "poster": f_m['poster'], "year": f_m['p_year'],
+                "u_rating": u_rating, "f_rating": f_rating, "diff": diff
+            })
                 
         # 2. Root Mean Square Error (RMSE)
         rmse = math.sqrt(sum_squared_diff / shared_count)

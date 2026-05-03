@@ -611,21 +611,25 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
       width: 100%;
       max-width: none;
       margin: 0;
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
     }
     .search {
       width: 100%;
       min-width: 0;
+      flex: 1;
     }
     .search-prefix {
       font-size: 1rem;
       padding: 8px 6px 8px 10px;
+      flex-shrink: 0;
     }
     .search,
     .search-button {
       font-size: 1rem;
       padding: 8px 10px !important;
+      flex-shrink: 0;
     }
     .search-result-item {
       flex-direction: column;
