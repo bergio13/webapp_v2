@@ -249,6 +249,11 @@
 <script src="/static/js/canvas_bg.js"></script>
 
 <div class="watchlist-container">
+  <div class="library-tabs">
+    <a href="/lista" class="library-tab">Watched</a>
+    <a href="/watchlist" class="library-tab active">Watchlist</a>
+  </div>
+
   <h2 class="section-title">
     <span>//</span> {% if is_shared %}Shared Watchlist [ {{ friend_username }} ]{% else %}My Watchlist{% endif %}
   </h2>

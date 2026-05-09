@@ -36,7 +36,7 @@
   {% set current_path = request.path if request and request.path else '/' %}
   {% set is_home_nav = current_path == '/home' or current_path.startswith('/add_movie') or current_path.startswith('/edit_movie') or current_path.startswith('/remove_movie') %}
   {% set is_friends_nav = current_path.startswith('/friends') or current_path.startswith('/follow') or current_path.startswith('/compare') or current_path.startswith('/unfollow') %}
-  {% set is_list_nav = current_path == '/lista' or current_path.startswith('/list/') or current_path.startswith('/directors') or current_path.startswith('/genres') or current_path.startswith('/years') or current_path.startswith('/ratings') %}
+  {% set is_list_nav = current_path == '/lista' or current_path.startswith('/list/') or current_path.startswith('/directors') or current_path.startswith('/genres') or current_path.startswith('/years') or current_path.startswith('/ratings') or current_path.startswith('/watchlist') %}
   {% set is_watchlist_nav = current_path.startswith('/watchlist') %}
   {% set is_discover_nav = current_path.startswith('/discover') or current_path.startswith('/explore') %}
   {% set is_profile_nav = current_path.startswith('/profile') or current_path.startswith('/users/') or current_path.startswith('/login') or current_path.startswith('/register') or current_path.startswith('/passwordreset') or current_path.startswith('/reset2') %}
@@ -179,9 +179,9 @@
           <a
             href="/lista"
             class="nav-link{% if is_list_nav %} active{% endif %}"
-            data-nav-label="List"
-            title="List"
-            aria-label="List"
+            data-nav-label="Library"
+            title="Library"
+            aria-label="Library"
             {% if is_list_nav %}aria-current="page"{% endif %}
           >
             <svg
@@ -209,43 +209,7 @@
               ></path>
             </g>
           </svg>            
-            <span class="link-text">List</span>
-          </a>
-        </li>
-
-        <li class="nav-item">
-          <a
-            href="/watchlist"
-            class="nav-link{% if is_watchlist_nav %} active{% endif %}"
-            data-nav-label="Watchlist"
-            title="Watchlist"
-            aria-label="Watchlist"
-            {% if is_watchlist_nav %}aria-current="page"{% endif %}
-          >
-            <svg
-              aria-hidden="true"
-              focusable="false"
-              data-prefix="fad"
-              data-icon="eye"
-              role="img"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 576 512"
-              class="svg-inline--fa fa-eye fa-w-18 fa-2x"
-            >
-              <g class="fa-group">
-                <path
-                  fill="currentColor"
-                  d="M288 144a110.94 110.94 0 0 0-31.24 5 55.4 55.4 0 0 1 7.24 27 56 56 0 0 1-56 56 55.4 55.4 0 0 1-27-7.24A111.71 111.71 0 1 0 288 144zm284.52 97.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400c-98.65 0-189.09-55-237.93-144C98.91 167 189.34 112 288 112s189.09 55 237.93 144C477.1 345 386.66 400 288 400z"
-                  class="fa-secondary"
-                ></path>
-                <path
-                  fill="currentColor"
-                  d="M288 144a111.71 111.71 0 1 1-111.71 111.71A111.71 111.71 0 0 1 288 144zm0 176a64 64 0 1 0-64-64 64 64 0 0 0 64 64z"
-                  class="fa-primary"
-                ></path>
-              </g>
-            </svg>
-            <span class="link-text">Watchlist</span>
+            <span class="link-text">Library</span>
           </a>
         </li>
 

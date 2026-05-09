@@ -908,3 +908,73 @@ ul.add li {
 .success {
   color: rgb(20, 224, 109);
 }
+
+/* --- Library Tabs (Terminal Aesthetic) --- */
+.library-tabs {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 25px;
+  margin-bottom: 20px;
+  border-bottom: 1px dashed rgba(126, 181, 196, 0.4);
+  padding-bottom: 10px;
+}
+
+.library-tab {
+  font-family: "VT323", "Courier New", monospace;
+  font-size: 1.4rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  transition: all 0.2s ease;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.library-tab:hover {
+  color: #7eb5c4;
+  text-shadow: 0 0 8px rgba(126, 181, 196, 0.4);
+  background: transparent;
+}
+
+.library-tab.active {
+  color: #7eb5c4;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  text-shadow: 0 0 10px rgba(126, 181, 196, 0.6);
+}
+
+.library-tab::before {
+  content: "[ ";
+  opacity: 0.5;
+}
+
+.library-tab::after {
+  content: " ]";
+  opacity: 0.5;
+}
+
+.library-tab.active::before {
+  content: "> ";
+  color: #7eb5c4;
+  opacity: 1;
+}
+
+.library-tab.active::after {
+  content: " <";
+  color: #7eb5c4;
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .library-tabs {
+    gap: 15px;
+    justify-content: center;
+  }
+  .library-tab {
+    font-size: 1.2rem;
+  }
+}

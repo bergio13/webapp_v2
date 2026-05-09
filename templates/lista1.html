@@ -39,6 +39,12 @@ body_class %} list_page{% endblock %} {% block body %}
     ╔═══ WATCHED_LIST.db :: total_entries: {{ movies|length }} ═══╝
   </div>
 
+  <div class="library-tabs">
+    <a href="/lista" class="library-tab active">Watched</a>
+    <a href="/watchlist" class="library-tab">Watchlist</a>
+  </div>
+
+
   {% include '_analytics_wayfinder.html' %}
 
   <!-- Filter and Add Movie Section -->
