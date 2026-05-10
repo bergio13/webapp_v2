@@ -119,11 +119,40 @@ content %}
     transform: scale(1.02);
   }
 
-  .add-movie-main .season-field {
-    margin-top: -0.5rem;
-    margin-bottom: 1.5rem;
-    padding-left: 1rem;
-    border-left: 3px solid var(--theme-accent);
+  .add-movie-main .season-counter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--app-panel-border);
+    border-radius: 8px;
+    padding: 0.2rem 0.5rem;
+  }
+  .add-movie-main .season-btn {
+    background: transparent;
+    color: var(--theme-accent);
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.2s ease;
+    padding: 0 0.5rem;
+  }
+  .add-movie-main .season-btn:hover {
+    color: var(--theme-accent-soft);
+  }
+  .add-movie-main .season-input {
+    width: 50px;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    font-size: 1.4rem;
+    color: white;
+  }
+  .add-movie-main .season-input::-webkit-inner-spin-button,
+  .add-movie-main .season-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 
   .autocomplete-items {
@@ -258,17 +287,14 @@ content %}
       <label for="title" class="label">Title</label>
       <div id="autocomplete-list" class="autocomplete-items"></div>
     </div>
-    <div class="field">
-      <input type="number" class="input" id="year" name="year" placeholder=" " max="2030" min="1890" required />
-      <label for="year" class="label">Year</label>
-    </div>
+    <input type="hidden" id="year" name="year" />
     <div class="field">
       <input type="number" class="input" id="rating" name="rating" placeholder=" " max="10" min="0" required />
       <label for="rating" class="label">Rating (0-10)</label>
     </div>
     <div class="field">
       <input type="text" class="input" id="director" name="director" placeholder=" " />
-      <label for="director" class="label">Director (optional)</label>
+      <label for="director" class="label">Director</label>
     </div>
     <div class="field">
       <input type="date" class="input" id="date" name="date" required />
@@ -286,7 +312,11 @@ content %}
     </div>
     <div class="radio-group" id="seasonField" style="display: none;">
       <label for="season">Season</label>
-      <input type="number" class="input" id="season" name="season" placeholder="Enter season number" />
+      <div class="season-counter">
+        <button type="button" class="season-btn" onclick="document.getElementById('season').stepDown()">-</button>
+        <input type="number" class="input season-input" id="season" name="season" value="1" min="1" />
+        <button type="button" class="season-btn" onclick="document.getElementById('season').stepUp()">+</button>
+      </div>
     </div>
     <div class="radio-group">
       <label for="tv">Watched at the cinema?</label>
@@ -355,6 +385,20 @@ content %}
                   }
 
                   autocompleteList.innerHTML = '';
+                  
+                  // Fetch director
+                  const dirInput = document.getElementById('director');
+                  dirInput.value = 'Loading...';
+                  fetch(`/api/director?id=${item.id}&type=${item.type}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.director) {
+                            dirInput.value = data.director;
+                        } else {
+                            dirInput.value = '';
+                        }
+                    })
+                    .catch(() => dirInput.value = '');
                 });
                 autocompleteList.appendChild(div);
               });

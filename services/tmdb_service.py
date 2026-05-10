@@ -224,6 +224,7 @@ def search_titles(query, is_tv=False):
             poster = f"https://image.tmdb.org/t/p/w92{poster_path}" if poster_path else "https://via.placeholder.com/92x138?text=No+Poster"
             
             results.append({
+                "id": item.get('id'),
                 "title": title, 
                 "year": year, 
                 "poster": poster,
@@ -237,3 +238,33 @@ def search_titles(query, is_tv=False):
     except Exception as e:
         print(f"Error in tmdb_service.search_titles: {e}")
         return []
+
+def get_director_by_id(media_id, media_type):
+    """
+    Fetch the director or creator for a specific media ID.
+    """
+    try:
+        api_key = tmdb.api_key
+        if media_type == 'tv':
+            # Check created_by first for TV shows
+            tv_details = tv_api.details(media_id)
+            if hasattr(tv_details, 'created_by') and tv_details.created_by:
+                return tv_details.created_by[0]['name']
+                
+            credits_url = f"https://api.themoviedb.org/3/tv/{media_id}/credits?api_key={api_key}"
+            credits_response = requests.get(credits_url)
+            if credits_response.status_code == 200:
+                for crew in credits_response.json().get('crew', []):
+                    if crew['job'] in ['Director', 'Creator', 'Executive Producer']:
+                        return crew['name']
+        else:
+            credits_url = f"https://api.themoviedb.org/3/movie/{media_id}/credits?api_key={api_key}"
+            credits_response = requests.get(credits_url)
+            if credits_response.status_code == 200:
+                for crew in credits_response.json().get('crew', []):
+                    if crew['job'] == 'Director':
+                        return crew['name']
+    except Exception as e:
+        print(f"Error in tmdb_service.get_director_by_id: {e}")
+        
+    return ""

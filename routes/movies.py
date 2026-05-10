@@ -84,6 +84,18 @@ def search_tmdb():
     results = tmdb_service.search_titles(query, is_tv=(tv_show == "1"))
     return jsonify(results)
 
+@movies_bp.route("/api/director", methods=["GET"])
+@login_required
+@limiter.limit("200 per hour")
+def api_director():
+    media_id = request.args.get("id")
+    media_type = request.args.get("type")
+    if not media_id or not media_type:
+        return jsonify({"director": ""})
+    director = tmdb_service.get_director_by_id(media_id, media_type)
+    return jsonify({"director": director})
+
+
 
 # ---------------------------------------------------------------------------
 # Remove
