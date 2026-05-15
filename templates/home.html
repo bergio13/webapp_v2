@@ -446,33 +446,58 @@
     </p>
   </div>
   </div> <!-- end main column -->  <!-- SIDEBAR COLUMN -->
-  <div class="sidebar-column">
-    <div class="cyber-card glass-panel panel-smoke-heavy" style="height:100%;min-height:480px;display:flex;flex-direction:column;align-items:center;padding:1rem 0.8rem;gap:6px;">
-      <h3 style="font-family:'VT323',monospace;color:var(--ocean-blue);margin:0;border-bottom:1px dashed rgba(126,181,196,0.3);padding-bottom:8px;font-size:1.15rem;opacity:0.85;width:100%;text-align:center;flex-shrink:0;">// NOW IN CINEMAS</h3>
+  <div class="sidebar-column" style="display:flex;flex-direction:column;gap:15px;box-sizing:border-box;min-width:0;">
+    
+    <!-- NOW IN CINEMAS -->
+    <div class="cyber-card glass-panel panel-smoke-heavy" style="display:flex;flex-direction:column;align-items:center;padding:0.8rem;gap:4px;width:100%;box-sizing:border-box;">
+      <h3 style="font-family:'VT323',monospace;color:var(--ocean-blue);margin:0;border-bottom:1px dashed rgba(126,181,196,0.3);padding-bottom:6px;font-size:1.1rem;opacity:0.85;width:100%;text-align:center;flex-shrink:0;">// NOW IN CINEMAS</h3>
 
       <!-- Poster carousel (takes most space) -->
-      <div style="position:relative;width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column;align-items:center;">
-        <div id="kin-poster-wrap" style="position:relative;width:100%;flex:1 1 0;min-height:0;overflow:hidden;border-radius:6px;">
+      <div style="position:relative;width:100%;display:flex;flex-direction:column;align-items:center;">
+        <div id="kin-poster-wrap" style="position:relative;width:100%;height:250px;overflow:hidden;border-radius:6px;">
 
-          <div id="kin-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;gap:8px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
-            <img id="kin-img-a" src="" alt="" style="width:200px;border-radius:6px;box-shadow:0 10px 32px rgba(0,0,0,0.5);border:1px solid rgba(126,181,196,0.2);object-fit:cover;" />
-            <p id="kin-title-a" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1.05rem;margin:0;text-align:center;line-height:1.25;opacity:0.88;"></p>
+          <div id="kin-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
+            <img id="kin-img-a" src="" alt="" style="width:140px;height:210px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(126,181,196,0.2);object-fit:cover;" />
+            <p id="kin-title-a" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1rem;margin:0;text-align:center;line-height:1.2;opacity:0.88;"></p>
           </div>
 
-          <div id="kin-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;gap:8px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
-            <img id="kin-img-b" src="" alt="" style="width:200px;border-radius:6px;box-shadow:0 10px 32px rgba(0,0,0,0.5);border:1px solid rgba(126,181,196,0.2);object-fit:cover;" />
-            <p id="kin-title-b" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1.05rem;margin:0;text-align:center;line-height:1.25;opacity:0.88;"></p>
+          <div id="kin-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
+            <img id="kin-img-b" src="" alt="" style="width:140px;height:210px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(126,181,196,0.2);object-fit:cover;" />
+            <p id="kin-title-b" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1rem;margin:0;text-align:center;line-height:1.2;opacity:0.88;"></p>
           </div>
 
         </div>
-        <div id="kin-dots" style="display:flex;justify-content:center;gap:5px;margin-top:6px;flex-shrink:0;"></div>
+        <div id="kin-dots" style="display:flex;justify-content:center;gap:4px;margin-top:4px;flex-shrink:0;"></div>
       </div>
 
       <!-- Kin canvas (compact strip at bottom) -->
-      <canvas id="kin-canvas" width="240" height="80" style="image-rendering:pixelated;image-rendering:crisp-edges;width:240px;height:80px;flex-shrink:0;"></canvas>
+      <canvas id="kin-canvas" width="240" height="70" style="image-rendering:pixelated;image-rendering:crisp-edges;width:240px;height:70px;flex-shrink:0;max-width:100%;"></canvas>
+    </div>
+
+    <!-- COMING SOON -->
+    <div class="cyber-card glass-panel panel-smoke-heavy" style="display:flex;flex-direction:column;align-items:center;padding:0.8rem;gap:4px;width:100%;box-sizing:border-box;">
+      <h3 style="font-family:'VT323',monospace;color:var(--ocean-coral);margin:0;border-bottom:1px dashed rgba(181,138,138,0.3);padding-bottom:6px;font-size:1.1rem;opacity:0.85;width:100%;text-align:center;flex-shrink:0;">// COMING SOON</h3>
+
+      <div style="position:relative;width:100%;display:flex;flex-direction:column;align-items:center;">
+        <div id="upc-poster-wrap" style="position:relative;width:100%;height:250px;overflow:hidden;border-radius:6px;">
+
+          <div id="upc-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
+            <img id="upc-img-a" src="" alt="" style="width:140px;height:210px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(181,138,138,0.2);object-fit:cover;" />
+            <p id="upc-title-a" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1rem;margin:0;text-align:center;line-height:1.2;opacity:0.88;"></p>
+          </div>
+
+          <div id="upc-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
+            <img id="upc-img-b" src="" alt="" style="width:140px;height:210px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(181,138,138,0.2);object-fit:cover;" />
+            <p id="upc-title-b" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1rem;margin:0;text-align:center;line-height:1.2;opacity:0.88;"></p>
+          </div>
+
+        </div>
+        <div id="upc-dots" style="display:flex;justify-content:center;gap:4px;margin-top:4px;flex-shrink:0;"></div>
+      </div>
     </div>
   </div>
   </div><!-- end home-layout -->
 </div>
 <script src="/static/js/kin_mascot.js"></script>
+<script src="/static/js/upcoming_carousel.js"></script>
 {% endblock %} {% endblock %}

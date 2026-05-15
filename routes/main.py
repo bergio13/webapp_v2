@@ -197,3 +197,36 @@ def api_now_playing():
         return jsonify({"movies": []})
 
 
+@main_bp.route("/api/upcoming")
+@login_required
+def api_upcoming():
+    """Return up to 8 movies upcoming in cinemas (TMDB upcoming)."""
+    api_key = os.environ.get("TMDB_API_KEY")
+    if not api_key:
+        return jsonify({"movies": []})
+    try:
+        url = (
+            f"https://api.themoviedb.org/3/movie/upcoming"
+            f"?api_key={api_key}&language=en-US&page=1"
+        )
+        resp = http_requests.get(url, timeout=5)
+        data = resp.json()
+        movies = []
+        import datetime
+        today = datetime.datetime.today().strftime('%Y-%m-%d')
+        for m in (data.get("results") or []):
+            release_date = m.get("release_date", "")
+            if release_date and release_date > today:
+                poster = m.get("poster_path")
+                if poster:
+                    movies.append({
+                        "title": m.get("title", ""),
+                        "poster": f"https://image.tmdb.org/t/p/w185{poster}",
+                        "rating": round(m.get("vote_average", 0), 1),
+                    })
+            if len(movies) >= 8:
+                break
+        return jsonify({"movies": movies})
+    except Exception:
+        return jsonify({"movies": []})
+
