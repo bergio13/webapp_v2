@@ -6,7 +6,7 @@ body_class %} explore_page{% endblock %}{% block content%}
     <h2 class="explore-title app-title-terminal"><span>//</span> Trending on Kineto</h2>
     <section class="carta-list explore-cards" id="scrollableSection">
       {% for m in movies %}
-      <a href="https://www.google.com/search?q={{m['movie']}}" target="_blank" style="text-decoration: none;">
+      <a href="/tmdb_redirect?title={{m['movie'] | urlencode}}&tv={{'1' if m.get('tv_show') else '0'}}" target="_blank" style="text-decoration: none;">
         <article class="movie-frame">
           <img src="{{m.poster}}" alt="{{m.movie}}" class="movie-poster" loading="lazy">
           <div class="frame-overlay">

@@ -60,7 +60,7 @@
                     <td>
                       <a
                         class="table-link"
-                        href="https://www.google.com/search?q={{ movie['movie'] }}"
+                        href="/tmdb_redirect?title={{ movie['movie'] | urlencode }}&tv={{ '1' if movie.get('tv_show') else '0' }}"
                         target="_blank"
                       >
                         {{ movie['movie'].upper() }}</a>

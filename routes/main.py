@@ -188,6 +188,7 @@ def api_now_playing():
             poster = m.get("poster_path")
             if poster:
                 movies.append({
+                    "id": m.get("id"),
                     "title": m.get("title", ""),
                     "poster": f"https://image.tmdb.org/t/p/w185{poster}",
                     "rating": round(m.get("vote_average", 0), 1),
@@ -220,6 +221,7 @@ def api_upcoming():
                 poster = m.get("poster_path")
                 if poster:
                     movies.append({
+                        "id": m.get("id"),
                         "title": m.get("title", ""),
                         "poster": f"https://image.tmdb.org/t/p/w185{poster}",
                         "rating": round(m.get("vote_average", 0), 1),
@@ -229,4 +231,35 @@ def api_upcoming():
         return jsonify({"movies": movies})
     except Exception:
         return jsonify({"movies": []})
+
+
+@main_bp.route("/tmdb_redirect")
+def tmdb_redirect():
+    title = request.args.get("title")
+    is_tv_str = str(request.args.get("tv", "")).strip().lower()
+    is_tv = is_tv_str in ["1", "true", "t", "yes"]
+    
+    if not title:
+        return redirect("https://www.themoviedb.org/")
+        
+    search_title = title
+    if is_tv:
+        import re
+        # Remove suffixes like " Season 1", " (Season 2)", " - Season 3", " S4"
+        search_title = re.sub(r'(?i)[\s\-\(]*(season\s*\d+|s\d+)[\)]*$', '', search_title).strip()
+        
+    try:
+        results = tmdb_service.search_titles(search_title, is_tv)
+        if results:
+            match = results[0]
+            media_type = match.get("type", "tv" if is_tv else "movie")
+            tmdb_id = match.get("id")
+            if tmdb_id:
+                return redirect(f"https://www.themoviedb.org/{media_type}/{tmdb_id}")
+    except Exception:
+        pass
+        
+    import urllib.parse
+    safe_title = urllib.parse.quote(search_title)
+    return redirect(f"https://www.themoviedb.org/search?query={safe_title}")
 

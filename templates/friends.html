@@ -832,7 +832,7 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
         <p class="recent-logs-hint" id="recentLogsHint">Use mouse wheel, trackpad, or arrow keys to browse</p>
       <section class="carta-list recent-logs-track" id="scrollableSection" tabindex="0" aria-label="Recent logs carousel">
         {% for act in activity %}
-        <a href="https://www.google.com/search?q={{act['movie']}}" target="_blank" class="recent-log-link">
+        <a href="/tmdb_redirect?title={{act['movie'] | urlencode}}&tv={{'1' if act.get('tv_show') else '0'}}" target="_blank" class="recent-log-link">
           <article class="movie-frame">
             <img src="{{act.poster}}" alt="{{act.movie}}" class="movie-poster" loading="lazy">
             <div class="frame-overlay">

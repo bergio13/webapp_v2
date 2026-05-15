@@ -232,6 +232,94 @@
     letter-spacing: 1px;
     opacity: 0.75;
   }
+  
+  .carousel-item-link {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .carousel-item-link img {
+    width: 164px;
+    height: 246px;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    border: 1px solid rgba(126,181,196,0.2);
+    object-fit: cover;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .carousel-item-link:hover img {
+    transform: scale(1.03);
+    box-shadow: 0 12px 32px rgba(126,181,196,0.4);
+    border-color: rgba(126,181,196,0.5);
+  }
+  .carousel-item-link p {
+    font-family: 'VT323', monospace;
+    color: var(--ocean-light);
+    font-size: 1rem;
+    margin: 0;
+    text-align: center;
+    line-height: 1.2;
+    opacity: 0.88;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+  }
+  .carousel-item-link:hover p {
+    color: var(--ocean-blue);
+    text-shadow: 0 0 5px rgba(126,181,196,0.3);
+  }
+  
+  .carousel-item-link.upc-link img {
+    border: 1px solid rgba(181,138,138,0.2);
+  }
+  .carousel-item-link.upc-link:hover img {
+    box-shadow: 0 12px 32px rgba(181,138,138,0.4);
+    border-color: rgba(181,138,138,0.5);
+  }
+  .carousel-item-link.upc-link:hover p {
+    color: var(--ocean-coral);
+    text-shadow: 0 0 5px rgba(181,138,138,0.3);
+  }
+  
+  .carousel-nav-btn {
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    background: rgba(13, 22, 33, 0.4);
+    color: var(--ocean-light);
+    border: 1px solid rgba(126, 181, 196, 0.4);
+    border-radius: 4px;
+    width: 26px;
+    height: 38px;
+    cursor: pointer;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'VT323', monospace;
+    font-size: 1.2rem;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+    opacity: 0;
+  }
+  #kin-poster-wrap:hover .carousel-nav-btn,
+  #upc-poster-wrap:hover .carousel-nav-btn {
+    opacity: 0.7;
+  }
+  .carousel-nav-btn:hover {
+    background: rgba(13, 22, 33, 0.8) !important;
+    color: var(--ocean-blue) !important;
+    border-color: var(--ocean-blue) !important;
+    box-shadow: 0 0 10px rgba(126, 181, 196, 0.4) !important;
+    opacity: 1 !important;
+  }
+  .carousel-nav-btn.upc-btn {
+    border-color: rgba(181, 138, 138, 0.4);
+  }
+  .carousel-nav-btn.upc-btn:hover {
+    color: var(--ocean-coral) !important;
+    border-color: var(--ocean-coral) !important;
+    box-shadow: 0 0 10px rgba(181, 138, 138, 0.4) !important;
+  }
 </style>
 
 <!-- JavaScript function for confirmation popup -->
@@ -390,7 +478,7 @@
 
           <td style="padding: 10px">
             <a
-              href="https://www.google.com/search?q={{movie['movie']}}"
+              href="/tmdb_redirect?title={{movie['movie'] | urlencode}}&tv={{movie['tv_show']}}"
               target="_blank"
               style="color: white"
             >
@@ -454,16 +542,23 @@
 
       <!-- Poster carousel (takes most space) -->
       <div style="position:relative;width:100%;display:flex;flex-direction:column;align-items:center;">
-        <div id="kin-poster-wrap" style="position:relative;width:100%;height:250px;overflow:hidden;border-radius:6px;">
+        <div id="kin-poster-wrap" style="position:relative;width:100%;height:320px;overflow:hidden;border-radius:6px;">
 
-          <div id="kin-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
-            <img id="kin-img-a" src="" alt="" style="width:140px;height:210px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(126,181,196,0.2);object-fit:cover;" />
-            <p id="kin-title-a" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1rem;margin:0;text-align:center;line-height:1.2;opacity:0.88;"></p>
+          <button id="kin-prev" class="carousel-nav-btn" style="left:8px;">&lt;</button>
+          <button id="kin-next" class="carousel-nav-btn" style="right:8px;">&gt;</button>
+
+          <div id="kin-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);pointer-events:none;">
+            <a id="kin-link-a" href="#" target="_blank" class="carousel-item-link">
+              <img id="kin-img-a" src="" alt="" />
+              <p id="kin-title-a"></p>
+            </a>
           </div>
 
-          <div id="kin-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
-            <img id="kin-img-b" src="" alt="" style="width:140px;height:210px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(126,181,196,0.2);object-fit:cover;" />
-            <p id="kin-title-b" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1rem;margin:0;text-align:center;line-height:1.2;opacity:0.88;"></p>
+          <div id="kin-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);pointer-events:none;">
+            <a id="kin-link-b" href="#" target="_blank" class="carousel-item-link">
+              <img id="kin-img-b" src="" alt="" />
+              <p id="kin-title-b"></p>
+            </a>
           </div>
 
         </div>
@@ -479,16 +574,23 @@
       <h3 style="font-family:'VT323',monospace;color:var(--ocean-coral);margin:0;border-bottom:1px dashed rgba(181,138,138,0.3);padding-bottom:6px;font-size:1.1rem;opacity:0.85;width:100%;text-align:center;flex-shrink:0;">// COMING SOON</h3>
 
       <div style="position:relative;width:100%;display:flex;flex-direction:column;align-items:center;">
-        <div id="upc-poster-wrap" style="position:relative;width:100%;height:250px;overflow:hidden;border-radius:6px;">
+        <div id="upc-poster-wrap" style="position:relative;width:100%;height:320px;overflow:hidden;border-radius:6px;">
 
-          <div id="upc-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
-            <img id="upc-img-a" src="" alt="" style="width:140px;height:210px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(181,138,138,0.2);object-fit:cover;" />
-            <p id="upc-title-a" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1rem;margin:0;text-align:center;line-height:1.2;opacity:0.88;"></p>
+          <button id="upc-prev" class="carousel-nav-btn upc-btn" style="left:8px;">&lt;</button>
+          <button id="upc-next" class="carousel-nav-btn upc-btn" style="right:8px;">&gt;</button>
+
+          <div id="upc-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);pointer-events:none;">
+            <a id="upc-link-a" href="#" target="_blank" class="carousel-item-link upc-link">
+              <img id="upc-img-a" src="" alt="" />
+              <p id="upc-title-a"></p>
+            </a>
           </div>
 
-          <div id="upc-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);">
-            <img id="upc-img-b" src="" alt="" style="width:140px;height:210px;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(181,138,138,0.2);object-fit:cover;" />
-            <p id="upc-title-b" style="font-family:'VT323',monospace;color:var(--ocean-light);font-size:1rem;margin:0;text-align:center;line-height:1.2;opacity:0.88;"></p>
+          <div id="upc-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);pointer-events:none;">
+            <a id="upc-link-b" href="#" target="_blank" class="carousel-item-link upc-link">
+              <img id="upc-img-b" src="" alt="" />
+              <p id="upc-title-b"></p>
+            </a>
           </div>
 
         </div>

@@ -71,7 +71,7 @@ body %} {% block content %}
           </td>
           <td>
             <a
-              href="https://www.google.com/search?q={{movie['movie']}}"
+              href="/tmdb_redirect?title={{movie['movie'] | urlencode}}&tv={{'1' if movie.get('tv_show') else '0'}}"
               target="_blank"
             >
               {{movie['movie'].upper()}}
@@ -140,7 +140,7 @@ body %} {% block content %}
               <img class="table-poster1 app-table-poster-responsive" src="${movie.poster}" style="width: 50px" loading="lazy" />
             </td>
             <td>
-              <a href="https://www.google.com/search?q=${encodeURIComponent(movie.movie)}" target="_blank">${movie.movie.toUpperCase()}</a>
+              <a href="/tmdb_redirect?title=${encodeURIComponent(movie.movie)}&tv=${movie.tv_show ? 1 : 0}" target="_blank">${movie.movie.toUpperCase()}</a>
             </td>
             <td>${movie.p_year}</td>
             <td>${movie.director.toUpperCase()}</td>
