@@ -61,10 +61,223 @@ body_class %} list_page{% endblock %} {% block body %}
          style="margin: 0 !important; display: flex !important; align-items: center !important; height: 32px; font-size: 1.1rem; font-family: 'VT323', monospace; text-decoration: none;"
         >[ + ADD ]</a
       >
+      <div class="view-toggle" style="display: flex; gap: 10px;">
+        <button id="btn-grid-view" class="view-toggle-btn active" title="Grid View">
+          <i class="fa-solid fa-table-cells-large"></i>
+        </button>
+        <button id="btn-table-view" class="view-toggle-btn" title="Table View">
+          <i class="fa-solid fa-list"></i>
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="table-wrapper app-table-scroll app-table-scroll-mobile">
+  <style>
+    .view-toggle-btn {
+      background: rgba(13, 22, 33, 0.4);
+      color: #9eb0ba;
+      border: 1px solid rgba(126, 181, 196, 0.3);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.2rem;
+      backdrop-filter: blur(4px);
+    }
+    .view-toggle-btn.active {
+      background: rgba(126, 181, 196, 0.15);
+      color: #7eb5c4;
+      border-color: #7eb5c4;
+      box-shadow: 0 0 12px rgba(126, 181, 196, 0.25);
+    }
+    .view-toggle-btn:hover:not(.active) {
+      background: rgba(126, 181, 196, 0.08);
+      color: white;
+      border-color: rgba(126, 181, 196, 0.6);
+    }
+    
+    .library-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 10px 0;
+    }
+    
+    @media (max-width: 600px) {
+      .library-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+      }
+    }
+    
+    .library-card {
+      background: rgba(19, 28, 39, 0.6);
+      border: 1px solid rgba(126, 181, 196, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    .library-card:hover {
+      transform: translateY(-5px);
+      border-color: #7eb5c4;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 0 15px rgba(126, 181, 196, 0.2);
+      z-index: 2;
+    }
+    
+    .card-poster-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      border-bottom: 1px solid rgba(126, 181, 196, 0.2);
+      overflow: hidden;
+      background: #111;
+    }
+    
+    .card-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .card-rating {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(13, 22, 33, 0.85);
+      color: #c4a96d;
+      font-family: "VT323", monospace;
+      font-size: 1.4rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(196, 169, 109, 0.4);
+      backdrop-filter: blur(4px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    }
+    
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+    }
+    
+    .small-remove-btn {
+      font-family: "VT323", monospace;
+      font-size: 1.2rem;
+      background: transparent;
+      border: 1px solid rgba(229, 115, 115, 0.4);
+      color: #e57373;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .small-remove-btn:hover {
+      background: rgba(229, 115, 115, 0.2);
+      color: white;
+      border-color: #e57373;
+      transform: scale(1.05);
+    }
+    
+    .card-details {
+      padding: 15px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+    }
+    
+    .card-title {
+      font-family: "VT323", monospace;
+      font-size: 1.4rem;
+      color: white;
+      margin: 0 0 5px 0;
+      line-height: 1.2;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    .card-title:hover {
+      color: #7eb5c4;
+    }
+    
+    .card-meta {
+      font-family: "VT323", monospace;
+      font-size: 1rem;
+      color: #9eb0ba;
+      margin: 0 0 10px 0;
+      line-height: 1.2;
+    }
+    
+    .card-date {
+      font-family: "VT323", monospace;
+      font-size: 1.1rem;
+      color: #7eb5c4;
+      opacity: 0.8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .card-date i {
+      font-size: 0.9rem;
+      color: #7eb5c4;
+    }
+  </style>
+
+  <!-- Grid View -->
+  <div id="view-grid-container" style="display: block;">
+    <div class="library-grid" id="library-grid">
+      {% for movie in movies %}
+      <div class="library-card">
+        <div class="card-poster-wrapper">
+          <img src="{{ movie['poster'] }}" class="card-poster" loading="lazy" />
+          <div class="card-rating">{{ movie['rating'] }}</div>
+        </div>
+        <div class="card-details">
+          <a href="/tmdb_redirect?title={{ movie['movie'] | urlencode }}&tv={{ '1' if movie.get('tv_show') else '0' }}" target="_blank" class="card-title">
+            {{ movie['movie'].upper() }}
+          </a>
+          <div class="card-meta">
+            {{ movie['director'].upper() }} • {{ movie['p_year'] }}
+          </div>
+          <div class="card-footer">
+            <div class="card-date">
+              {{ movie['v_date'].strftime('%b %Y') }}
+              {% if movie['cinema'] | int == 1 %}
+              <i class="fa-solid fa-film" title="Cinema"></i>
+              {% endif %}
+              {% if movie['rewatch'] | int == 1 %}
+              <i class="fa-solid fa-repeat" title="Rewatch"></i>
+              {% endif %}
+            </div>
+            <button type="button" class="small-remove-btn" 
+                    data-id="{{ movie['id'] }}" 
+                    data-movie="{{ movie['movie'] }}" 
+                    data-csrf="{{ csrf_token() }}"
+                    onclick="handleDelete(this)"
+                    title="Remove Movie">
+              x
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Table View -->
+  <div id="view-table-container" style="display: none;">
+    <div class="table-wrapper app-table-scroll app-table-scroll-mobile">
     <table class="table-lista1 app-grid-table app-table-responsive app-table-mobile-width app-table-mobile-structured">
       <thead>
         <tr style="text-align: left">
@@ -122,6 +335,7 @@ body_class %} list_page{% endblock %} {% block body %}
       </tbody>
     </table>
   </div>
+  </div>
   <div id="infinite-scroll-sensor" style="height: 10px;"></div>
 
   <p class="legend-terminal app-legend">
@@ -148,7 +362,8 @@ body_class %} list_page{% endblock %} {% block body %}
   async function deleteMovie(btn, movieId, movieName, csrfToken) {
     if (!confirmDeletion(movieName)) return;
     
-    const row = btn.closest('tr');
+    // Find either the row (if in table) or the card (if in grid)
+    const elementToRemove = btn.closest('tr') || btn.closest('.library-card');
     
     try {
       const response = await fetch('/remove_movie', {
@@ -162,10 +377,12 @@ body_class %} list_page{% endblock %} {% block body %}
       });
       
       if (response.ok) {
-        row.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-        row.style.opacity = '0';
-        row.style.transform = 'scale(0.95)';
-        setTimeout(() => row.remove(), 400);
+        if (elementToRemove) {
+          elementToRemove.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          elementToRemove.style.opacity = '0';
+          elementToRemove.style.transform = 'scale(0.95)';
+          setTimeout(() => elementToRemove.remove(), 400);
+        }
       } else {
         alert('Failed to delete movie.');
       }
@@ -225,6 +442,10 @@ body_class %} list_page{% endblock %} {% block body %}
         currentPage = 1;
         hasNext = true;
         document.querySelector(".table-lista1 tbody").innerHTML = "";
+        
+        const gridContainer = document.getElementById("library-grid");
+        if (gridContainer) gridContainer.innerHTML = "";
+        
         loadMoreMovies();
       }, 300);
     });
@@ -240,18 +461,21 @@ body_class %} list_page{% endblock %} {% block body %}
       
       if (data.movies && data.movies.length > 0) {
         const tbody = document.querySelector(".table-lista1 tbody");
+        const gridContainer = document.getElementById("library-grid");
         
         data.movies.forEach(movie => {
-          const tr = document.createElement('tr');
-          tr.style.color = "white";
-          
           const vDate = new Date(movie.v_date);
           const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
           const dateStr = `${monthNames[vDate.getUTCMonth()]} ${vDate.getUTCFullYear()}`;
           
-          let cinemaIcon = movie.cinema == 1 ? '<i class="fa-solid fa-film" style="font-size: 16px"></i>' : '';
-          let rewatchIcon = movie.rewatch == 1 ? '<i class="fa-solid fa-repeat" style="font-size: 16px"></i>' : '';
+          let cinemaIcon = movie.cinema == 1 ? '<i class="fa-solid fa-film" style="font-size: 16px" title="Cinema"></i>' : '';
+          let rewatchIcon = movie.rewatch == 1 ? '<i class="fa-solid fa-repeat" style="font-size: 16px" title="Rewatch"></i>' : '';
           
+          const csrfVal = document.querySelector('[name="csrf_token"]') ? document.querySelector('[name="csrf_token"]').value : '';
+          
+          // Append to Table
+          const tr = document.createElement('tr');
+          tr.style.color = "white";
           tr.innerHTML = `
             <td style="padding: 10px" data-sort-value="${movie.v_date}">
               ${dateStr} ${cinemaIcon} ${rewatchIcon}
@@ -269,13 +493,45 @@ body_class %} list_page{% endblock %} {% block body %}
               <button type="button" class="table-button-list app-table-action-danger" 
                       data-id="${movie.id}" 
                       data-movie="${movie.movie}" 
-                      data-csrf="${document.querySelector('[name="csrf_token"]') ? document.querySelector('[name="csrf_token"]').value : ''}"
+                      data-csrf="${csrfVal}"
                       onclick="handleDelete(this)">
                 X
               </button>
             </td>
           `;
           tbody.appendChild(tr);
+
+          // Append to Grid
+          const card = document.createElement('div');
+          card.className = "library-card";
+          card.innerHTML = `
+            <div class="card-poster-wrapper">
+              <img src="${movie.poster}" class="card-poster" loading="lazy" />
+              <div class="card-rating">${movie.rating}</div>
+            </div>
+            <div class="card-details">
+              <a href="/tmdb_redirect?title=${encodeURIComponent(movie.movie)}&tv=${movie.tv_show ? 1 : 0}" target="_blank" class="card-title">
+                ${movie.movie.toUpperCase()}
+              </a>
+              <div class="card-meta">
+                ${movie.director.toUpperCase()} • ${movie.p_year}
+              </div>
+              <div class="card-footer">
+                <div class="card-date">
+                  ${dateStr} ${cinemaIcon} ${rewatchIcon}
+                </div>
+                <button type="button" class="small-remove-btn" 
+                        data-id="${movie.id}" 
+                        data-movie="${movie.movie}" 
+                        data-csrf="${csrfVal}"
+                        onclick="handleDelete(this)"
+                        title="Remove Movie">
+                  x
+                </button>
+              </div>
+            </div>
+          `;
+          gridContainer.appendChild(card);
         });
         
         currentPage++;
@@ -289,7 +545,34 @@ body_class %} list_page{% endblock %} {% block body %}
     }
   }
 
+  // View Toggle Logic
+  document.getElementById('btn-grid-view').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('btn-table-view').classList.remove('active');
+    document.getElementById('view-grid-container').style.display = 'block';
+    document.getElementById('view-table-container').style.display = 'none';
+    
+    // Save preference
+    localStorage.setItem('kineto_library_view', 'grid');
+  });
+
+  document.getElementById('btn-table-view').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('btn-grid-view').classList.remove('active');
+    document.getElementById('view-table-container').style.display = 'block';
+    document.getElementById('view-grid-container').style.display = 'none';
+    
+    // Save preference
+    localStorage.setItem('kineto_library_view', 'table');
+  });
+
   window.onload = () => {
+    // Check local storage for view preference
+    const preferredView = localStorage.getItem('kineto_library_view');
+    if (preferredView === 'table') {
+      document.getElementById('btn-table-view').click();
+    }
+    
     document.getElementById("preloader").style.display = "none";
     document.querySelector(".list_list").style.display = "block";
   };
