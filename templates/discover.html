@@ -43,7 +43,6 @@ body_class %} discover_page{% endblock %} {% block content %}
 
           <div class="form-group">
             <span class="form-label">&gt; RECOMMENDATION STYLE</span>
-            <p class="form-helper">How closely should picks match your usual taste profile?</p>
             <div class="option-grid mode-grid">
               {% for mode_key, mode_label in discover_mode_labels.items() %}
               <label class="choice-card">
@@ -64,7 +63,6 @@ body_class %} discover_page{% endblock %} {% block content %}
 
           <div class="form-group">
             <span class="form-label">&gt; TASTE MEMORY WINDOW</span>
-            <p class="form-helper">Decide which part of your watch history should influence results most.</p>
             <div class="option-grid lens-grid">
               {% for profile_key, profile_label in
               discover_history_profile_labels.items() %}
@@ -84,23 +82,7 @@ body_class %} discover_page{% endblock %} {% block content %}
             </div>
           </div>
 
-          <div class="form-group">
-            <span class="form-label">&gt; OPTIONAL GENRE FOCUS</span>
-            <p class="form-helper">Leave empty for broad discovery, or select genres to narrow the search space.</p>
-            <div class="genre-chip-grid">
-              {% for genre in discover_available_genres %}
-              <label class="genre-chip">
-                <input
-                  type="checkbox"
-                  name="preferred_genres"
-                  value="{{ genre }}"
-                  {{ "checked" if genre in selected_genres else "" }}
-                />
-                <span>{{ genre }}</span>
-              </label>
-              {% endfor %}
-            </div>
-          </div>
+
 
           <button type="submit" class="recommend-button" id="submit-button">
             [ GENERATE RECOMMENDATIONS ]
@@ -115,8 +97,7 @@ body_class %} discover_page{% endblock %} {% block content %}
         <p id="response-meta-text">
           {% if ai_response %}
           Mode: {{ discover_mode_labels.get(recommendation_mode, 'Similar') }} |
-          History Lens: {{ discover_history_profile_labels.get(history_profile, 'Balanced Mix') }} | 
-          Genres: {% if selected_genres %}{{ selected_genres | join(', ') }}{% else %}Any{% endif %}
+          History Lens: {{ discover_history_profile_labels.get(history_profile, 'Balanced Mix') }}
           {% endif %}
         </p>
         <p class="badge-legend">
@@ -255,16 +236,18 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .discover-form-card {
-    padding: 20px;
-    max-width: 980px;
+    padding: 24px;
+    max-width: 100%;
     width: 100%;
-    margin: 0 auto;
+    margin: 0;
   }
 
   .recommendation-form {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 22px;
+    max-width: 100% !important;
+    margin: 0 !important;
   }
 
   .form-group {
@@ -423,7 +406,7 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .recommend-button {
-    align-self: flex-start;
+    align-self: center;
     border: 1px solid var(--discover-cyan);
     background: linear-gradient(135deg, rgba(126, 181, 196, 0.24), rgba(126, 181, 196, 0.12));
     color: var(--discover-cyan);
@@ -455,14 +438,13 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .response-card {
-    margin-top: 18px;
-    padding: 18px;
+    margin-top: 24px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    max-width: 1240px;
-    margin-left: auto;
-    margin-right: auto;
+    gap: 1.2rem;
+    max-width: 100%;
+    margin: 24px 0 0 0;
   }
 
   .discover-form-card,
@@ -973,7 +955,8 @@ body_class %} discover_page{% endblock %} {% block content %}
           continue;
         }
 
-        const numberedMatch = line.match(/^([1-4])\.\s+(.+)$/);
+        // Make heading match more resilient to bolding
+        const numberedMatch = line.match(/^([1-4])\.\s+\*?\*?(.+?)\*?\*?$/);
         if (numberedMatch) {
           const heading = numberedMatch[2].trim().replace(/\*\*/g, "").trim();
           if (current) {
@@ -999,25 +982,25 @@ body_class %} discover_page{% endblock %} {% block content %}
           continue;
         }
 
-        if (/^genre\s*:/i.test(line)) {
+        if (/^\*?\*?genre\*?\*?\s*:/i.test(line)) {
           const val = line.split(":", 2)[1];
-          if (val) current.genre = val.trim();
+          if (val) current.genre = val.trim().replace(/\*\*/g, "");
           continue;
         }
 
-        if (/^rating\s*:/i.test(line)) {
+        if (/^\*?\*?score\*?\*?\s*:/i.test(line)) {
           const val = line.split(":", 2)[1];
-          if (val) current.rating = val.trim();
+          if (val) current.rating = val.trim().replace(/\*\*/g, "");
           continue;
         }
 
-        if (/^why(\s+i\s+recommend\s+it)?\s*:/i.test(line)) {
+        if (/^\*?\*?comment\*?\*?\s*:/i.test(line)) {
           const val = line.split(":", 2)[1];
-          if (val) current.whyLines.push(val.trim());
+          if (val) current.whyLines.push(val.trim().replace(/\*\*/g, ""));
           continue;
         }
 
-        if (!/^\*\*/.test(line)) {
+        if (!/^\*\*/.test(line) && !/^\s*$/.test(line)) {
           current.whyLines.push(line);
         }
       }
@@ -1051,9 +1034,11 @@ body_class %} discover_page{% endblock %} {% block content %}
       const displayTitle = (details && details.title) || item.title || "Untitled Recommendation";
       const displayDirector = (details && details.director) || item.director || "Unknown Director";
       const displayGenre = (details && details.genre) || item.genre || "Genre unavailable";
-      const displayRating = (details && typeof details.rating === "number")
-        ? `TMDB ${details.rating.toFixed(1)}/10`
-        : (item.rating || "Curated Pick");
+      const displayRating = (item.rating && item.rating !== "Curated Pick") 
+        ? item.rating 
+        : ((details && typeof details.rating === "number") 
+            ? `TMDB ${details.rating.toFixed(1)}/10` 
+            : "Curated Pick");
       const poster = (details && details.poster) || "https://via.placeholder.com/500x750?text=Loading+Poster";
       const badge = item.isWatched ? '<span class="already-watched-badge">Already watched</span>' : "";
 
@@ -1069,7 +1054,7 @@ body_class %} discover_page{% endblock %} {% block content %}
             </div>
             <div class="frame-genre">${escapeHtml(displayGenre)}</div>
             <div class="frame-rating">${escapeHtml(displayRating)}</div>
-            <div class="frame-summary"><strong>Why it fits:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}</div>
+            <div class="frame-summary"><strong>Comment:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}</div>
             <div class="frame-badge-row">${badge}</div>
           </div>
         </div>
@@ -1208,7 +1193,7 @@ body_class %} discover_page{% endblock %} {% block content %}
         }
 
         const ratingNode = card.querySelector(".frame-rating");
-        if (ratingNode && typeof details.rating === "number") {
+        if (ratingNode && typeof details.rating === "number" && (!item.rating || item.rating === "Curated Pick")) {
           ratingNode.textContent = `TMDB ${details.rating.toFixed(1)}/10`;
         }
 
@@ -1229,7 +1214,7 @@ body_class %} discover_page{% endblock %} {% block content %}
       if (slot.dataset.state === "filled" && slot.dataset.itemKey === item.key) {
         const summaryNode = slot.querySelector(".frame-summary");
         if (summaryNode) {
-          summaryNode.innerHTML = `<strong>Why it fits:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}`;
+          summaryNode.innerHTML = `<strong>Comment:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}`;
         }
 
         const genreNode = slot.querySelector(".frame-genre");

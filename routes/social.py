@@ -165,20 +165,15 @@ def recommend_stream():
     if not user_request:
         return jsonify({"error": "Prompt required"}), 400
 
-    genres_str = ",".join(sorted(selected_genres))
-    cache_key = f"ai_rec_{user_request}_{recommendation_mode}_{history_profile}_{genres_str}"
-
-    cached_val = cache.get(cache_key)
-    if cached_val:
-        def _stream_cached():
-            yield f"data: {json.dumps({'token': cached_val})}\n\n"
-        return Response(stream_with_context(_stream_cached()), mimetype="text/event-stream")
+    if not user_request:
+        return jsonify({"error": "Prompt required"}), 400
 
     user_history = get_user_watch_history_summary(
         current_user.id,
         history_profile=history_profile,
         history_profile_labels=DISCOVER_HISTORY_PROFILE_LABELS,
     )
+    watched_lookup = get_watched_title_year_lookup(current_user.id)
     settings = build_openrouter_settings()
     discover_config = build_discover_config()
     api_key = os.environ.get("OPENROUTER_API_KEY")
@@ -191,6 +186,7 @@ def recommend_stream():
                 user_request, user_history,
                 recommendation_mode=recommendation_mode,
                 preferred_genres=selected_genres,
+                watched_lookup=watched_lookup,
                 history_profile=history_profile,
                 api_key=api_key,
                 app_base_url=os.environ.get("APP_BASE_URL", "http://localhost:5000"),
@@ -204,8 +200,7 @@ def recommend_stream():
                 accumulated += chunk
                 yield f"data: {json.dumps({'token': chunk})}\n\n"
 
-            if accumulated and "Error:" not in accumulated:
-                cache.set(cache_key, accumulated, timeout=3600)
+            # No caching to ensure fresh recommendations every time
         except Exception as exc:
             yield f"data: {json.dumps({'error': str(exc)})}\n\n"
 

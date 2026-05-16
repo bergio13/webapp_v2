@@ -556,6 +556,7 @@ def get_ai_movie_recommendation_stream(
     user_history,
     recommendation_mode="similar",
     preferred_genres=None,
+    watched_lookup=None,
     history_profile="balanced",
     *,
     api_key,
@@ -593,8 +594,10 @@ def get_ai_movie_recommendation_stream(
     history_label = discover_config.history_profile_labels.get(history_profile, "Balanced Mix")
     history_prompt = discover_config.history_profile_prompts[history_profile]
 
-    prompt = f"""You are a movie recommendation expert. Based on the user's watch history and their request, provide 3-5 specific movie recommendations.
-
+    watched_set = _normalize_watch_lookup(watched_lookup)
+    
+    prompt_step1 = f"""You are a movie recommendation expert. Based on the user's watch history and their request, generate 12 movie recommendation candidates.
+    
 User's Recent Watch History:
 {user_history}
 
@@ -604,23 +607,15 @@ Recommendation Mode: {mode_label}
 Mode Instructions: {mode_prompt}
 History Lens: {history_label}
 History Lens Instructions: {history_prompt}
-Preferred Genres: {genre_prompt}
 
-Please provide exactly 4 movie recommendations in the following format:
-1. **Movie Title (Year) - Director**
-   Genre: [genres]
-   Why I recommend it: [brief explanation based on their history and request]
+You MUST return ONLY a valid JSON array of objects. Do not include any markdown formatting, backticks, or other text.
+Format:
+[
+  {{"title": "Movie Title", "year": "2023", "director": "Director Name"}},
+  {{"title": "Another Movie", "year": "1999", "director": "Another Director"}}
+]
 
-2. **Movie Title (Year) - Director**
-   Genre: [genres]
-   Why I recommend it: [brief explanation based on their history and request]
-
-[Continue for exactly 4 movies]
-
-Keep recommendations diverse and consider the user's rating patterns and favorite genres.
-If preferred genres are provided, prioritize those genres in all recommendations.
-Avoid recommending exact title+year combinations already listed in watch history when possible.
-Explain why each movie fits their taste based on their watch history."""
+Generate exactly 12 diverse candidates that fit the user's taste."""
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -635,18 +630,118 @@ Explain why each movie fits their taste based on their watch history."""
 
     import json
     import requests
+    import re
+
+    candidates = []
+    # Step 1: Get candidates
+    for model_id in model_candidates:
+        request_payload = {
+            "model": model_id,
+            "messages": [{"role": "user", "content": prompt_step1}],
+            "max_completion_tokens": 1000,
+            "max_tokens": 1000,
+        }
+        request_payload["provider"] = _build_openrouter_provider_preferences(settings)
+        
+        try:
+            response = requests.post(
+                settings.api_url,
+                headers=headers,
+                json=request_payload,
+                timeout=settings.request_timeout,
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            if "error" in data:
+                continue
+                
+            content = _extract_openrouter_message_text(data)
+            
+            # Clean up the output in case the LLM returned markdown blocks
+            content = re.sub(r'```json', '', content)
+            content = re.sub(r'```', '', content)
+            content = content.strip()
+            
+            candidates = json.loads(content)
+            if isinstance(candidates, list) and len(candidates) > 0:
+                break
+        except Exception as e:
+            if logger:
+                logger.warning(f"Step 1 failed for model {model_id}: {e}")
+            continue
+
+    if not candidates:
+        yield "Error: Failed to generate candidates."
+        return
+
+    # Validate candidates with TMDB
+    valid_movies = []
+    for candidate in candidates:
+        title = candidate.get("title", "")
+        year = candidate.get("year", "")
+        director = candidate.get("director", "")
+        if not title:
+            continue
+            
+        try:
+            details = tmdb_get_movie_details(title, year, manual_director=director)
+            if details and "No+Poster" not in details.get("poster", "") and details.get("genre") != "Unknown":
+                real_title = details.get("title", title)
+                real_year = str(year)
+                
+                title_clean = re.sub(r'[^a-z0-9\s]', '', real_title.lower()).strip()
+                title_clean = re.sub(r'\s+', ' ', title_clean)
+                lookup_key = f"{title_clean}::{real_year}"
+                
+                if lookup_key not in watched_set:
+                    valid_movies.append({
+                        "title": real_title,
+                        "year": real_year,
+                        "director": details.get("director", director)
+                    })
+        except Exception:
+            pass
+            
+        if len(valid_movies) == 4:
+            break
+
+    if not valid_movies:
+        yield "Error: Could not validate any movies against TMDB."
+        return
+
+    # Step 2: Stream the validated movies
+    validated_list_str = ""
+    for idx, vm in enumerate(valid_movies, 1):
+        dir_name = vm.get('director', '').strip() or 'Unknown Director'
+        validated_list_str += f"{idx}. {vm['title']} ({vm.get('year', '')}) - {dir_name}\n"
+
+    prompt_step2 = f"""User's Request: {user_request}
+
+I have found the following {len(valid_movies)} verified movies that perfectly match the user's request:
+{validated_list_str}
+
+Your task is to write a score and a 1-liner comment for EACH of these {len(valid_movies)} EXACT movies.
+CRITICAL: You MUST ONLY use the {len(valid_movies)} movies listed above. DO NOT invent, hallucinate, or generate any other movies. 
+
+Please format your response EXACTLY like this for each movie, in the exact same order:
+1. **[Exact Movie Title from list] ([Exact Year from list]) - [Exact Director from list]**
+   Score: [Your Score e.g. 95/100]
+   Comment: [A brief, punchy one-liner explaining why it fits perfectly]
+
+2. **[Exact Movie Title from list] ([Exact Year from list]) - [Exact Director from list]**
+...
+"""
 
     for model_id in model_candidates:
         request_payload = {
             "model": model_id,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": [{"role": "user", "content": prompt_step2}],
             "max_completion_tokens": settings.max_completion_tokens,
             "max_tokens": settings.max_completion_tokens,
             "stream": True,
         }
         request_payload["provider"] = _build_openrouter_provider_preferences(settings)
-        if settings.service_tier:
-            request_payload["service_tier"] = settings.service_tier
 
         try:
             response = requests.post(
@@ -745,23 +840,21 @@ Recommendation Mode: {mode_label}
 Mode Instructions: {mode_prompt}
 History Lens: {history_label}
 History Lens Instructions: {history_prompt}
-Preferred Genres: {genre_prompt}
 
-Please provide movie recommendations in the following format:
-1. **Movie Title (Year) - Director**
-   Genre: [genres]
-   Why I recommend it: [brief explanation based on their history and request]
+Please provide exactly 4 movie recommendations in the following format:
+1. **[Movie Title] ([Year]) - [Director]**
+   Score: [Your Score e.g. 95/100]
+   Comment: [A brief, punchy one-liner explaining why it fits perfectly]
 
-2. **Movie Title (Year) - Director**
-   Genre: [genres]
-   Why I recommend it: [brief explanation based on their history and request]
+2. **[Movie Title] ([Year]) - [Director]**
+   Score: [Your Score e.g. 95/100]
+   Comment: [A brief, punchy one-liner explaining why it fits perfectly]
 
-[Continue for 3-5 movies]
+[Continue for exactly 4 movies]
 
 Keep recommendations diverse and consider the user's rating patterns and favorite genres.
 If preferred genres are provided, prioritize those genres in all recommendations.
-Avoid recommending exact title+year combinations already listed in watch history when possible.
-Explain why each movie fits their taste based on their watch history."""
+Avoid recommending exact title+year combinations already listed in watch history when possible."""
 
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -943,12 +1036,10 @@ def format_ai_response_to_html(text, watched_lookup=None):
             footer_lines.append(line)
             continue
 
-        if line.startswith("Genre:"):
-            current_item["genre"] = line.split(":", 1)[1].strip()
-        elif line.startswith("Why I recommend it:"):
+        if line.startswith("Score:"):
+            current_item["rating"] = line.split(":", 1)[1].strip()
+        elif line.startswith("Comment:"):
             current_item["why"] = line.split(":", 1)[1].strip()
-        elif line.startswith("Why"):
-            current_item["why"] = f"{current_item['why']} {line}".strip()
         else:
             current_item["extra"].append(line)
 

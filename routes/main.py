@@ -145,7 +145,7 @@ def api_watched_lookup():
 
 @main_bp.route("/api/movie_details")
 @login_required
-@limiter.limit("300 per hour")
+@limiter.limit("3000 per hour")
 def api_movie_details():
     title = (request.args.get("title") or "").strip()
     year_raw = (request.args.get("year") or "").strip()
