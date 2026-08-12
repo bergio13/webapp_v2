@@ -1,0 +1,43 @@
+{% macro render_sentiment_badge(level, show_label=True, compact=False) %}
+  {% set lvl = (level | int) if level else 3 %}
+  {% if lvl > 5 %}{% set lvl = ((lvl / 2) | round(0, 'ceil')) | int %}{% endif %}
+  {% if lvl < 1 %}{% set lvl = 1 %}{% endif %}
+  {% if lvl > 5 %}{% set lvl = 5 %}{% endif %}
+
+  <div class="sentiment-badge sentiment-level-{{ lvl }}{% if compact %} compact{% endif %}" title="{% if lvl == 1 %}Hated it{% elif lvl == 2 %}Disliked it{% elif lvl == 3 %}OK{% elif lvl == 4 %}Liked it{% elif lvl == 5 %}Loved it{% endif %}">
+    {% if lvl == 1 %}
+      <!-- Hated it: Broken Heart Vector with Jagged Fracture -->
+      <svg viewBox="0 0 24 24">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        <polyline points="12 3 9 8.5 14 13 9.5 17.5 12 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    {% elif lvl == 2 %}
+      <!-- Disliked it: Thumbs Down Vector -->
+      <svg viewBox="0 0 24 24">
+        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/>
+      </svg>
+    {% elif lvl == 3 %}
+      <!-- OK: Equilibrium Gauge -->
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+    {% elif lvl == 4 %}
+      <!-- Liked it: Thumbs Up Vector -->
+      <svg viewBox="0 0 24 24">
+        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+      </svg>
+    {% elif lvl == 5 %}
+      <!-- Loved it: Crown Vector -->
+      <svg viewBox="0 0 24 24">
+        <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/>
+      </svg>
+    {% endif %}
+
+    {% if show_label %}
+      <span>
+        {% if lvl == 1 %}Hated it{% elif lvl == 2 %}Disliked it{% elif lvl == 3 %}OK{% elif lvl == 4 %}Liked it{% elif lvl == 5 %}Loved it{% endif %}
+      </span>
+    {% endif %}
+  </div>
+{% endmacro %}

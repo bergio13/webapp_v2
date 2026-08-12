@@ -1,5 +1,6 @@
 """Main blueprint — home, list, and API endpoints."""
 import datetime
+import math
 import os
 
 import requests as http_requests
@@ -35,13 +36,20 @@ def hello():
     try:
         _, month_now = get_current_year_month()
         movies = get_monthly_movies(current_user.id, month_now)
+        def _get_sentiment_val(r):
+            try:
+                v = float(r)
+                return math.ceil(v / 2.0) if v > 5 else v
+            except (TypeError, ValueError):
+                return 3.0
+
         total_this_month = len(movies)
         avg_rating = (
-            round(sum(float(m["rating"]) for m in movies) / total_this_month, 1)
+            round(sum(_get_sentiment_val(m["rating"]) for m in movies) / total_this_month, 1)
             if total_this_month > 0 else 0
         )
         cinema_trips = sum(1 for m in movies if int(m["cinema"]) == 1)
-        highest_rated = max(movies, key=lambda m: float(m["rating"])) if movies else None
+        highest_rated = max(movies, key=lambda m: _get_sentiment_val(m["rating"])) if movies else None
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load home monthly movies")

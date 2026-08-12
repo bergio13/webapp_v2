@@ -161,35 +161,23 @@ content %}
       <label for="movie" class="label">Title</label>
     </div>
 
-    <!-- Year and Rating side by side -->
-    <div class="field-group">
-      <div class="field">
-        <input
-          type="number"
-          class="number"
-          id="year"
-          name="year"
-          placeholder=" "
-          max="2030"
-          min="1890"
-          required
-        />
-        <label for="year" class="label">Year</label>
-      </div>
-      <div class="field">
-        <input
-          type="number"
-          class="number"
-          id="rating"
-          name="rating"
-          placeholder=" "
-          max="10"
-          min="0"
-          required
-        />
-        <label for="rating" class="label">Rating (0-10)</label>
-      </div>
+    <!-- Year -->
+    <div class="field">
+      <input
+        type="number"
+        class="number"
+        id="year"
+        name="year"
+        placeholder=" "
+        max="2030"
+        min="1890"
+        required
+      />
+      <label for="year" class="label">Year</label>
     </div>
+
+    <!-- Sentiment Rating -->
+    {% include 'components/_sentiment_selector.html' %}
 
     <!-- Director -->
     <div class="field">
@@ -218,8 +206,15 @@ content %}
   document.getElementById("movie").value = urlParams.get("movie") || "";
   document.getElementById("year").value = urlParams.get("year") || "";
   document.getElementById("director").value = urlParams.get("director") || "";
-  document.getElementById("rating").value = urlParams.get("rating") || "";
   document.getElementById("tv").value = urlParams.get("tv") || "0";
+
+  let rawRating = parseInt(urlParams.get("rating")) || 3;
+  if (rawRating > 5) {
+    rawRating = Math.ceil(rawRating / 2);
+  }
+  if (window.setSentimentRating) {
+    window.setSentimentRating(rawRating);
+  }
 </script>
 
 {% endblock %}

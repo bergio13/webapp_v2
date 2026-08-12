@@ -9,6 +9,7 @@ from database import (
     get_genres,
     get_movies_groupby_director,
     get_movies_groupby_genre,
+    get_movies_groupby_rating,
     get_movies_groupby_year,
     get_ratings,
     get_user_id,
@@ -190,8 +191,9 @@ def show_years_friends(username):
 @cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def show_ratings():
     try:
-        movies = get_movies_groupby_year(current_user.id)
+        movies = get_movies_groupby_rating(current_user.id)
         ratings = get_ratings(current_user.id)
+        ratings.sort(key=lambda x: str(x.get("name", "")), reverse=True)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load ratings page")
@@ -214,8 +216,9 @@ def show_ratings_friends(username):
         flash("User not found", category="error")
         return redirect("/friends")
     try:
-        movies = get_movies_groupby_year(friend["id"])
+        movies = get_movies_groupby_rating(friend["id"])
         ratings = get_ratings(friend["id"])
+        ratings.sort(key=lambda x: str(x.get("name", "")), reverse=True)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load friend ratings page for %s", username)

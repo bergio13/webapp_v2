@@ -288,10 +288,7 @@ content %}
       <div id="autocomplete-list" class="autocomplete-items"></div>
     </div>
     <input type="hidden" id="year" name="year" />
-    <div class="field">
-      <input type="number" class="input" id="rating" name="rating" placeholder=" " max="10" min="0" required />
-      <label for="rating" class="label">Rating (0-10)</label>
-    </div>
+    {% include 'components/_sentiment_selector.html' %}
     <div class="field">
       <input type="text" class="input" id="director" name="director" placeholder=" " />
       <label for="director" class="label">Director (optional)</label>

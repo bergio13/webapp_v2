@@ -252,7 +252,7 @@ def get_highest_rating():
 
         data = client.table('lista') \
             .select('movie', 'director', 'p_year', 'poster') \
-            .gte('rating', 9) \
+            .gte('rating', 5) \
             .gte('v_date', start_date.strftime('%Y-%m-%d')) \
             .lt('v_date', end_date.strftime('%Y-%m-%d')) \
             .execute()
@@ -442,9 +442,9 @@ def get_taste_match(user_id, friend_id):
                 "u_rating": u_rating, "f_rating": f_rating, "diff": diff
             })
                 
-        # 2. Root Mean Square Error (RMSE)
+        # 2. Root Mean Square Error (RMSE) on 5-Point Sentiment Scale
         rmse = math.sqrt(sum_squared_diff / shared_count)
-        rating_match_score = max(0, min(100, 100 - (rmse * 10)))
+        rating_match_score = max(0, min(100, 100 - (rmse * 20)))
         
         # 3. Jaccard Index (Library Overlap)
         overlap_percent = (shared_count / total_unique_movies) * 100 if total_unique_movies > 0 else 0

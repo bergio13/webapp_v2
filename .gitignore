@@ -137,3 +137,6 @@ local-tools/
 
 # Quarantined legacy CSS — dead code for local review only, never pushed
 static/css/partials/_legacy.css
+
+scripts/backup_lista_ratings.json
+scripts/backup_lista_ratings_ORIGINAL_10POINT.json

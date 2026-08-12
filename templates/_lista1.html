@@ -1,3 +1,4 @@
+{% from 'components/_sentiment_badge.html' import render_sentiment_badge %}
 {% extends 'base.html' %} {% block title %} {{username}}'s Watched Movies{% 
 endblock %} {% block body_class %} list_page list_page_friend_theme{% endblock %} {% block
 body %} {% block content %}
@@ -187,7 +188,9 @@ body %} {% block content %}
       <div class="library-card">
         <div class="card-poster-wrapper">
           <img src="{{ movie['poster'] }}" class="card-poster" loading="lazy" />
-          <div class="card-rating">{{ movie['rating'] }}</div>
+          <div style="position: absolute; bottom: 8px; right: 8px;">
+            {{ render_sentiment_badge(movie['rating'], show_label=True, compact=True) }}
+          </div>
         </div>
         <div class="card-details">
           <a href="/tmdb_redirect?title={{ movie['movie'] | urlencode }}&tv={{ '1' if movie.get('tv_show') else '0' }}" target="_blank" class="card-title">
@@ -254,7 +257,9 @@ body %} {% block content %}
           </td>
           <td>{{movie['p_year']}}</td>
           <td>{{movie['director'].upper()}}</td>
-          <td style="text-align: center">{{movie['rating']}}</td>
+          <td style="text-align: center">
+            {{ render_sentiment_badge(movie['rating'], show_label=True, compact=True) }}
+          </td>
         </tr>
         {% endfor %}
       </tbody>

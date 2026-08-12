@@ -269,8 +269,13 @@ def build_user_watch_history_summary(
         f"Watch history lens: {lens_label} "
         f"({len(selected_movies)} picked from {total_movies} total entries):\n"
     )
+    sentiment_map = {1: "Hated it (1/5)", 2: "Disliked it (2/5)", 3: "OK (3/5)", 4: "Liked it (4/5)", 5: "Loved it (5/5)"}
     for idx, movie in enumerate(selected_movies, 1):
-        rating_text = f"{movie['rating']}/10" if movie["rating"] else "unrated"
+        raw_r = movie.get("rating")
+        r_val = int(raw_r) if isinstance(raw_r, (int, float)) else None
+        if r_val and r_val > 5:
+            r_val = math.ceil(r_val / 2.0)
+        rating_text = sentiment_map.get(r_val, "unrated") if r_val else "unrated"
         summary += (
             f"{idx}. {movie['movie']} ({movie['p_year']}) | "
             f"dir: {movie['director']} | genres: {movie['genre']} | rating: {rating_text}\n"

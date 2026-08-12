@@ -1,3 +1,4 @@
+{% from 'components/_sentiment_badge.html' import render_sentiment_badge %}
 {% extends 'base.html' %} {% block title %}Lista{% endblock %} {% block body%}
 {% block content %}
 <script src="/static/js/grid.js"></script>
@@ -13,8 +14,10 @@
       <div class="row">
         {% for item in items %}
         {% set item_id = item.name if item.name is defined else item %}
+        {% set sentiment_names = {'1': '1 - Hated it', '2': '2 - Disliked it', '3': '3 - OK', '4': '4 - Liked it', '5': '5 - Loved it'} %}
+        {% set display_title = sentiment_names.get(item_id|string, item_id) if groupby == 'rating' else item_id %}
         <div class="column-directors" onclick="openTab('{{ item_id }}');">
-          <h4 class="title">{{ item_id }}</h4>
+          <h4 class="title">{{ display_title }}</h4>
         </div>
         <div id="{{ item_id }}" class="containerTab">
           <span
@@ -68,7 +71,7 @@
                     {% if groupby != 'director' %}<td>{{ movie['director'].upper() }}</td>{% endif %}
                     {% if groupby != 'genre' %}<td>{{ movie['genre'] }}</td>{% endif %}
                     {% if groupby != 'year' %}<td>{{ movie['p_year'] }}</td>{% endif %}
-                    {% if groupby != 'rating' %}<td>{{ movie['rating'] }}</td>{% endif %}
+                    {% if groupby != 'rating' %}<td>{{ render_sentiment_badge(movie['rating'], show_label=True, compact=True) }}</td>{% endif %}
                     
                     {% if allow_delete %}
                     <td>

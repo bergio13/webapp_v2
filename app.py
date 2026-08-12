@@ -11,6 +11,19 @@ from dotenv import load_dotenv
 # Load .env *before* any module that reads os.environ (e.g. database, config).
 load_dotenv()
 
+# Polyfill pkgutil.get_loader for Python 3.14+ compatibility with Flask 2.x
+import importlib.util
+import pkgutil
+
+if not hasattr(pkgutil, "get_loader"):
+    def _get_loader(name):
+        try:
+            spec = importlib.util.find_spec(name)
+            return spec.loader if spec else None
+        except (ValueError, AttributeError, ImportError):
+            return None
+    pkgutil.get_loader = _get_loader
+
 from flask import Flask
 from flask_login import current_user
 

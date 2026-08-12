@@ -978,3 +978,213 @@ ul.add li {
     font-size: 1.2rem;
   }
 }
+
+/* ==========================================================================
+   Sentiment Scale Components (5-Point Scale & Cyber-Terminal SVG Icons)
+   ========================================================================== */
+
+/* Badge Overlay & Pill Display */
+.sentiment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: "VT323", monospace;
+  font-size: 1.1rem;
+  line-height: 1;
+  background: rgba(13, 22, 33, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.sentiment-badge svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sentiment-badge.compact {
+  padding: 2px 6px;
+  font-size: 0.95rem;
+  gap: 4px;
+}
+
+.sentiment-badge.compact svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Sentiment Level Color Theme Variations */
+.sentiment-level-1 {
+  color: var(--sentiment-1);
+  border-color: rgba(255, 77, 109, 0.4);
+  box-shadow: 0 0 10px var(--sentiment-1-glow);
+}
+
+.sentiment-level-2 {
+  color: var(--sentiment-2);
+  border-color: rgba(255, 158, 0, 0.4);
+  box-shadow: 0 0 10px var(--sentiment-2-glow);
+}
+
+.sentiment-level-3 {
+  color: var(--sentiment-3);
+  border-color: rgba(126, 181, 196, 0.4);
+  box-shadow: 0 0 10px var(--sentiment-3-glow);
+}
+
+.sentiment-level-4 {
+  color: var(--sentiment-4);
+  border-color: rgba(0, 245, 212, 0.4);
+  box-shadow: 0 0 10px var(--sentiment-4-glow);
+}
+
+.sentiment-level-5 {
+  color: var(--sentiment-5);
+  border-color: rgba(255, 204, 0, 0.5);
+  box-shadow: 0 0 12px var(--sentiment-5-glow);
+}
+
+/* Interactive Sentiment Picker Selector */
+.sentiment-selector-wrapper {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.sentiment-selector-label {
+  display: block;
+  font-family: "VT323", monospace;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.sentiment-selector {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.sentiment-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 6px;
+  background: rgba(19, 28, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.sentiment-option svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.25s ease, stroke 0.25s ease;
+}
+
+.sentiment-option .sentiment-text {
+  font-family: "VT323", monospace;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  transition: color 0.25s ease;
+}
+
+.sentiment-option:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sentiment-option:hover .sentiment-text {
+  color: #ffffff;
+}
+
+/* Active State Styles */
+.sentiment-option[data-level="1"].active,
+.sentiment-option[data-level="1"]:hover {
+  color: var(--sentiment-1);
+  border-color: var(--sentiment-1);
+  box-shadow: 0 0 16px var(--sentiment-1-glow);
+}
+
+.sentiment-option[data-level="2"].active,
+.sentiment-option[data-level="2"]:hover {
+  color: var(--sentiment-2);
+  border-color: var(--sentiment-2);
+  box-shadow: 0 0 16px var(--sentiment-2-glow);
+}
+
+.sentiment-option[data-level="3"].active,
+.sentiment-option[data-level="3"]:hover {
+  color: var(--sentiment-3);
+  border-color: var(--sentiment-3);
+  box-shadow: 0 0 16px var(--sentiment-3-glow);
+}
+
+.sentiment-option[data-level="4"].active,
+.sentiment-option[data-level="4"]:hover {
+  color: var(--sentiment-4);
+  border-color: var(--sentiment-4);
+  box-shadow: 0 0 16px var(--sentiment-4-glow);
+}
+
+.sentiment-option[data-level="5"].active,
+.sentiment-option[data-level="5"]:hover {
+  color: var(--sentiment-5);
+  border-color: var(--sentiment-5);
+  box-shadow: 0 0 18px var(--sentiment-5-glow);
+}
+
+.sentiment-option.active {
+  background: rgba(13, 22, 33, 0.9);
+}
+
+.sentiment-option.active .sentiment-text {
+  color: currentColor;
+  font-weight: bold;
+}
+
+.sentiment-option.active svg {
+  transform: scale(1.15);
+}
+
+@media (max-width: 600px) {
+  .sentiment-selector {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  .sentiment-option {
+    padding: 8px 3px;
+  }
+
+  .sentiment-option svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .sentiment-option .sentiment-text {
+    font-size: 0.85rem;
+  }
+}
+

@@ -1,3 +1,4 @@
+{% from 'components/_sentiment_badge.html' import render_sentiment_badge %}
 {% extends "base.html" %} {% block title %}Home{% endblock %} {% block body_class %} home_page{% endblock %} {%block body
 %}{%block content %}
 
@@ -423,7 +424,7 @@
             <p style="font-family: 'VT323', monospace; color: var(--ocean-green); font-size: 1.3rem; margin: 0; letter-spacing: 2px; opacity: 0.85;">HIGHLIGHT OF THE MONTH</p>
           </div>
           <div style="text-align: center; padding-right: 20px;">
-            <div style="font-family: 'VT323', monospace; font-size: 3.5rem; color: #c4a96d; text-shadow: 0 0 8px rgba(196, 169, 109, 0.4); line-height: 1;">{{ highest_rated['rating'] }}</div>
+            {{ render_sentiment_badge(highest_rated['rating'], show_label=True) }}
           </div>
         </div>
       </div>
@@ -437,7 +438,7 @@
         </div>
         <div class="cyber-card glass-panel panel-smoke-heavy">
           <p class="stat-label">Avg Rating</p>
-          <p class="stat-value">{{ avg_rating }}</p>
+          <p class="stat-value">{{ avg_rating }}<span style="font-size: 1.2rem; color: var(--text-primary);"> / 5</span></p>
         </div>
         <div class="cyber-card glass-panel panel-smoke-heavy">
           <p class="stat-label">Cinema Trips</p>
@@ -496,7 +497,9 @@
 
           <td style="padding: 10px">{{movie['p_year']}}</td>
           <td style="padding: 10px">{{movie['director'].upper()}}</td>
-          <td style="padding: 10px; text-align: center">{{movie['rating']}}</td>
+          <td style="padding: 10px; text-align: center">
+            {{ render_sentiment_badge(movie['rating'], show_label=True, compact=True) }}
+          </td>
           <td style="padding: 10px">
             <form action="/edit_movie" method="GET" style="margin: 0">
               <button type="submit" class="table-edit app-table-action-edit">

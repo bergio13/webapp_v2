@@ -5,6 +5,7 @@ not from each other.
 """
 import datetime
 import logging
+import math
 import re
 
 from flask import request
@@ -116,7 +117,10 @@ def get_default_profile_stats() -> dict:
         "unique_directors": 0,
         "unique_genres": 0,
         "avg_movies_per_month": 0,
-        "ratings_distribution": {"high": 0, "mid": 0, "low": 0},
+        "ratings_distribution": {
+            "loved": 0, "liked": 0, "ok": 0, "disliked": 0, "hated": 0,
+            "high": 0, "mid": 0, "low": 0
+        },
     }
 
 
@@ -141,7 +145,12 @@ def build_profile_stats(user_id) -> dict:
     for movie in movies:
         rating = movie.get("rating")
         if isinstance(rating, (int, float)):
-            ratings.append(float(rating))
+            # Normalize legacy 6-10 ratings to 1-5 if any unmigrated exist
+            r_val = float(rating)
+            if r_val > 5:
+                r_val = float(math.ceil(r_val / 2.0))
+            ratings.append(r_val)
+            
         if movie.get("rewatch"):
             rewatch_count += 1
         if movie.get("cinema"):
@@ -158,8 +167,8 @@ def build_profile_stats(user_id) -> dict:
         for genre in split_genres(movie.get("genre")):
             unique_genres.add(genre)
             genre_scores[genre] = genre_scores.get(genre, 0) + 1
-            if isinstance(rating, (int, float)) and rating > 5:
-                genre_scores[genre] += (rating - 5) / 2
+            if isinstance(rating, (int, float)) and rating > 3:
+                genre_scores[genre] += (rating - 3)
 
     stats["favorite_genre"] = (
         max(genre_scores, key=genre_scores.get) if genre_scores else "No movies added"
@@ -175,9 +184,14 @@ def build_profile_stats(user_id) -> dict:
         round(stats["length"] / len(active_months), 2) if active_months else 0
     )
     stats["ratings_distribution"] = {
-        "high": sum(1 for r in ratings if r >= 8),
-        "mid": sum(1 for r in ratings if 5 <= r <= 7),
-        "low": sum(1 for r in ratings if r < 5),
+        "loved": sum(1 for r in ratings if r == 5),
+        "liked": sum(1 for r in ratings if r == 4),
+        "ok": sum(1 for r in ratings if r == 3),
+        "disliked": sum(1 for r in ratings if r == 2),
+        "hated": sum(1 for r in ratings if r == 1),
+        "high": sum(1 for r in ratings if r == 5),
+        "mid": sum(1 for r in ratings if 3 <= r <= 4),
+        "low": sum(1 for r in ratings if r <= 2),
     }
     return stats
 
