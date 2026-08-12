@@ -1,4 +1,4 @@
-{% macro render_sentiment_badge(level, show_label=True, compact=False) %}
+{% macro render_sentiment_badge(level, show_label=False, compact=False) %}
   {% set lvl = (level | int) if level else 3 %}
   {% if lvl > 5 %}{% set lvl = ((lvl / 2) | round(0, 'ceil')) | int %}{% endif %}
   {% if lvl < 1 %}{% set lvl = 1 %}{% endif %}

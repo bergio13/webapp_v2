@@ -845,7 +845,7 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
                   <span class="meta-item">{{act.director}}</span>
                 </div>
                 <div style="margin-top: 4px;">
-                  {{ render_sentiment_badge(act.rating, show_label=True, compact=True) }}
+                  {{ render_sentiment_badge(act.rating, compact=True) }}
                 </div>
                 <p class="recent-log-user">
                   > {{act.f_username}}

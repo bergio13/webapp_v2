@@ -424,7 +424,7 @@
             <p style="font-family: 'VT323', monospace; color: var(--ocean-green); font-size: 1.3rem; margin: 0; letter-spacing: 2px; opacity: 0.85;">HIGHLIGHT OF THE MONTH</p>
           </div>
           <div style="text-align: center; padding-right: 20px;">
-            {{ render_sentiment_badge(highest_rated['rating'], show_label=True) }}
+            {{ render_sentiment_badge(highest_rated['rating']) }}
           </div>
         </div>
       </div>
@@ -498,7 +498,7 @@
           <td style="padding: 10px">{{movie['p_year']}}</td>
           <td style="padding: 10px">{{movie['director'].upper()}}</td>
           <td style="padding: 10px; text-align: center">
-            {{ render_sentiment_badge(movie['rating'], show_label=True, compact=True) }}
+            {{ render_sentiment_badge(movie['rating'], compact=True) }}
           </td>
           <td style="padding: 10px">
             <form action="/edit_movie" method="GET" style="margin: 0">

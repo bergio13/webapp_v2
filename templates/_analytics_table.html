@@ -71,7 +71,7 @@
                     {% if groupby != 'director' %}<td>{{ movie['director'].upper() }}</td>{% endif %}
                     {% if groupby != 'genre' %}<td>{{ movie['genre'] }}</td>{% endif %}
                     {% if groupby != 'year' %}<td>{{ movie['p_year'] }}</td>{% endif %}
-                    {% if groupby != 'rating' %}<td>{{ render_sentiment_badge(movie['rating'], show_label=True, compact=True) }}</td>{% endif %}
+                    {% if groupby != 'rating' %}<td>{{ render_sentiment_badge(movie['rating'], compact=True) }}</td>{% endif %}
                     
                     {% if allow_delete %}
                     <td>

@@ -140,3 +140,4 @@ static/css/partials/_legacy.css
 
 scripts/backup_lista_ratings.json
 scripts/backup_lista_ratings_ORIGINAL_10POINT.json
+scripts/migrate_ratings.py

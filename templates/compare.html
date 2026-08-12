@@ -260,8 +260,8 @@
               <div class="compare-info">
                 <h4 class="compare-title">{{ movie.movie }} ({{ movie.year }})</h4>
                 <div class="ratings-row" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                  <div class="rating-you" style="display: flex; align-items: center; gap: 4px;">You: {{ render_sentiment_badge(movie.u_rating, show_label=True, compact=True) }}</div>
-                  <div class="rating-them" style="display: flex; align-items: center; gap: 4px;">Them: {{ render_sentiment_badge(movie.f_rating, show_label=True, compact=True) }}</div>
+                  <div class="rating-you" style="display: flex; align-items: center; gap: 4px;">You: {{ render_sentiment_badge(movie.u_rating, compact=True) }}</div>
+                  <div class="rating-them" style="display: flex; align-items: center; gap: 4px;">Them: {{ render_sentiment_badge(movie.f_rating, compact=True) }}</div>
                 </div>
               </div>
               

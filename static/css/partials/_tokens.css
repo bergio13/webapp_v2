@@ -171,16 +171,16 @@
   --app-action-danger-text: #b58a8a;
   --app-action-danger-hover-bg: rgba(181, 138, 138, 0.3);
 
-  /* --- Sentiment Scale Tokens --- */
-  --sentiment-1: #ff4d6d;
-  --sentiment-1-glow: rgba(255, 77, 109, 0.25);
-  --sentiment-2: #ff9e00;
-  --sentiment-2-glow: rgba(255, 158, 0, 0.25);
-  --sentiment-3: #7eb5c4;
-  --sentiment-3-glow: rgba(126, 181, 196, 0.25);
-  --sentiment-4: #00f5d4;
-  --sentiment-4-glow: rgba(0, 245, 212, 0.25);
-  --sentiment-5: #ffcc00;
-  --sentiment-5-glow: rgba(255, 204, 0, 0.35);
+  /* --- Sentiment Scale Tokens (Muted Palette) --- */
+  --sentiment-1: #b58a8a;
+  --sentiment-1-glow: rgba(181, 138, 138, 0.18);
+  --sentiment-2: #c89674;
+  --sentiment-2-glow: rgba(200, 150, 116, 0.18);
+  --sentiment-3: #9eb0ba;
+  --sentiment-3-glow: rgba(158, 176, 186, 0.18);
+  --sentiment-4: #7dbfa3;
+  --sentiment-4-glow: rgba(125, 191, 163, 0.18);
+  --sentiment-5: #c4a96d;
+  --sentiment-5-glow: rgba(196, 169, 109, 0.25);
   --sentiment-5-accent: #836fff;
 }

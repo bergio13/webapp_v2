@@ -243,7 +243,7 @@ body_class %} list_page{% endblock %} {% block body %}
         <div class="card-poster-wrapper">
           <img src="{{ movie['poster'] }}" class="card-poster" loading="lazy" />
           <div style="position: absolute; bottom: 8px; right: 8px;">
-            {{ render_sentiment_badge(movie['rating'], show_label=True, compact=True) }}
+            {{ render_sentiment_badge(movie['rating'], compact=True) }}
           </div>
         </div>
         <div class="card-details">
@@ -324,7 +324,7 @@ body_class %} list_page{% endblock %} {% block body %}
           <td style="padding: 10px">{{movie['p_year']}}</td>
           <td style="padding: 10px">{{movie['director'].upper()}}</td>
           <td style="padding: 10px; text-align: center">
-            {{ render_sentiment_badge(movie['rating'], show_label=True, compact=True) }}
+            {{ render_sentiment_badge(movie['rating'], compact=True) }}
           </td>
           <td style="padding: 10px">
             <button type="button" class="table-button-list app-table-action-danger" 
@@ -469,7 +469,7 @@ body_class %} list_page{% endblock %} {% block body %}
       4: `<svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`,
       5: `<svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/></svg>`
     };
-    return `<div class="sentiment-badge sentiment-level-${lvl} compact" title="${labels[lvl]}">${icons[lvl]} <span>${labels[lvl]}</span></div>`;
+    return `<div class="sentiment-badge sentiment-level-${lvl} compact" title="${labels[lvl]}">${icons[lvl]}</div>`;
   }
 
   async function loadMoreMovies() {

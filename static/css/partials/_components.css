@@ -1023,35 +1023,35 @@ ul.add li {
   height: 14px;
 }
 
-/* Sentiment Level Color Theme Variations */
+/* Sentiment Level Color Theme Variations (Muted Palette) */
 .sentiment-level-1 {
   color: var(--sentiment-1);
-  border-color: rgba(255, 77, 109, 0.4);
-  box-shadow: 0 0 10px var(--sentiment-1-glow);
+  border-color: rgba(181, 138, 138, 0.35);
+  box-shadow: 0 0 8px var(--sentiment-1-glow);
 }
 
 .sentiment-level-2 {
   color: var(--sentiment-2);
-  border-color: rgba(255, 158, 0, 0.4);
-  box-shadow: 0 0 10px var(--sentiment-2-glow);
+  border-color: rgba(200, 150, 116, 0.35);
+  box-shadow: 0 0 8px var(--sentiment-2-glow);
 }
 
 .sentiment-level-3 {
   color: var(--sentiment-3);
-  border-color: rgba(126, 181, 196, 0.4);
-  box-shadow: 0 0 10px var(--sentiment-3-glow);
+  border-color: rgba(158, 176, 186, 0.35);
+  box-shadow: 0 0 8px var(--sentiment-3-glow);
 }
 
 .sentiment-level-4 {
   color: var(--sentiment-4);
-  border-color: rgba(0, 245, 212, 0.4);
-  box-shadow: 0 0 10px var(--sentiment-4-glow);
+  border-color: rgba(125, 191, 163, 0.35);
+  box-shadow: 0 0 8px var(--sentiment-4-glow);
 }
 
 .sentiment-level-5 {
   color: var(--sentiment-5);
-  border-color: rgba(255, 204, 0, 0.5);
-  box-shadow: 0 0 12px var(--sentiment-5-glow);
+  border-color: rgba(196, 169, 109, 0.4);
+  box-shadow: 0 0 10px var(--sentiment-5-glow);
 }
 
 /* Interactive Sentiment Picker Selector */
