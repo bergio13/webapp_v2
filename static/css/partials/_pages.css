@@ -970,7 +970,9 @@ body.landing-private-lounge::before {
 /* -----------------------------------Form styling----------------------------------------------------------------- */
 body:not(.discover_page) form {
   max-width: 500px;
-  margin-left: 25%;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .field {

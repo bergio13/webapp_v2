@@ -1058,6 +1058,7 @@ ul.add li {
 .sentiment-selector-wrapper {
   margin-bottom: 1rem;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .sentiment-selector-label {
@@ -1070,9 +1071,10 @@ ul.add li {
 
 .sentiment-selector {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .sentiment-option {
@@ -1081,32 +1083,39 @@ ul.add li {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 12px 6px;
+  padding: 10px 4px;
   background: rgba(19, 28, 39, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .sentiment-option svg {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: transform 0.25s ease, stroke 0.25s ease;
+  flex-shrink: 0;
 }
 
 .sentiment-option .sentiment-text {
   font-family: "VT323", monospace;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--text-primary);
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.25s ease;
+  text-align: center;
 }
 
 .sentiment-option:hover {
@@ -1165,26 +1174,42 @@ ul.add li {
 }
 
 .sentiment-option.active svg {
-  transform: scale(1.15);
+  transform: scale(1.12);
 }
 
 @media (max-width: 600px) {
+  .sentiment-selector-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .sentiment-selector {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .sentiment-option {
-    padding: 8px 3px;
+    padding: 6px 1px;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   .sentiment-option svg {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
   }
 
   .sentiment-option .sentiment-text {
-    font-size: 0.85rem;
+    font-size: 0.72rem;
+    letter-spacing: -0.2px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
   }
 }
 
@@ -1205,6 +1230,8 @@ ul.add li {
   gap: 4px;
   backdrop-filter: blur(10px);
   user-select: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .segmented-btn {
@@ -1224,6 +1251,16 @@ ul.add li {
   position: relative;
   z-index: 1;
   text-align: center;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .segmented-btn {
+    padding: 8px 6px;
+    font-size: 1.15rem;
+    gap: 4px;
+  }
 }
 
 .segmented-btn:hover {

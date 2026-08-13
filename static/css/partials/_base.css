@@ -2,7 +2,13 @@
    _base.css — Global resets, element defaults, scrollbar, layout skeleton
    ========================================================================== */
 
-/* --- Document --- */
+/* --- Document & Box Sizing Reset --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 0;
