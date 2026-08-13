@@ -160,9 +160,12 @@
     color: #ffffff;
     margin: 0;
     line-height: 1.1;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
   }
 
@@ -412,7 +415,7 @@
 
     .highlight-content {
       padding: 10px 12px;
-      gap: 10px;
+      gap: 12px;
     }
 
     .highlight-poster {
@@ -421,11 +424,19 @@
     }
 
     .highlight-tag {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
     }
 
     .highlight-title {
-      font-size: 1.35rem;
+      font-size: 1.4rem;
+      line-height: 1.05;
+      white-space: normal;
+      word-break: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .stats-row {
