@@ -3,71 +3,72 @@
   <input type="hidden" name="rating" id="rating" value="{{ initial_rating | default(3) }}" required />
   
   <div class="sentiment-selector" role="radiogroup" aria-label="Sentiment Rating Selector">
-    <!-- Level 1: Hated it -->
+    <!-- Level 1: Flawed -->
     <button type="button" 
             class="sentiment-option {% if (initial_rating | default(3) | int) == 1 %}active{% endif %}" 
             data-level="1" 
             role="radio" 
             aria-checked="{% if (initial_rating | default(3) | int) == 1 %}true{% else %}false{% endif %}"
-            title="1 - Hated it">
+            title="1 - Flawed">
       <svg viewBox="0 0 24 24">
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-        <polyline points="12 3 9 8.5 14 13 9.5 17.5 12 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
-      <span class="sentiment-text">Hated it</span>
+      <span class="sentiment-text">Flawed</span>
     </button>
 
-    <!-- Level 2: Disliked it -->
+    <!-- Level 2: Mediocre -->
     <button type="button" 
             class="sentiment-option {% if (initial_rating | default(3) | int) == 2 %}active{% endif %}" 
             data-level="2" 
             role="radio" 
             aria-checked="{% if (initial_rating | default(3) | int) == 2 %}true{% else %}false{% endif %}"
-            title="2 - Disliked it">
+            title="2 - Mediocre">
       <svg viewBox="0 0 24 24">
         <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/>
       </svg>
-      <span class="sentiment-text">Disliked it</span>
+      <span class="sentiment-text">Mediocre</span>
     </button>
 
-    <!-- Level 3: OK -->
+    <!-- Level 3: Average -->
     <button type="button" 
             class="sentiment-option {% if (initial_rating | default(3) | int) == 3 %}active{% endif %}" 
             data-level="3" 
             role="radio" 
             aria-checked="{% if (initial_rating | default(3) | int) == 3 %}true{% else %}false{% endif %}"
-            title="3 - OK">
+            title="3 - Average">
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="9"/>
         <line x1="8" y1="12" x2="16" y2="12"/>
       </svg>
-      <span class="sentiment-text">OK</span>
+      <span class="sentiment-text">Average</span>
     </button>
 
-    <!-- Level 4: Liked it -->
+    <!-- Level 4: Great -->
     <button type="button" 
             class="sentiment-option {% if (initial_rating | default(3) | int) == 4 %}active{% endif %}" 
             data-level="4" 
             role="radio" 
             aria-checked="{% if (initial_rating | default(3) | int) == 4 %}true{% else %}false{% endif %}"
-            title="4 - Liked it">
+            title="4 - Great">
       <svg viewBox="0 0 24 24">
         <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
       </svg>
-      <span class="sentiment-text">Liked it</span>
+      <span class="sentiment-text">Great</span>
     </button>
 
-    <!-- Level 5: Loved it -->
+    <!-- Level 5: Masterpiece -->
     <button type="button" 
             class="sentiment-option {% if (initial_rating | default(3) | int) == 5 %}active{% endif %}" 
             data-level="5" 
             role="radio" 
             aria-checked="{% if (initial_rating | default(3) | int) == 5 %}true{% else %}false{% endif %}"
-            title="5 - Loved it">
+            title="5 - Masterpiece">
       <svg viewBox="0 0 24 24">
         <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/>
       </svg>
-      <span class="sentiment-text">Loved it</span>
+      <span class="sentiment-text">Masterpiece</span>
     </button>
   </div>
 </div>
