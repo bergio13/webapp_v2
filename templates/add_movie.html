@@ -297,38 +297,132 @@ content %}
       <input type="date" class="input" id="date" name="date" required />
       <label for="date" class="label">Watch Date</label>
     </div>
-    <div class="radio-group">
-      <label for="rewatch">Rewatch</label>
-      <input type="radio" class="radio-option" name="rewatch" id="rewatch_yes" value=1>Yes</input>
-      <input type="radio" class="radio-option" name="rewatch" id="rewatch_no" value=0 checked>No</input>
-    </div>
-    <div class="radio-group">
-      <label for="tv">Tv show</label>
-      <input type="radio" class="radio-option" name="tv" id="tv_yes" onclick="showSeasonField()" value=1>Yes</input>
-      <input type="radio" class="radio-option" name="tv"  id="tv_no" checked onclick="hideSeasonField()" value=0 checked>No</input>
-    </div>
-    <div class="radio-group" id="seasonField" style="display: none;">
-      <label for="season">Season</label>
-      <div class="season-counter">
-        <button type="button" class="season-btn" onclick="document.getElementById('season').stepDown()">-</button>
-        <input type="number" class="input season-input" id="season" name="season" value="1" min="1" />
-        <button type="button" class="season-btn" onclick="document.getElementById('season').stepUp()">+</button>
+
+    <!-- Media Type Segmented Toggle -->
+    <div class="media-type-section">
+      <!-- Hidden Radio Inputs for Form Submit -->
+      <input type="radio" name="tv" id="tv_no" value="0" checked hidden />
+      <input type="radio" name="tv" id="tv_yes" value="1" hidden />
+
+      <div class="segmented-toggle">
+        <button type="button" class="segmented-btn active" id="segment_movie" onclick="setMediaType('movie')">
+          <span class="segment-icon">🎬</span>
+          <span>Movie</span>
+        </button>
+        <button type="button" class="segmented-btn" id="segment_tv" onclick="setMediaType('tv')">
+          <span class="segment-icon">📺</span>
+          <span>TV Series</span>
+        </button>
+      </div>
+
+      <!-- Collapsible Season Counter -->
+      <div class="season-counter-panel" id="seasonField">
+        <div class="season-counter-wrapper">
+          <span class="season-label">📺 Season Number</span>
+          <div class="season-stepper">
+            <button type="button" class="season-stepper-btn" onclick="stepSeason(-1)">-</button>
+            <input type="number" class="season-stepper-input" id="season" name="season" value="1" min="1" readonly />
+            <button type="button" class="season-stepper-btn" onclick="stepSeason(1)">+</button>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="radio-group">
-      <label for="tv">Watched at the cinema?</label>
-      <input type="radio" class="radio-option" name="cinema" id="cinema_yes" value=1>Yes</input>
-      <input type="radio" class="radio-option" name="cinema"  id="cinema_no" value=0 checked>No</input>
+
+    <!-- Interactive Context Chips (Cinema & Rewatch) -->
+    <input type="radio" name="cinema" id="cinema_yes" value="1" hidden />
+    <input type="radio" name="cinema" id="cinema_no" value="0" checked hidden />
+    <input type="radio" name="rewatch" id="rewatch_yes" value="1" hidden />
+    <input type="radio" name="rewatch" id="rewatch_no" value="0" checked hidden />
+
+    <div class="context-chips-group">
+      <div class="context-chip cinema-chip" id="cinema_chip" onclick="toggleCinemaChip()">
+        <span class="chip-icon">🍿</span>
+        <div class="chip-info">
+          <span class="chip-title">Watched in Cinema</span>
+        </div>
+      </div>
+
+      <div class="context-chip rewatch-chip" id="rewatch_chip" onclick="toggleRewatchChip()">
+        <span class="chip-icon">🔄</span>
+        <div class="chip-info">
+          <span class="chip-title">Rewatch</span>
+        </div>
+      </div>
     </div>
+
     <button type="submit" class="button">[ SUBMIT ]</button>
   </form>
   <script>
+    function setMediaType(type) {
+      const tvYes = document.getElementById("tv_yes");
+      const tvNo = document.getElementById("tv_no");
+      const segMovie = document.getElementById("segment_movie");
+      const segTv = document.getElementById("segment_tv");
+      const seasonPanel = document.getElementById("seasonField");
+
+      if (type === 'tv') {
+        tvYes.checked = true;
+        tvNo.checked = false;
+        segMovie.classList.remove("active");
+        segTv.classList.add("active");
+        seasonPanel.classList.add("expanded");
+      } else {
+        tvNo.checked = true;
+        tvYes.checked = false;
+        segTv.classList.remove("active");
+        segMovie.classList.add("active");
+        seasonPanel.classList.remove("expanded");
+      }
+    }
+
     function showSeasonField() {
-      document.getElementById("seasonField").style.display = "block";
+      setMediaType('tv');
     }
 
     function hideSeasonField() {
-      document.getElementById("seasonField").style.display = "none";
+      setMediaType('movie');
+    }
+
+    function stepSeason(delta) {
+      const input = document.getElementById('season');
+      let val = parseInt(input.value) || 1;
+      val += delta;
+      if (val < 1) val = 1;
+      input.value = val;
+    }
+
+    function toggleCinemaChip() {
+      const chip = document.getElementById('cinema_chip');
+      const yesInput = document.getElementById('cinema_yes');
+      const noInput = document.getElementById('cinema_no');
+
+      const isCurrentlyActive = chip.classList.contains('active');
+      if (isCurrentlyActive) {
+        chip.classList.remove('active');
+        noInput.checked = true;
+        yesInput.checked = false;
+      } else {
+        chip.classList.add('active');
+        yesInput.checked = true;
+        noInput.checked = false;
+      }
+    }
+
+    function toggleRewatchChip() {
+      const chip = document.getElementById('rewatch_chip');
+      const yesInput = document.getElementById('rewatch_yes');
+      const noInput = document.getElementById('rewatch_no');
+
+      const isCurrentlyActive = chip.classList.contains('active');
+      if (isCurrentlyActive) {
+        chip.classList.remove('active');
+        noInput.checked = true;
+        yesInput.checked = false;
+      } else {
+        chip.classList.add('active');
+        yesInput.checked = true;
+        noInput.checked = false;
+      }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -374,11 +468,9 @@ content %}
                   document.getElementById('year').value = item.year;
                   
                   if (item.type === 'tv') {
-                    document.getElementById('tv_yes').checked = true;
-                    showSeasonField();
+                    setMediaType('tv');
                   } else {
-                    document.getElementById('tv_no').checked = true;
-                    hideSeasonField();
+                    setMediaType('movie');
                   }
 
                   autocompleteList.innerHTML = '';
@@ -415,3 +507,4 @@ content %}
 </main>
 
 {% endblock %}
+

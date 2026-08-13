@@ -1187,3 +1187,262 @@ ul.add li {
     font-size: 0.85rem;
   }
 }
+
+/* --- Segmented Media Type Toggle --- */
+.media-type-section {
+  margin-bottom: 1.2rem;
+  width: 100%;
+}
+
+.segmented-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--app-panel-border);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  backdrop-filter: blur(10px);
+  user-select: none;
+}
+
+.segmented-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: "VT323", monospace;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.segmented-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.segmented-btn.active {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.segmented-btn#segment_movie.active {
+  background: rgba(131, 111, 255, 0.22);
+  border-color: rgba(131, 111, 255, 0.45);
+  box-shadow: none;
+  color: var(--text-secondary);
+}
+
+.segmented-btn#segment_tv.active {
+  background: rgba(0, 180, 216, 0.2);
+  border-color: rgba(0, 180, 216, 0.45);
+  box-shadow: none;
+  color: var(--text-secondary);
+}
+
+.segmented-btn .segment-icon {
+  font-size: 1.2rem;
+  transition: transform 0.2s ease;
+}
+
+.segmented-btn:hover .segment-icon {
+  transform: scale(1.15);
+}
+
+.segmented-btn.active .segment-icon {
+  transform: scale(1.2);
+}
+
+/* --- Collapsible Season Counter Panel --- */
+.season-counter-panel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease;
+  margin-top: 0;
+}
+
+.season-counter-panel.expanded {
+  max-height: 100px;
+  opacity: 1;
+  margin-top: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.season-counter-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(131, 111, 255, 0.08);
+  border: 1px dashed var(--theme-accent-muted);
+  border-radius: 12px;
+  padding: 0.6rem 1.2rem;
+}
+
+.season-label {
+  font-family: "VT323", monospace;
+  font-size: 1.3rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.season-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--app-panel-border);
+  border-radius: 8px;
+  padding: 3px 6px;
+}
+
+.season-stepper-btn {
+  background: transparent;
+  color: var(--theme-accent);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: "VT323", monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.season-stepper-btn:hover {
+  background: var(--theme-accent-soft);
+  color: #ffffff;
+}
+
+.season-stepper-btn:active {
+  transform: scale(0.88);
+}
+
+.season-stepper-input {
+  width: 44px;
+  text-align: center;
+  font-family: "VT323", monospace;
+  font-size: 1.4rem;
+  color: #ffffff;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.season-stepper-input::-webkit-inner-spin-button,
+.season-stepper-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* --- Interactive Context Chips (Cinema & Rewatch) --- */
+.context-chips-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.context-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--app-panel-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.context-chip:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-1px);
+}
+
+.context-chip .chip-icon {
+  font-size: 1.4rem;
+  transition: transform 0.25s ease;
+}
+
+.context-chip:hover .chip-icon {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.context-chip .chip-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.context-chip .chip-title {
+  font-family: "VT323", monospace;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  line-height: 1.1;
+  transition: color 0.2s ease;
+}
+
+.context-chip .chip-sub {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+}
+
+/* Cinema Chip Active State - White Tint */
+.context-chip.cinema-chip.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+}
+
+.context-chip.cinema-chip.active .chip-title {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.context-chip.cinema-chip.active .chip-sub {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Rewatch Chip Active State - White Tint */
+.context-chip.rewatch-chip.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+}
+
+.context-chip.rewatch-chip.active .chip-title {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.context-chip.rewatch-chip.active .chip-sub {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 600px) {
+  .context-chips-group {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
