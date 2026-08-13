@@ -104,7 +104,7 @@ def _env_float(name: str, default: float) -> float:
 # ---------------------------------------------------------------------------
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_MODEL_ID = str(_setting_value("OPENROUTER_MODEL_ID", "google/gemma-3-12b-it:free")).strip()
+OPENROUTER_MODEL_ID = str(_setting_value("OPENROUTER_MODEL_ID", "google/gemini-3.6-flash")).strip()
 OPENROUTER_MODEL_FALLBACKS = _env_list("OPENROUTER_MODEL_FALLBACKS")
 OPENROUTER_REQUEST_TIMEOUT = _env_float("OPENROUTER_REQUEST_TIMEOUT", 30)
 OPENROUTER_TOTAL_TIMEOUT = _env_float("OPENROUTER_TOTAL_TIMEOUT", 20)

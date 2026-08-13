@@ -1,14 +1,11 @@
 {
-  "OPENROUTER_MODEL_ID": "google/gemma-3-12b-it:free",
+  "OPENROUTER_MODEL_ID": "google/gemini-3.6-flash",
   "OPENROUTER_MODEL_FALLBACKS": [
-    "google/gemma-3-27b-it:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "openai/gpt-oss-20b:free",
-    "openai/gpt-oss-120b:free",
-    "nvidia/nemotron-3-nano-30b-a3b:free",
-    "z-ai/glm-4.5-air:free",
-    "google/gemma-4-26b-a4b-it:free"
+    "google/gemini-3.5-flash-lite",
+    "deepseek/deepseek-v4-flash-0731",
+    "qwen/qwen3.7-flash",
+    "liquid/lfm-2.5-2.6b:free",
+    "nvidia/nemotron-3.5-lightning:free"
   ],
   "OPENROUTER_REQUEST_TIMEOUT": 30,
   "OPENROUTER_TOTAL_TIMEOUT": 20,
@@ -24,7 +21,5 @@
   "OPENROUTER_PROVIDER_REQUIRE_PARAMETERS": false,
   "OPENROUTER_PROVIDER_ONLY": [],
   "OPENROUTER_PROVIDER_IGNORE": [],
-  "OPENROUTER_PREFERRED_MAX_LATENCY": 4,
-  "OPENROUTER_PREFERRED_MIN_THROUGHPUT": 20,
   "OPENROUTER_SERVICE_TIER": ""
 }

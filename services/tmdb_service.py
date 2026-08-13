@@ -27,32 +27,77 @@ tv_genres = {
 
 def get_movie_details(title, year, manual_director=None):
     """
-    Search TMDB for a movie and extract poster, genres, and director.
+    Search TMDB for a movie or TV show, extracting poster, genres, and director.
+    Handles season title stripping (e.g. 'Reacher, Season 1' -> 'Reacher') and falls back to TV API.
     """
+    import re
+    clean_title = re.sub(r',?\s*season\s*\d+.*$', '', title, flags=re.IGNORECASE).strip()
+    if not clean_title:
+        clean_title = title
+
     try:
-        res = movie_api.search(title)
-        if not res:
+        # 1. Check TV search if title matches known show patterns or media hints
+        movie_res = movie_api.search(clean_title) or []
+        tv_res = tv_api.search(clean_title) or []
+
+        # Find exact title match in TV vs Movie
+        norm_input = re.sub(r'[^a-z0-9]', '', clean_title.lower())
+        
+        best_match = None
+        is_tv_result = False
+
+        # Check for exact title match in TV first if title is short/known TV title
+        for t_item in tv_res:
+            t_name = re.sub(r'[^a-z0-9]', '', (t_item.get('name') or '').lower())
+            if t_name == norm_input:
+                best_match = t_item
+                is_tv_result = True
+                break
+
+        # Check exact title match in Movies if not found in TV
+        if not best_match:
+            for m_item in movie_res:
+                m_title = re.sub(r'[^a-z0-9]', '', (m_item.get('title') or '').lower())
+                if m_title == norm_input:
+                    best_match = m_item
+                    is_tv_result = False
+                    break
+
+        # Fallback to year matching
+        if not best_match:
+            for m_item in movie_res:
+                date_str = m_item.get('release_date') or ''
+                if date_str and str(year) and date_str[:4] == str(year):
+                    best_match = m_item
+                    is_tv_result = False
+                    break
+
+        if not best_match:
+            for t_item in tv_res:
+                date_str = t_item.get('first_air_date') or ''
+                if date_str and str(year) and date_str[:4] == str(year):
+                    best_match = t_item
+                    is_tv_result = True
+                    break
+
+        if not best_match:
+            if movie_res:
+                best_match = movie_res[0]
+                is_tv_result = False
+            elif tv_res:
+                best_match = tv_res[0]
+                is_tv_result = True
+
+        if not best_match:
             return {
-                "poster": "https://via.placeholder.com/200x300?text=No+Poster",
-                "genre": "Unknown",
+                "poster": f"https://placehold.co/500x750/0f172a/7eb5c4?text={requests.utils.quote(clean_title[:20])}",
+                "genre": "Cinematic Pick",
                 "director": manual_director or "Unknown",
                 "title": title
             }
-        
-        # Try to find exact year match
-        best_match = None
-        for result in res:
-            release_date = result.get('release_date')
-            if release_date and release_date[:4] == str(year):
-                best_match = result
-                break
-        
-        # Fallback to first result if no year match
-        if not best_match:
-            best_match = res[0]
             
         poster_path = best_match.get('poster_path')
-        poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/200x300?text=No+Poster"
+        poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else f"https://placehold.co/500x750/0f172a/7eb5c4?text={requests.utils.quote(clean_title[:20])}"
         rating = best_match.get('vote_average')
         if rating is not None:
             try:
@@ -61,47 +106,42 @@ def get_movie_details(title, year, manual_director=None):
                 rating = None
         
         genre_ids = best_match.get('genre_ids', [])
-        genre_list = [movie_genres.get(gid, "") for gid in genre_ids if movie_genres.get(gid)]
-        genre = ", ".join(genre_list) if genre_list else "Unknown"
+        genre_map = tv_genres if is_tv_result else movie_genres
+        genre_list = [genre_map.get(gid, "") for gid in genre_ids if genre_map.get(gid)]
+        genre = ", ".join(genre_list) if genre_list else ("TV Series" if is_tv_result else "Feature Film")
         
         director = "Unknown"
         if manual_director:
             director = manual_director
         else:
             try:
-                movie_details = movie_api.details(best_match['id'])
-                credits = movie_details.credits
-                if credits and 'crew' in credits:
-                    for crew_member in credits['crew']:
-                        if crew_member['job'] == 'Director':
-                            director = crew_member['name']
-                            break
-            except:
-                # Fallback API call for credits
-                try:
-                    api_key = tmdb.api_key
-                    credits_url = f"https://api.themoviedb.org/3/movie/{best_match['id']}/credits?api_key={api_key}"
-                    credits_response = requests.get(credits_url)
-                    if credits_response.status_code == 200:
-                        credits_data = credits_response.json()
-                        for crew_member in credits_data.get('crew', []):
+                if not is_tv_result:
+                    movie_details = movie_api.details(best_match['id'])
+                    credits = movie_details.credits
+                    if credits and 'crew' in credits:
+                        for crew_member in credits['crew']:
                             if crew_member['job'] == 'Director':
                                 director = crew_member['name']
                                 break
-                except:
-                    pass
-                    
+                else:
+                    created_by = best_match.get('created_by', [])
+                    if created_by:
+                        director = created_by[0].get('name', 'Unknown')
+            except Exception:
+                pass
+
+        matched_name = best_match.get('name') if is_tv_result else best_match.get('title')
         return {
             "poster": poster,
             "genre": genre,
-            "director": director,
-            "title": best_match.get('title', title),
+            "director": director if director != "Unknown" else (manual_director or "Unknown"),
+            "title": matched_name or title,
             "rating": rating,
         }
     except Exception as e:
         print(f"Error in tmdb_service.get_movie_details: {e}")
         return {
-            "poster": "https://via.placeholder.com/200x300?text=Error",
+            "poster": f"https://placehold.co/500x750/0f172a/7eb5c4?text={requests.utils.quote(title[:20])}",
             "genre": "Unknown",
             "director": manual_director or "Unknown",
             "title": title,

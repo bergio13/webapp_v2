@@ -968,7 +968,7 @@ body.landing-private-lounge::before {
 }
 
 /* -----------------------------------Form styling----------------------------------------------------------------- */
-form {
+body:not(.discover_page) form {
   max-width: 500px;
   margin-left: 25%;
 }

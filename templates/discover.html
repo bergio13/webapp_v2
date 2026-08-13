@@ -1,10 +1,8 @@
-{% extends 'base.html' %} {% block title %}Discover{% endblock %} {% block
-body_class %} discover_page{% endblock %} {% block content %}
-<link
-  href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
-  rel="stylesheet"
-/>
-
+{% extends 'base.html' %} 
+{% block title %}Discover Studio | Kineto{% endblock %} 
+{% block body_class %} discover_page{% endblock %} 
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
 
 <canvas class="canvas_discover" id="canvas"></canvas>
 <div class="discover-atmosphere" aria-hidden="true"></div>
@@ -13,298 +11,440 @@ body_class %} discover_page{% endblock %} {% block content %}
 
 <main class="discover-main">
   <div class="discover-wrap">
+    
+    <!-- STUDIO HEADER -->
     <header class="discover-header">
-      <h1 class="app-title-terminal home-title glitch-text">
-        <span>//</span> Discover
-      </h1>
-      <p class="discover-intro">Describe the mood you want and choose the recommendation style.</p>
+      <div class="header-tag">// KINETO NEURAL DISCOVERY STUDIO</div>
+      <h1 class="glitch-text"><span>AI</span> Cinema &amp; TV Studio</h1>
     </header>
 
+    <!-- CONTROL PANEL GRID -->
     <section class="discover-grid">
       <div class="cyber-card glass-panel discover-card discover-form-card">
-        <form method="post" class="recommendation-form">
+        <form method="post" class="recommendation-form" id="recommendation-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
+          <!-- MEDIA TYPE SEGMENTED TOGGLE -->
           <div class="form-group">
-            <label for="user_request" class="form-label"
-              >&gt; WHAT ARE YOU IN THE MOOD FOR?</label
-            >
+            <span class="form-label">&gt; MEDIA FORMAT CONSTRAINT</span>
+            <div class="segmented-control" id="media-type-segmented">
+              <button type="button" class="segmented-btn active" data-value="both">
+                <i class="fa-solid fa-layer-group"></i> Hybrid (Both)
+              </button>
+              <button type="button" class="segmented-btn" data-value="movie">
+                <i class="fa-solid fa-film"></i> Movies
+              </button>
+              <button type="button" class="segmented-btn" data-value="tv">
+                <i class="fa-solid fa-tv"></i> TV Series
+              </button>
+            </div>
+            <input type="hidden" name="media_type" id="media_type_input" value="both" />
+          </div>
+
+          <!-- NATURAL LANGUAGE PROMPT BOX -->
+          <div class="form-group">
+            <div class="label-with-clear">
+              <label for="user_request" class="form-label">&gt; NATURAL LANGUAGE PROMPT</label>
+              <button type="button" class="text-link-btn" id="clear-prompt-btn">Clear</button>
+            </div>
             <textarea
               id="user_request"
               name="user_request"
               class="form-textarea"
-              rows="4"
-              placeholder="e.g. moody sci-fi, comforting thrillers, arthouse drama with strong direction"
+              rows="3"
+              placeholder="Describe what you want to watch... (e.g. 90s atmospheric mystery, comforting sci-fi, or intense psychological drama)"
               required
-            >
-{{ user_request }}</textarea
-            >
+            >{{ user_request }}</textarea>
           </div>
 
+          <!-- ADVANCED TASTE PROFILE SETTINGS -->
           <div class="form-group">
-            <span class="form-label">&gt; RECOMMENDATION STYLE</span>
+            <span class="form-label">&gt; ALGORITHM MODE</span>
             <div class="option-grid mode-grid">
-              {% for mode_key, mode_label in discover_mode_labels.items() %}
               <label class="choice-card">
-                <input
-                  type="radio"
-                  name="recommendation_mode"
-                  value="{{ mode_key }}"
-                  {{ "checked" if recommendation_mode == mode_key else "" }}
-                />
+                <input type="radio" name="recommendation_mode" value="similar" checked />
                 <span class="choice-title">
-                  <span class="choice-main">{{ mode_label }}</span>
-                  <span class="choice-sub">{% if mode_key == 'explore' %}Push beyond your usual picks{% elif mode_key == 'similar' %}Closest to your established taste{% elif mode_key == 'comfort' %}Safe familiar territory{% else %}Tune recommendation distance{% endif %}</span>
+                  <span class="choice-main">Closest Taste Match</span>
+                  <span class="choice-sub">Aligns strictly with your highest rated films</span>
                 </span>
               </label>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div class="form-group">
-            <span class="form-label">&gt; TASTE MEMORY WINDOW</span>
-            <div class="option-grid lens-grid">
-              {% for profile_key, profile_label in
-              discover_history_profile_labels.items() %}
               <label class="choice-card">
-                <input
-                  type="radio"
-                  name="history_profile"
-                  value="{{ profile_key }}"
-                  {{ "checked" if history_profile == profile_key else "" }}
-                />
+                <input type="radio" name="recommendation_mode" value="explore" />
                 <span class="choice-title">
-                  <span class="choice-main">{{ profile_label }}</span>
-                  <span class="choice-sub">{% if profile_key == 'recent' %}Bias toward your latest favorites{% elif profile_key == 'balanced' %}Blend recent and long-term taste{% elif profile_key == 'all_time' %}Use your full watch-history identity{% else %}Adjust history influence{% endif %}</span>
+                  <span class="choice-main">Exploratory Push</span>
+                  <span class="choice-sub">Pushes slightly beyond your usual genre clusters</span>
                 </span>
               </label>
-              {% endfor %}
+              <label class="choice-card">
+                <input type="radio" name="recommendation_mode" value="wildcard" />
+                <span class="choice-title">
+                  <span class="choice-main">Serendipity Matrix</span>
+                  <span class="choice-sub">High-variance discovery for unexpected gems</span>
+                </span>
+              </label>
             </div>
           </div>
-
-
 
           <button type="submit" class="recommend-button" id="submit-button">
-            [ GENERATE RECOMMENDATIONS ]
+            [ LAUNCH DISCOVERY ]
           </button>
         </form>
       </div>
     </section>
 
-    <section class="cyber-card glass-panel discover-card response-card" id="response-section" style="display: {% if ai_response %}block{% else %}none{% endif %};">
+    <!-- STREAMING RESPONSE SECTION -->
+    <section class="cyber-card glass-panel discover-card response-card" id="response-section" style="display: none;">
       <div class="response-headline">
-        <h2>OUTPUT_RECOMMENDATIONS</h2>
-        <p id="response-meta-text">
-          {% if ai_response %}
-          Mode: {{ discover_mode_labels.get(recommendation_mode, 'Similar') }} |
-          History Lens: {{ discover_history_profile_labels.get(history_profile, 'Balanced Mix') }}
-          {% endif %}
-        </p>
-        <p class="badge-legend">
-          <span class="already-watched-badge">Already watched</span>
-          marks strict title + year matches from your watched library.
-        </p>
+        <div class="headline-title-wrap">
+          <h2>NEURAL_SYNTHESIS_RESULTS</h2>
+          <div class="live-status-pill" id="live-status-pill">
+            <span class="status-dot"></span> <span id="status-text">Ready</span>
+          </div>
+        </div>
+        <p id="response-meta-text">Configuring neural synthesis...</p>
       </div>
 
-      <div class="formatted-recommendations" id="formatted-recommendations">{% if ai_response %}{{ ai_response | safe }}{% endif %}</div>
+      <div class="formatted-recommendations" id="formatted-recommendations"></div>
     </section>
+
   </div>
 </main>
 
 <style>
   :root {
-    --discover-bg: #181f2b;
-    --discover-bg-elev: #1f2a3a;
+    --discover-bg: #141b26;
     --discover-cyan: #7eb5c4;
-    --discover-purple: #9e96b8;
+    --discover-purple: #a89bc4;
     --discover-green: #7aa898;
     --discover-gold: #c4a96d;
+    --discover-coral: #d97b7b;
     --discover-light: #d0dde5;
-    --discover-muted: #9eb0ba;
-    --discover-line: rgba(126, 181, 196, 0.18);
-    --discover-panel-bg: rgba(19, 28, 39, 0.44);
-    --discover-panel-border: rgba(126, 181, 196, 0.16);
-    --discover-panel-shadow: 0 14px 36px rgba(0, 0, 0, 0.32);
-  }
-
-  .discover_page::before {
-    background: #1a1a1a !important;
-    z-index: 0;
+    --discover-muted: #8ca2af;
   }
 
   .canvas_discover {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-    background: transparent;
-  }
-
-  .discover-atmosphere {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background: transparent;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
   }
 
   .discover-main {
     position: relative;
     z-index: 2;
     margin-left: 5rem;
-    padding: 1rem;
+    padding: 0.5rem 1.5rem 3rem;
     background: transparent;
   }
 
   .discover-wrap {
-    max-width: 1240px;
+    max-width: 1260px;
     margin: 0 auto;
-    width: 100%;
-    box-sizing: border-box;
   }
 
   .discover-header {
-    margin-bottom: 1.2rem;
-    padding: 0 0.5rem;
+    margin-bottom: 1rem;
   }
 
-  .discover-intro {
-    margin: 0.45rem 0 0;
-    max-width: 860px;
-    color: var(--discover-muted);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.18rem;
-    letter-spacing: 0.45px;
-    line-height: 1.3;
-  }
-
-  .ascii-top {
+  .header-tag {
+    font-family: "VT323", monospace;
+    font-size: 1.1rem;
     color: var(--discover-cyan);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 14px;
-    opacity: 0.8;
-    letter-spacing: 0.8px;
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 100%;
+    letter-spacing: 2px;
+    opacity: 0.85;
   }
 
   .discover-header h1 {
-    font-family: "VT323", "Courier New", monospace;
-    letter-spacing: 2px;
+    font-family: "VT323", monospace;
+    font-size: 2.5rem;
     color: var(--discover-light);
-    margin: 0.2rem 0 0;
-    font-size: 3rem;
+    margin: 0.1rem 0 0;
+    letter-spacing: 2px;
   }
 
   .discover-header h1 span {
     color: var(--discover-cyan);
-    opacity: 0.8;
   }
 
-  .discover-header p {
-    margin: 0.2rem 0 0;
+  .discover-intro {
+    font-family: "Rajdhani", sans-serif;
+    font-size: 1.05rem;
     color: var(--discover-muted);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.25rem;
-    letter-spacing: 0.8px;
-  }
-
-  .discover-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-    align-items: start;
+    margin: 0.2rem 0 0;
   }
 
   .discover-card {
-    position: relative;
-    background: linear-gradient(150deg, rgba(19, 28, 39, 0.52), rgba(16, 24, 34, 0.42)) !important;
-    border: 1px solid rgba(126, 181, 196, 0.16) !important;
+    background: linear-gradient(150deg, rgba(17, 25, 36, 0.65), rgba(12, 18, 27, 0.55)) !important;
+    border: 1px solid rgba(126, 181, 196, 0.22) !important;
     border-radius: 16px !important;
-    clip-path: none !important;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(6px) saturate(1.08) !important;
-    -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
-    overflow: hidden;
-  }
-
-  .discover-card::before {
-    content: none !important;
-  }
-
-  .discover-form-card {
-    padding: 24px;
-    max-width: 100%;
-    width: 100%;
-    margin: 0;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px) saturate(1.1) !important;
+    padding: 20px;
   }
 
   .recommendation-form {
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    gap: 18px;
     max-width: 100% !important;
-    margin: 0 !important;
+    margin-left: 0 !important;
+    margin-top: 0 !important;
   }
 
   .form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .form-label {
     color: var(--discover-purple);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.2rem;
-    letter-spacing: 0.9px;
+    font-family: "VT323", monospace;
+    font-size: 1.25rem;
+    letter-spacing: 1px;
   }
 
-  .form-helper {
-    margin: -1px 0 3px;
-    color: rgba(208, 221, 229, 0.78);
-    font-family: "VT323", "Courier New", monospace;
+  .label-with-clear {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .text-link-btn {
+    background: none;
+    border: none;
+    color: var(--discover-muted);
+    font-family: "VT323", monospace;
     font-size: 1rem;
-    letter-spacing: 0.4px;
-    line-height: 1.25;
+    cursor: pointer;
+    text-decoration: underline;
   }
 
+  .text-link-btn:hover {
+    color: var(--discover-cyan);
+  }
+
+  /* SEGMENTED CONTROL */
+  .segmented-control {
+    display: flex;
+    background: rgba(10, 15, 22, 0.7);
+    border: 1px solid rgba(126, 181, 196, 0.2);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .segmented-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--discover-muted);
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .segmented-btn:hover {
+    color: var(--discover-light);
+    background: rgba(126, 181, 196, 0.1);
+  }
+
+  .segmented-btn.active {
+    background: linear-gradient(135deg, rgba(126, 181, 196, 0.25), rgba(126, 181, 196, 0.12));
+    border: 1px solid var(--discover-cyan);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(126, 181, 196, 0.25);
+  }
+
+  /* MOOD PRESETS GRID */
+  .mood-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+
+  .mood-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(12, 19, 28, 0.7);
+    border: 1px solid rgba(126, 181, 196, 0.18);
+    border-radius: 12px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .mood-chip:hover {
+    border-color: var(--discover-cyan);
+    transform: translateY(-2px);
+    background: rgba(126, 181, 196, 0.12);
+  }
+
+  .mood-chip.active {
+    border-color: var(--discover-cyan);
+    background: linear-gradient(145deg, rgba(126, 181, 196, 0.28), rgba(168, 155, 196, 0.18));
+    box-shadow: 0 0 14px rgba(126, 181, 196, 0.3);
+  }
+
+  .mood-icon {
+    font-size: 1.4rem;
+  }
+
+  .mood-title {
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--discover-light);
+    text-align: center;
+  }
+
+  /* VIBE SLIDERS */
+  .vibe-sliders-container {
+    background: rgba(10, 16, 24, 0.5);
+    border: 1px solid rgba(126, 181, 196, 0.15);
+    border-radius: 12px;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "VT323", monospace;
+    font-size: 1.1rem;
+    color: var(--discover-light);
+  }
+
+  .slider-badge {
+    font-family: "VT323", monospace;
+    font-size: 0.95rem;
+    color: var(--discover-cyan);
+    background: rgba(126, 181, 196, 0.12);
+    border: 1px solid rgba(126, 181, 196, 0.25);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .slider-track-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .slider-hint {
+    font-family: "Rajdhani", sans-serif;
+    font-size: 0.85rem;
+    color: var(--discover-muted);
+    min-width: 90px;
+  }
+
+  .slider-hint:last-child {
+    text-align: right;
+  }
+
+  .vibe-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(126, 181, 196, 0.2);
+    outline: none;
+  }
+
+  .vibe-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--discover-cyan);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--discover-cyan);
+    transition: transform 0.15s ease;
+  }
+
+  .vibe-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  /* TEXTAREA & STARTERS */
   .form-textarea {
     width: 100%;
-    min-height: 120px;
     border-radius: 12px;
     box-sizing: border-box;
     resize: vertical;
     border: 1px solid rgba(126, 181, 196, 0.24);
-    background: rgba(12, 19, 27, 0.8);
+    background: rgba(10, 16, 24, 0.85);
     color: var(--discover-light);
-    padding: 12px;
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.2rem;
-    letter-spacing: 0.6px;
+    padding: 14px;
+    font-family: "VT323", monospace;
+    font-size: 1.25rem;
     line-height: 1.35;
-  }
-
-  .form-textarea::placeholder {
-    color: rgba(176, 190, 197, 0.85);
   }
 
   .form-textarea:focus {
     outline: none;
     border-color: var(--discover-cyan);
-    box-shadow: 0 0 12px rgba(100, 181, 246, 0.25);
+    box-shadow: 0 0 14px rgba(126, 181, 196, 0.3);
   }
 
+  .prompt-starters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .starter-label {
+    font-family: "VT323", monospace;
+    color: var(--discover-muted);
+    font-size: 0.95rem;
+  }
+
+  .starter-chip {
+    background: rgba(126, 181, 196, 0.08);
+    border: 1px solid rgba(126, 181, 196, 0.2);
+    color: var(--discover-light);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: "Rajdhani", sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .starter-chip:hover {
+    border-color: var(--discover-cyan);
+    background: rgba(126, 181, 196, 0.2);
+  }
+
+  /* OPTION GRID MODES */
   .option-grid {
     display: grid;
     gap: 9px;
-  }
-
-  .mode-grid,
-  .lens-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -329,9 +469,8 @@ body_class %} discover_page{% endblock %} {% block content %}
     background: rgba(14, 22, 32, 0.75);
     color: var(--discover-light);
     padding: 8px 10px;
-    font-family: "VT323", "Courier New", monospace;
+    font-family: "VT323", monospace;
     font-size: 1.12rem;
-    letter-spacing: 0.7px;
     transition: all 0.22s ease;
     cursor: pointer;
     border-radius: 10px;
@@ -341,7 +480,6 @@ body_class %} discover_page{% endblock %} {% block content %}
     display: block;
     color: #e2ecf2;
     font-size: 1.08rem;
-    letter-spacing: 0.55px;
     line-height: 1.05;
   }
 
@@ -349,8 +487,6 @@ body_class %} discover_page{% endblock %} {% block content %}
     display: block;
     color: rgba(176, 190, 197, 0.9);
     font-size: 0.9rem;
-    letter-spacing: 0.35px;
-    line-height: 1.1;
     margin-top: 2px;
   }
 
@@ -361,150 +497,89 @@ body_class %} discover_page{% endblock %} {% block content %}
     box-shadow: 0 0 8px rgba(126, 181, 196, 0.25);
   }
 
-  .choice-card:hover .choice-title {
-    border-color: rgba(126, 181, 196, 0.5);
-    transform: translateY(-1px);
-  }
-
-  .genre-chip-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .genre-chip {
-    position: relative;
-  }
-
-  .genre-chip input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .genre-chip span {
-    display: inline-flex;
-    align-items: center;
-    min-height: 40px;
-    border: 1px solid rgba(126, 181, 196, 0.22);
-    background: rgba(14, 22, 32, 0.7);
-    color: var(--discover-muted);
-    padding: 4px 15px;
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.02rem;
-    letter-spacing: 0.6px;
-    transition: all 0.22s ease;
-    cursor: pointer;
-    border-radius: 999px;
-  }
-
-  .genre-chip input:checked + span {
-    border-color: var(--discover-green);
-    color: #d0dde5;
-    background: rgba(122, 168, 152, 0.15);
-    box-shadow: 0 0 6px rgba(122, 168, 152, 0.25);
-  }
-
+  /* SUBMIT BUTTON */
   .recommend-button {
     align-self: center;
     border: 1px solid var(--discover-cyan);
-    background: linear-gradient(135deg, rgba(126, 181, 196, 0.24), rgba(126, 181, 196, 0.12));
+    background: linear-gradient(135deg, rgba(126, 181, 196, 0.28), rgba(126, 181, 196, 0.12));
     color: var(--discover-cyan);
-    padding: 12px 24px;
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.35rem;
+    padding: 14px 32px;
+    font-family: "VT323", monospace;
+    font-size: 1.4rem;
     letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.25s ease;
     border-radius: 12px;
+    margin-top: 6px;
   }
 
   .recommend-button:hover:not(:disabled) {
-    background: rgba(100, 181, 246, 0.3);
-    box-shadow: 0 0 20px rgba(100, 181, 246, 0.5);
+    background: rgba(126, 181, 196, 0.35);
+    box-shadow: 0 0 24px rgba(126, 181, 196, 0.5);
     color: #ffffff;
+    transform: translateY(-1px);
   }
 
-  .recommend-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-
-  .recommend-button.loading {
-    background: rgba(116, 131, 148, 0.22);
-    border-color: #8ea0b2;
-    color: #aebbc9;
-    box-shadow: none;
-  }
-
+  /* RESPONSE SECTION & CARDS */
   .response-card {
-    margin-top: 24px;
-    padding: 24px;
+    margin-top: 28px;
+  }
+
+  .response-headline {
+    margin-bottom: 16px;
+  }
+
+  .headline-title-wrap {
     display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-    max-width: 100%;
-    margin: 24px 0 0 0;
-  }
-
-  .discover-form-card,
-  .response-card {
-    background: linear-gradient(150deg, rgba(19, 28, 39, 0.58), rgba(15, 22, 31, 0.46)) !important;
-    border-color: rgba(126, 181, 196, 0.18) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   .response-headline h2 {
     margin: 0;
     color: var(--discover-cyan);
-    font-family: "VT323", "Courier New", monospace;
+    font-family: "VT323", monospace;
+    font-size: 2.2rem;
     letter-spacing: 1.5px;
-    font-size: 2rem;
-    font-weight: normal;
   }
 
-  .response-headline p {
-    margin: 8px 0 0;
-    color: var(--discover-muted);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.12rem;
-    letter-spacing: 0.6px;
-  }
-
-  .badge-legend {
-    display: flex;
+  .live-status-pill {
+    display: inline-flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+    background: rgba(126, 181, 196, 0.12);
+    border: 1px solid rgba(126, 181, 196, 0.25);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-family: "VT323", monospace;
+    font-size: 0.95rem;
+    color: var(--discover-light);
   }
 
-  .formatted-recommendations {
-    margin-top: 12px;
-    max-height: 650px;
-    overflow-y: auto;
-    background: rgba(8, 13, 19, 0.25);
-    border: 1px solid rgba(126, 181, 196, 0.1);
-    border-radius: 12px;
-    padding: 10px;
-    color: var(--discover-light);
-    font-family: inherit;
-    font-size: 1rem;
-    line-height: 1.5;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(126, 181, 196, 0.4) transparent;
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--discover-green);
+    box-shadow: 0 0 8px var(--discover-green);
+  }
+
+  #response-meta-text {
+    font-family: "VT323", monospace;
+    font-size: 1.1rem;
+    color: var(--discover-muted);
+    margin: 6px 0 0;
   }
 
   .movie-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: clamp(1rem, 1.8vw, 1.5rem);
-    padding: 0.3rem;
-    max-width: 1280px;
-    margin: 0 auto;
-    align-items: start;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
   }
 
+  /* CARD OVERLAY & ACTIONS */
   .movie-frame {
     position: relative;
     width: 100%;
@@ -530,27 +605,24 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .movie-frame:hover .movie-poster {
-    filter: brightness(0.72) saturate(1.15);
+    filter: brightness(0.68) saturate(1.15);
     transform: scale(1.05);
   }
 
   .frame-overlay {
     position: absolute;
     inset: 0;
-    width: auto;
-    max-width: 100%;
     display: flex;
     align-items: flex-end;
     padding: 1.1rem 1rem 0.9rem;
-    background: linear-gradient(to top, rgba(10, 14, 20, 0.96) 0%, rgba(10, 14, 20, 0.58) 62%, transparent 100%);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: linear-gradient(to top, rgba(10, 14, 20, 0.96) 0%, rgba(10, 14, 20, 0.65) 65%, transparent 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     box-sizing: border-box;
     transform: translateY(24px);
     opacity: 0;
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     pointer-events: none;
-    overflow: hidden;
   }
 
   .movie-frame:hover .frame-overlay {
@@ -560,879 +632,617 @@ body_class %} discover_page{% endblock %} {% block content %}
   }
 
   .overlay-content {
-    display: grid;
-    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
-    gap: 0.32rem;
-    min-height: 0;
-    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
     width: 100%;
-    transform: translateY(14px);
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    transition-delay: 0.05s;
-    overflow: hidden;
-  }
-
-  .movie-frame:hover .overlay-content {
-    transform: translateY(0);
   }
 
   .frame-title {
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.25rem;
-    font-weight: 400;
+    font-family: "VT323", monospace;
+    font-size: 1.35rem;
     color: #ffffff;
     margin: 0;
     line-height: 1.1;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.85);
   }
 
   .frame-meta {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    flex-wrap: nowrap;
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 0.86rem;
-    color: rgba(255, 255, 255, 0.72);
-    margin: 0;
-    min-height: 1.1rem;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .frame-meta .meta-item {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-    min-width: 0;
-  }
-
-  .frame-meta .meta-item:first-child {
-    max-width: 3.2rem;
-    flex: 0 0 auto;
-  }
-
-  .frame-meta .meta-item:nth-child(2) {
-    flex: 0 0 auto;
-  }
-
-  .frame-meta .meta-item:last-child {
-    flex: 1 1 auto;
+    gap: 0.4rem;
+    font-family: "VT323", monospace;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.75);
   }
 
   .frame-genre {
     display: inline-flex;
     align-items: center;
-    max-width: 100%;
-    margin: 0;
-    padding: 0.2rem 0.45rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 999px;
-    border: 1px solid rgba(126, 181, 196, 0.18);
-    background: rgba(126, 181, 196, 0.1);
+    border: 1px solid rgba(126, 181, 196, 0.2);
+    background: rgba(126, 181, 196, 0.12);
     color: var(--discover-light);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 0.78rem;
-    letter-spacing: 0.45px;
+    font-family: "VT323", monospace;
+    font-size: 0.82rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .frame-rating {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
     color: var(--discover-gold);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 0.86rem;
-    letter-spacing: 0.6px;
-    margin: 0;
-    min-height: 1rem;
-  }
-
-  .frame-summary {
-    color: rgba(255, 255, 255, 0.84);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 0.84rem;
-    line-height: 1.22;
-    margin: 0;
-    padding-right: 0.2rem;
-    text-shadow: 0 0 8px rgba(0, 0, 0, 0.65);
-    max-height: 4.2em;
-    overflow-y: auto;
-    overflow-x: hidden;
-    word-break: break-word;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(126, 181, 196, 0.42) transparent;
-  }
-
-  .frame-summary::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .frame-summary::-webkit-scrollbar-thumb {
-    background: rgba(126, 181, 196, 0.42);
-    border-radius: 999px;
-  }
-
-  .frame-summary::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .frame-summary strong {
-    color: #ffffff;
-    font-weight: 400;
-  }
-
-  .frame-badge-row {
-    margin-top: 0.35rem;
-    min-height: 0.95rem;
-    overflow: hidden;
-  }
-
-  .stream-card-empty {
-    border: 1px dashed rgba(126, 181, 196, 0.3);
-    background:
-      linear-gradient(145deg, rgba(25, 34, 48, 0.9), rgba(16, 23, 32, 0.95));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 24px rgba(0, 0, 0, 0.35);
-    cursor: default;
-  }
-
-  .stream-card-empty:hover {
-    transform: none;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 24px rgba(0, 0, 0, 0.35);
-  }
-
-  .stream-skeleton {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    grid-template-rows: 1fr auto;
-    padding: 0.9rem;
-    box-sizing: border-box;
-  }
-
-  .stream-skeleton-bars {
-    align-self: end;
-    display: grid;
-    gap: 0.42rem;
-  }
-
-  .stream-skeleton-bar {
-    height: 9px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, rgba(126, 181, 196, 0.16), rgba(158, 150, 184, 0.24), rgba(126, 181, 196, 0.16));
-    background-size: 220% 100%;
-    animation: discoverSkeletonPulse 1.35s ease-in-out infinite;
-  }
-
-  .stream-skeleton-bar:nth-child(1) { width: 82%; }
-  .stream-skeleton-bar:nth-child(2) { width: 64%; }
-  .stream-skeleton-bar:nth-child(3) { width: 74%; }
-
-  .stream-skeleton-label {
-    margin-top: 0.52rem;
-    color: rgba(208, 221, 229, 0.72);
-    font-family: "VT323", "Courier New", monospace;
+    font-family: "VT323", monospace;
     font-size: 0.9rem;
     letter-spacing: 0.6px;
   }
 
-  @keyframes discoverSkeletonPulse {
-    0% {
-      background-position: 100% 0;
-      opacity: 0.65;
-    }
-    50% {
-      opacity: 1;
-    }
-    100% {
-      background-position: -100% 0;
-      opacity: 0.65;
-    }
+  .frame-summary {
+    color: rgba(255, 255, 255, 0.88);
+    font-family: "VT323", monospace;
+    font-size: 0.88rem;
+    line-height: 1.25;
+    max-height: 4.5em;
+    overflow-y: auto;
   }
 
-  .movie-frame.stream-slot-enter {
-    animation: discoverSlotReveal 0.38s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  .frame-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
   }
 
-  @keyframes discoverSlotReveal {
-    0% {
-      opacity: 0;
-      transform: translateY(14px) scale(0.985);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  .movie-gallery-empty,
-  .recommendation-epilogue {
+  .card-action-btn {
+    flex: 1;
+    background: rgba(14, 22, 32, 0.85);
+    border: 1px solid rgba(126, 181, 196, 0.25);
     color: var(--discover-light);
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.2rem;
-  }
-
-  .recommendation-epilogue {
-    margin: 1rem 0 0;
-    color: var(--discover-muted);
-  }
-
-  .already-watched-badge {
-    display: inline-flex;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
     align-items: center;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 213, 79, 0.7);
-    background: rgba(255, 213, 79, 0.14);
-    color: #ffea9f;
-    padding: 2px 8px;
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 0.74rem;
-    letter-spacing: 0.45px;
-    text-transform: uppercase;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+    text-decoration: none;
   }
 
-  @media (max-width: 980px) {
-    .discover-grid {
-      grid-template-columns: 1fr;
+  .card-action-btn:hover {
+    border-color: var(--discover-cyan);
+    background: rgba(126, 181, 196, 0.25);
+    color: #ffffff;
+  }
+
+  .card-action-btn.added {
+    border-color: var(--discover-green);
+    background: rgba(122, 168, 152, 0.25);
+    color: #ffffff;
+  }
+
+  /* MOBILE DEVICE RESPONSIVE MEDIA QUERIES */
+  @media (max-width: 1024px) {
+    .movie-gallery {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 16px !important;
     }
   }
 
   @media (max-width: 600px) {
     .discover-main {
-      margin-left: 0;
-      padding: 0.8rem 0.6rem 5rem;
-      width: 100%;
-      box-sizing: border-box;
-      overflow-x: hidden;
-    }
-
-    .discover-wrap {
-      width: 100%;
-      box-sizing: border-box;
-      max-width: 100%;
+      margin-left: 0 !important;
+      padding: 0.5rem 0.85rem 6rem !important; /* 6rem clears the 5rem bottom nav */
     }
 
     .discover-header h1 {
-      font-size: 2.45rem;
+      font-size: 2rem !important;
     }
 
-    .discover-form-card,
-    .response-card {
-      padding: 12px;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-
-    .mode-grid,
-    .lens-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .recommend-button {
-      width: 100%;
-      text-align: center;
-    }
-
-    .formatted-recommendations {
-      max-height: 500px;
-      padding: 10px;
-      max-width: 100%;
-      box-sizing: border-box;
+    .discover-intro {
+      font-size: 0.95rem !important;
     }
 
     .movie-gallery {
-      grid-template-columns: 1fr;
-      max-width: 100%;
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
     }
-  }
 
-  @media (hover: none), (pointer: coarse) {
+    .segmented-control {
+      flex-direction: column !important;
+    }
+
+    .segmented-btn {
+      padding: 8px 12px !important;
+      font-size: 0.95rem !important;
+      justify-content: flex-start !important;
+    }
+
+    .mode-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .slider-track-wrap {
+      gap: 4px !important;
+    }
+
+    .slider-hint {
+      font-size: 0.7rem !important;
+    }
+
+    .discover-card {
+      padding: 14px !important;
+      border-radius: 12px !important;
+    }
+
+    .recommend-button {
+      padding: 13px 16px !important;
+      font-size: 1.1rem !important;
+      width: 100% !important;
+      text-align: center !important;
+    }
+
     .movie-frame {
-      transform: none;
-    }
-
-    .movie-poster {
-      filter: brightness(0.78) saturate(1.08);
-    }
-
-    .frame-overlay {
-      transform: translateY(0);
-      opacity: 1;
-      pointer-events: auto;
+      min-height: 400px !important;
     }
 
     .overlay-content {
-      transform: translateY(0);
+      padding: 12px !important;
+    }
+
+    .frame-actions {
+      flex-wrap: wrap !important;
+      gap: 6px !important;
+    }
+
+    .card-action-btn {
+      font-size: 0.75rem !important;
+      padding: 7px 4px !important;
+    }
+
+    .discover-grid {
+      gap: 12px !important;
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .movie-frame.stream-slot-enter {
-      animation: none;
+  @media (max-width: 420px) {
+    .discover-main {
+      padding: 0.4rem 0.6rem 6rem !important;
+    }
+
+    .header-tag {
+      font-size: 0.9rem !important;
+    }
+
+    .discover-header h1 {
+      font-size: 1.65rem !important;
+    }
+
+    .form-label {
+      font-size: 1.05rem !important;
     }
   }
 </style>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const form = document.querySelector(".recommendation-form");
-    const submitButton = document.getElementById("submit-button");
-    const responseSection = document.getElementById("response-section");
-    const formattedRecs = document.getElementById("formatted-recommendations");
-    const responseMeta = document.getElementById("response-meta-text");
-    const movieDetailsCache = new Map();
-    const movieDetailsRequestCache = new Map();
-    const streamState = {
-      text: "",
-      renderQueued: false,
-    };
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("recommendation-form");
+  const submitButton = document.getElementById("submit-button");
+  const responseSection = document.getElementById("response-section");
+  const formattedRecs = document.getElementById("formatted-recommendations");
+  const responseMeta = document.getElementById("response-meta-text");
+  const statusText = document.getElementById("status-text");
+  const userRequestInput = document.getElementById("user_request");
 
-    let watchedMovies = [];
-    fetch('/api/watched_lookup')
-      .then(res => res.json())
-      .then(data => { watchedMovies = data; })
-      .catch(err => console.error("Failed to load watched lookup", err));
+  const movieDetailsCache = new Map();
 
-    const normalizeText = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const normalizedCacheKey = (title, year) => `${normalizeText(title).toLowerCase()}::${year || ""}`;
-    const escapeHtml = (value) => String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\"/g, "&quot;")
-      .replace(/'/g, "&#39;");
 
-    const buildWatchedLookup = (watchedLookup = []) => {
-      return new Set(
-        watchedLookup
-          .filter((item) => item && item.title && item.year)
-          .map((item) => `${normalizeText(item.title).toLowerCase()}::${item.year}`),
-      );
-    };
 
-    const parseStreamedRecommendations = (rawText, watchedLookup = []) => {
-      const text = String(rawText || "").replace(/\r\n/g, "\n");
-      const lines = text.split("\n");
-      const watchedSet = buildWatchedLookup(watchedLookup);
-      const results = [];
-      let current = null;
+  // MEDIA TYPE SEGMENTED TOGGLE
+  const segmentedBtns = document.querySelectorAll("#media-type-segmented .segmented-btn");
+  const mediaTypeInput = document.getElementById("media_type_input");
 
-      const pushCurrent = () => {
-        if (!current || !current.title) {
-          return;
-        }
+  segmentedBtns.forEach(btn => {
+    btn.addEventListener("click", function() {
+      segmentedBtns.forEach(b => b.classList.remove("active"));
+      this.classList.add("active");
+      mediaTypeInput.value = this.dataset.value;
+    });
+  });
 
-        const normalizedTitle = normalizeText(current.title).toLowerCase();
-        const isWatched = current.year ? watchedSet.has(`${normalizedTitle}::${current.year}`) : false;
-        const whyText = current.whyLines.join(" ").trim() || "No rationale provided yet.";
+  document.getElementById("clear-prompt-btn").addEventListener("click", function() {
+    userRequestInput.value = "";
+  });
 
-        results.push({
-          title: current.title,
-          year: current.year,
-          director: current.director,
-          genre: current.genre,
-          rating: current.rating,
-          why: whyText,
-          isWatched,
-          key: `${normalizedTitle}::${current.year}`,
-        });
-      };
+  // WATCHLIST AJAX ACTION
+  window.handleWatchlistAdd = async function(btn, title, year, director, mediaType) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
-      for (const rawLine of lines) {
-        const line = rawLine.trim();
-        if (!line) {
-          continue;
-        }
+    try {
+      const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+      const res = await fetch("/api/watchlist/add_ajax", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify({ title, year, director, media_type: mediaType })
+      });
 
-        // Make heading match more resilient to bolding
-        const numberedMatch = line.match(/^([1-4])\.\s+\*?\*?(.+?)\*?\*?$/);
-        if (numberedMatch) {
-          const heading = numberedMatch[2].trim().replace(/\*\*/g, "").trim();
-          if (current) {
-            pushCurrent();
-            if (results.length >= 4) {
-              break;
+      const data = await res.json();
+      if (res.ok && data.success) {
+        btn.classList.add("added");
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> In Watchlist';
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-plus"></i> + Watchlist';
+        alert(data.error || "Failed to add to watchlist.");
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-plus"></i> + Watchlist';
+      alert("Error adding to watchlist.");
+    }
+  };
+
+  // SINGLE CARD SWAP ACTION
+  window.handleCardSwap = async function(cardIndex, rejectedTitle) {
+    const activeCards = Array.from(formattedRecs.querySelectorAll(".movie-frame[data-title]"));
+    const activeTitles = activeCards.map(c => c.dataset.title);
+    const targetCard = activeCards[cardIndex];
+
+    if (!targetCard) return;
+
+    targetCard.style.opacity = "0.5";
+    targetCard.style.pointerEvents = "none";
+
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    const mediaType = mediaTypeInput.value;
+    const tone = sliders.tone.input.value;
+    const pace = sliders.pace.input.value;
+    const distance = sliders.distance.input.value;
+    const userRequest = userRequestInput.value;
+
+    try {
+      const response = await fetch("/api/recommend_swap", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify({
+          user_request: userRequest,
+          active_titles: activeTitles,
+          rejected_title: rejectedTitle,
+          media_type: mediaType,
+          tone: tone,
+          pace: pace,
+          distance: distance
+        })
+      });
+
+      if (!response.ok) throw new Error("Swap request failed");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let streamText = "";
+      let sseBuffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        sseBuffer += decoder.decode(value, { stream: true });
+        const events = sseBuffer.split("\n\n");
+        sseBuffer = events.pop() || "";
+
+        for (const eventBlock of events) {
+          const payloadRaw = eventBlock
+            .split("\n")
+            .filter((line) => line.startsWith("data: "))
+            .map((line) => line.slice(6))
+            .join("\n")
+            .trim();
+
+          if (!payloadRaw) continue;
+
+          try {
+            const data = JSON.parse(payloadRaw);
+            if (data.token) {
+              streamText += data.token;
+            } else if (data.error) {
+              console.error("[DEBUG] Swap SSE error:", data.error);
             }
-          }
+          } catch (_e) {}
+        }
+      }
 
-          const headingMatch = heading.match(/^(.*?)\s*\((\d{4})\)\s*[-–—]\s*(.*?)\s*$/);
+      targetCard.style.opacity = "1";
+      targetCard.style.pointerEvents = "auto";
+
+      console.log("[DEBUG] Swap raw streamText:", streamText);
+      const items = parseStreamedText(streamText);
+      console.log("[DEBUG] Swap parsed items:", items);
+      if (items && items.length > 0) {
+        const newItem = items[0];
+        const details = await fetchMovieDetails(newItem.title, newItem.year, newItem.director);
+        const poster = (details && details.poster && !details.poster.includes("via.placeholder"))
+          ? details.poster
+          : `https://placehold.co/500x750/0f172a/7eb5c4?text=${encodeURIComponent(newItem.title)}`;
+        const genre = (details && details.genre) ? details.genre : "Cinematic Pick";
+        const rating = newItem.rating ? `Match ${newItem.rating}` : "95% Match";
+
+        const newCardHtml = `
+          <article class="movie-frame" data-title="${newItem.title}" data-year="${newItem.year}">
+            <img src="${poster}" alt="${newItem.title}" class="movie-poster" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=${encodeURIComponent(newItem.title)}';">
+            <div class="frame-overlay">
+              <div class="overlay-content">
+                <h3 class="frame-title">${newItem.title}</h3>
+                <div class="frame-meta">
+                  <span>${newItem.year}</span> • <span>${newItem.director}</span>
+                </div>
+                <div class="frame-genre">${genre}</div>
+                <div class="frame-rating"><i class="fa-solid fa-bolt"></i> ${rating}</div>
+                <div class="frame-summary"><strong>Rationale:</strong> ${newItem.why || "Perfect replacement pick for your vibe profile."}</div>
+                
+                <div class="frame-actions">
+                  <button type="button" class="card-action-btn" onclick="event.stopPropagation(); event.preventDefault(); handleWatchlistAdd(this, '${newItem.title.replace(/'/g, "\\'")}', '${newItem.year}', '${newItem.director.replace(/'/g, "\\'")}', '${mediaType}')">
+                    <i class="fa-solid fa-plus"></i> + Watchlist
+                  </button>
+                  <a href="/add_movie?movie=${encodeURIComponent(newItem.title)}&p_year=${newItem.year}&director=${encodeURIComponent(newItem.director)}" target="_blank" class="card-action-btn" onclick="event.stopPropagation();">
+                    <i class="fa-solid fa-eye"></i> Log Watch
+                  </a>
+                  <button type="button" class="card-action-btn" onclick="event.stopPropagation(); event.preventDefault(); handleCardSwap(${cardIndex}, '${newItem.title.replace(/'/g, "\\'")}')">
+                    <i class="fa-solid fa-rotate"></i> Swap
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+        targetCard.outerHTML = newCardHtml;
+      }
+    } catch (err) {
+      console.error(err);
+      targetCard.style.opacity = "1";
+      targetCard.style.pointerEvents = "auto";
+      alert("Could not swap card at this time.");
+    }
+  };
+
+  // HELPER MOVIE DETAILS FETCH
+  async function fetchMovieDetails(title, year, director) {
+    const key = `${title.toLowerCase()}::${year}`;
+    if (movieDetailsCache.has(key)) return movieDetailsCache.get(key);
+    try {
+      const params = new URLSearchParams({ title });
+      if (year) params.set("year", String(year));
+      if (director) params.set("director", String(director));
+      const res = await fetch(`/api/movie_details?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        movieDetailsCache.set(key, data);
+        return data;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  // PARSE STREAMED RECOMMENDATIONS
+  function parseStreamedText(rawText) {
+    const lines = (rawText || "").split("\n");
+    const results = [];
+    let current = null;
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line) continue;
+
+      const numMatch = line.match(/^(?:###\s*)?(?:[1-4]\.|[-*])\s+\*?\*?(.+?)\*?\*?$/);
+      if (numMatch) {
+        const heading = numMatch[1].replace(/\*\*/g, "").trim();
+        const hMatch = heading.match(/^(.*?)\s*\((?:c\.\s*)?(\d{4})\)\s*[-–—:]\s*(.*?)\s*$/) || heading.match(/^(.*?)\s*[-–—:]\s*(.*?)\s*$/);
+        
+        if (hMatch) {
+          if (current && current.title) results.push(current);
+          if (results.length >= 4) break;
+
+          const part1 = hMatch[1] ? hMatch[1].trim() : "";
+          const part2 = hMatch[2] ? hMatch[2].trim() : "";
+          const part3 = hMatch[3] ? hMatch[3].trim() : "";
+
           current = {
-            title: headingMatch ? headingMatch[1].trim() : heading.replace(/\s*[-–—].*$/, "").trim(),
-            year: headingMatch ? headingMatch[2] : "",
-            director: headingMatch ? headingMatch[3].trim() : "Unknown Director",
-            genre: "Genre unavailable",
-            rating: "Curated Pick",
-            whyLines: [],
+            title: part1,
+            year: /^\d{4}$/.test(part2) ? part2 : (/^\d{4}$/.test(part3) ? part3 : ""),
+            director: part3 && !/^\d{4}$/.test(part3) ? part3 : (part2 && !/^\d{4}$/.test(part2) ? part2 : "Unknown Creator"),
+            rating: "95/100",
+            why: ""
           };
           continue;
         }
-
-        if (!current) {
-          continue;
-        }
-
-        if (/^\*?\*?genre\*?\*?\s*:/i.test(line)) {
-          const val = line.split(":", 2)[1];
-          if (val) current.genre = val.trim().replace(/\*\*/g, "");
-          continue;
-        }
-
-        if (/^\*?\*?score\*?\*?\s*:/i.test(line)) {
-          const val = line.split(":", 2)[1];
-          if (val) current.rating = val.trim().replace(/\*\*/g, "");
-          continue;
-        }
-
-        if (/^\*?\*?comment\*?\*?\s*:/i.test(line)) {
-          const val = line.split(":", 2)[1];
-          if (val) current.whyLines.push(val.trim().replace(/\*\*/g, ""));
-          continue;
-        }
-
-        if (!/^\*\*/.test(line) && !/^\s*$/.test(line)) {
-          current.whyLines.push(line);
-        }
       }
 
-      if (current && results.length < 4) {
-        pushCurrent();
+      if (!current) continue;
+
+      if (/^score\s*:/i.test(line)) {
+        current.rating = line.split(":", 2)[1].replace(/\*\*/g, "").trim();
+      } else if (/^comment\s*:/i.test(line) || /^rationale\s*:/i.test(line)) {
+        current.why = line.split(":", 2)[1].replace(/\*\*/g, "").trim();
+      } else if (!line.startsWith("**") && !line.startsWith("#")) {
+        current.why = (current.why ? current.why + " " : "") + line.replace(/\*\*/g, "").trim();
       }
+    }
 
-      return results.slice(0, 4);
-    };
+    if (current && current.title && results.length < 4) {
+      results.push(current);
+    }
+    return results.slice(0, 4);
+  }
 
-    const buildSkeletonGallery = () => {
-      const cards = Array.from({ length: 4 }, (_, index) => `
-        <article class="movie-frame stream-card-empty" data-slot-index="${index}" data-state="empty">
-          <div class="stream-skeleton">
-            <div></div>
-            <div class="stream-skeleton-bars">
-              <span class="stream-skeleton-bar"></span>
-              <span class="stream-skeleton-bar"></span>
-              <span class="stream-skeleton-bar"></span>
-              <p class="stream-skeleton-label">Slot ${index + 1} loading...</p>
+  // RENDER GALLERY CARDS
+  async function renderGalleryCards(items) {
+    if (!items || !items.length) return;
+
+    const cardsHtml = await Promise.all(items.map(async (item, idx) => {
+      const details = await fetchMovieDetails(item.title, item.year, item.director);
+      const poster = (details && details.poster && !details.poster.includes("via.placeholder")) 
+        ? details.poster 
+        : `https://placehold.co/500x750/0f172a/7eb5c4?text=${encodeURIComponent(item.title)}`;
+      const genre = (details && details.genre) ? details.genre : "Cinematic Pick";
+      const rating = item.rating ? `Match ${item.rating}` : "95% Match";
+
+      return `
+        <article class="movie-frame" data-title="${item.title}" data-year="${item.year}">
+          <img src="${poster}" alt="${item.title}" class="movie-poster" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=${encodeURIComponent(item.title)}';">
+          <div class="frame-overlay">
+            <div class="overlay-content">
+              <h3 class="frame-title">${item.title}</h3>
+              <div class="frame-meta">
+                <span>${item.year}</span> • <span>${item.director}</span>
+              </div>
+              <div class="frame-genre">${genre}</div>
+              <div class="frame-rating"><i class="fa-solid fa-bolt"></i> ${rating}</div>
+              <div class="frame-summary"><strong>Rationale:</strong> ${item.why || "Perfect match for your current vibe profile."}</div>
+              
+              <div class="frame-actions">
+                <button type="button" class="card-action-btn" onclick="event.stopPropagation(); event.preventDefault(); handleWatchlistAdd(this, '${item.title.replace(/'/g, "\\'")}', '${item.year}', '${item.director.replace(/'/g, "\\'")}', '${mediaTypeInput.value}')">
+                  <i class="fa-solid fa-plus"></i> + Watchlist
+                </button>
+                <a href="/add_movie?movie=${encodeURIComponent(item.title)}&p_year=${item.year}&director=${encodeURIComponent(item.director)}" target="_blank" class="card-action-btn" onclick="event.stopPropagation();">
+                  <i class="fa-solid fa-eye"></i> Log Watch
+                </a>
+                <button type="button" class="card-action-btn" onclick="event.stopPropagation(); event.preventDefault(); handleCardSwap(${idx}, '${item.title.replace(/'/g, "\\'")}')">
+                  <i class="fa-solid fa-rotate"></i> Swap
+                </button>
+              </div>
             </div>
           </div>
         </article>
-      `).join("");
-
-      return `<section class="movie-gallery" id="stream-gallery">${cards}</section><p class="recommendation-epilogue" id="stream-status">Streaming recommendations...</p>`;
-    };
-
-    const buildFilledCardMarkup = (item, details) => {
-      const displayTitle = (details && details.title) || item.title || "Untitled Recommendation";
-      const displayDirector = (details && details.director) || item.director || "Unknown Director";
-      const displayGenre = (details && details.genre) || item.genre || "Genre unavailable";
-      const displayRating = (item.rating && item.rating !== "Curated Pick") 
-        ? item.rating 
-        : ((details && typeof details.rating === "number") 
-            ? `TMDB ${details.rating.toFixed(1)}/10` 
-            : "Curated Pick");
-      const poster = (details && details.poster) || "https://via.placeholder.com/500x750?text=Loading+Poster";
-      const badge = item.isWatched ? '<span class="already-watched-badge">Already watched</span>' : "";
-
-      return `
-        <img src="${escapeHtml(poster)}" alt="${escapeHtml(displayTitle)}" class="movie-poster" loading="lazy">
-        <div class="frame-overlay">
-          <div class="overlay-content">
-            <h3 class="frame-title">${escapeHtml(displayTitle)}</h3>
-            <div class="frame-meta">
-              <span class="meta-item">${escapeHtml(item.year || "Year unavailable")}</span>
-              <span class="meta-item divider">•</span>
-              <span class="meta-item">${escapeHtml(displayDirector)}</span>
-            </div>
-            <div class="frame-genre">${escapeHtml(displayGenre)}</div>
-            <div class="frame-rating">${escapeHtml(displayRating)}</div>
-            <div class="frame-summary"><strong>Comment:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}</div>
-            <div class="frame-badge-row">${badge}</div>
-          </div>
-        </div>
       `;
-    };
+    }));
 
-    async function fetchMovieDetails(title, year, director) {
-      const safeTitle = (title || "").trim();
-      if (!safeTitle) {
-        return null;
-      }
+    formattedRecs.innerHTML = `<section class="movie-gallery">${cardsHtml.join("")}</section>`;
+  }
 
-      const cacheKey = `${safeTitle.toLowerCase()}::${year || ""}`;
-      if (movieDetailsCache.has(cacheKey)) {
-        return movieDetailsCache.get(cacheKey);
-      }
+  // FORM SUBMISSION & SSE STREAMING
+  if (form && submitButton) {
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-      if (movieDetailsRequestCache.has(cacheKey)) {
-        return movieDetailsRequestCache.get(cacheKey);
-      }
+      submitButton.classList.add("loading");
+      submitButton.disabled = true;
+      submitButton.textContent = "[ SYNTHESIZING RECOMMENDATIONS... ]";
 
-      const params = new URLSearchParams({ title: safeTitle });
-      if (year) params.set("year", String(year));
-      if (director) params.set("director", String(director));
+      const activeCards = Array.from(formattedRecs.querySelectorAll(".movie-frame[data-title]"));
+      const activeTitles = activeCards.map(c => c.dataset.title);
 
-      const requestPromise = (async () => {
-        try {
-          const response = await fetch(`/api/movie_details?${params.toString()}`);
-          if (!response.ok) {
-            if (response.status === 429) {
-              return {
-                transientRateLimit: true,
-              };
-            }
-            return null;
-          }
+      const formData = new FormData(form);
+      const requestPayload = {
+        user_request: formData.get("user_request"),
+        recommendation_mode: formData.get("recommendation_mode"),
+        history_profile: formData.get("history_profile"),
+        media_type: formData.get("media_type"),
+        tone: formData.get("tone"),
+        pace: formData.get("pace"),
+        distance: formData.get("distance"),
+        mood_preset: formData.get("mood_preset"),
+        preferred_genres: formData.getAll("preferred_genres"),
+        active_titles: activeTitles
+      };
 
-          const data = await response.json();
-          movieDetailsCache.set(cacheKey, data);
-          return data;
-        } catch (_err) {
-          return null;
-        } finally {
-          movieDetailsRequestCache.delete(cacheKey);
-        }
-      })();
+      const mediaTypeLabel = requestPayload.media_type === "tv" ? "TV Series" : (requestPayload.media_type === "movie" ? "Movies" : "Hybrid");
 
-      movieDetailsRequestCache.set(cacheKey, requestPromise);
-      return requestPromise;
-    }
+      responseMeta.innerHTML = `Format: ${mediaTypeLabel}`;
 
-    const setSlotEmpty = (slot, index) => {
-      slot.className = "movie-frame stream-card-empty";
-      slot.dataset.state = "empty";
-      slot.dataset.slotIndex = String(index);
-      delete slot.dataset.itemKey;
-      delete slot.dataset.title;
-      delete slot.dataset.year;
-      delete slot.dataset.director;
-      delete slot.dataset.posterHydrated;
-      delete slot.dataset.posterPending;
-      slot.innerHTML = `
-        <div class="stream-skeleton">
-          <div></div>
-          <div class="stream-skeleton-bars">
-            <span class="stream-skeleton-bar"></span>
-            <span class="stream-skeleton-bar"></span>
-            <span class="stream-skeleton-bar"></span>
-            <p class="stream-skeleton-label">Slot ${index + 1} loading...</p>
-          </div>
-        </div>
-      `;
-    };
-
-    const ensureStreamingShell = () => {
-      let gallery = formattedRecs.querySelector("#stream-gallery");
-      if (!gallery) {
-        formattedRecs.innerHTML = buildSkeletonGallery();
-        gallery = formattedRecs.querySelector("#stream-gallery");
-      }
-      return gallery;
-    };
-
-    const updateStreamStatus = (message) => {
-      const status = formattedRecs.querySelector("#stream-status");
-      if (status) {
-        status.textContent = message;
-      }
-    };
-
-    const hydrateSingleCard = async (card, item) => {
-      if (!item || card.dataset.posterHydrated === "1" || card.dataset.posterPending === "1") {
-        return;
-      }
-
-      const retryAfter = Number(card.dataset.posterRetryAfter || "0");
-      if (retryAfter && Date.now() < retryAfter) {
-        return;
-      }
-
-      card.dataset.posterPending = "1";
-      const activeKey = card.dataset.itemKey;
+      responseSection.style.display = "block";
+      statusText.textContent = "Synthesizing...";
+      formattedRecs.innerHTML = `<p style="font-family:'VT323',monospace;font-size:1.2rem;color:var(--discover-cyan);">[ Neural engine synthesizing recommendations... ]</p>`;
 
       try {
-        const details = await fetchMovieDetails(item.title, item.year, item.director);
-        if (!details || card.dataset.itemKey !== activeKey) {
-          card.dataset.posterRetryAfter = String(Date.now() + 1500);
-          return;
-        }
+        const response = await fetch("/api/recommend_stream", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": formData.get("csrf_token")
+          },
+          body: JSON.stringify(requestPayload)
+        });
 
-        if (details.transientRateLimit) {
-          card.dataset.posterRetryAfter = String(Date.now() + 2000);
-          return;
-        }
-
-        movieDetailsCache.set(normalizedCacheKey(item.title, item.year), details);
-        const posterNode = card.querySelector(".movie-poster");
-        if (posterNode && details.poster) {
-          posterNode.src = details.poster;
-          posterNode.alt = details.title || item.title || "Recommendation Poster";
-        }
-
-        const titleNode = card.querySelector(".frame-title");
-        if (titleNode && details.title) {
-          titleNode.textContent = details.title;
-        }
-
-        const metaItems = card.querySelectorAll(".frame-meta .meta-item");
-        if (metaItems.length >= 3 && details.director) {
-          metaItems[2].textContent = details.director;
-        }
-
-        const genreNode = card.querySelector(".frame-genre");
-        if (genreNode && details.genre) {
-          genreNode.textContent = details.genre;
-        }
-
-        const ratingNode = card.querySelector(".frame-rating");
-        if (ratingNode && typeof details.rating === "number" && (!item.rating || item.rating === "Curated Pick")) {
-          ratingNode.textContent = `TMDB ${details.rating.toFixed(1)}/10`;
-        }
-
-        card.dataset.director = details.director || item.director || "";
-        delete card.dataset.posterRetryAfter;
-        card.dataset.posterHydrated = "1";
-      } finally {
-        delete card.dataset.posterPending;
-      }
-    };
-
-    const paintSlot = (slot, item, index) => {
-      if (!item) {
-        setSlotEmpty(slot, index);
-        return;
-      }
-
-      if (slot.dataset.state === "filled" && slot.dataset.itemKey === item.key) {
-        const summaryNode = slot.querySelector(".frame-summary");
-        if (summaryNode) {
-          summaryNode.innerHTML = `<strong>Comment:</strong> ${escapeHtml(item.why || "No rationale provided yet.")}`;
-        }
-
-        const genreNode = slot.querySelector(".frame-genre");
-        if (genreNode && item.genre && item.genre !== "Genre unavailable") {
-          genreNode.textContent = item.genre;
-        }
-
-        slot.dataset.whyText = item.why;
-        slot.dataset.genreText = item.genre;
-        return;
-      }
-
-      const cachedDetails = movieDetailsCache.get(normalizedCacheKey(item.title, item.year));
-      const needsRepaint =
-        slot.dataset.state !== "filled" ||
-        slot.dataset.itemKey !== item.key ||
-        slot.dataset.whyText !== item.why ||
-        slot.dataset.genreText !== item.genre;
-
-      if (!needsRepaint) {
-        return;
-      }
-
-      slot.className = "movie-frame";
-      slot.dataset.state = "filled";
-      slot.dataset.slotIndex = String(index);
-      slot.dataset.itemKey = item.key;
-      slot.dataset.whyText = item.why;
-      slot.dataset.genreText = item.genre;
-      slot.dataset.title = item.title;
-      slot.dataset.year = item.year;
-      slot.dataset.director = item.director;
-      delete slot.dataset.posterHydrated;
-      delete slot.dataset.posterPending;
-      slot.innerHTML = buildFilledCardMarkup(item, cachedDetails);
-
-      if (!cachedDetails) {
-        slot.classList.add("stream-slot-enter");
-        slot.style.animationDelay = `${index * 120}ms`;
-        window.setTimeout(() => {
-          slot.classList.remove("stream-slot-enter");
-          slot.style.animationDelay = "";
-        }, 550 + (index * 120));
-      }
-
-      void hydrateSingleCard(slot, item);
-    };
-
-    const renderStreamSlots = () => {
-      const parsedItems = parseStreamedRecommendations(streamState.text, watchedMovies);
-      const gallery = ensureStreamingShell();
-      const slots = Array.from(gallery.querySelectorAll(".movie-frame[data-slot-index]"));
-
-      slots.forEach((slot, index) => {
-        const item = parsedItems[index] || null;
-        paintSlot(slot, item, index);
-      });
-
-      if (!parsedItems.length && streamState.text.trim().length > 0) {
-        updateStreamStatus("Generating first card...");
-      } else {
-        updateStreamStatus(`Loaded ${parsedItems.length}/4 recommendations`);
-      }
-    };
-
-    const queueStreamRender = () => {
-      if (streamState.renderQueued) {
-        return;
-      }
-
-      streamState.renderQueued = true;
-      requestAnimationFrame(() => {
-        streamState.renderQueued = false;
-        renderStreamSlots();
-      });
-    };
-
-    async function hydrateCardPosters() {
-      const cards = Array.from(formattedRecs.querySelectorAll('.movie-frame[data-title]')).filter(
-        (card) => card.dataset.posterHydrated !== "1" && card.dataset.posterPending !== "1",
-      );
-      if (!cards.length) {
-        return;
-      }
-
-      await Promise.all(cards.map(async (card) => {
-        const item = {
-          title: card.dataset.title || "",
-          year: card.dataset.year || "",
-          director: card.dataset.director || "",
-          key: `${normalizeText(card.dataset.title).toLowerCase()}::${card.dataset.year || ""}`,
-          why: card.dataset.whyText || "",
-          genre: card.dataset.genreText || "",
-          isWatched: card.querySelector(".already-watched-badge") !== null,
-          rating: card.querySelector(".frame-rating") ? card.querySelector(".frame-rating").textContent : "Curated Pick",
-        };
-        await hydrateSingleCard(card, item);
-      }));
-    }
-
-    if (form && submitButton) {
-      form.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        
-        submitButton.classList.add("loading");
-        submitButton.disabled = true;
-        submitButton.textContent = "[ GENERATING... ]";
-
-        const formData = new FormData(form);
-        const requestPayload = {
-          user_request: formData.get('user_request'),
-          recommendation_mode: formData.get('recommendation_mode'),
-          history_profile: formData.get('history_profile'),
-          preferred_genres: formData.getAll('preferred_genres')
-        };
-
-        const selectedModeCard = document.querySelector(`input[name="recommendation_mode"]:checked`)?.nextElementSibling;
-        const selectedProfileCard = document.querySelector(`input[name="history_profile"]:checked`)?.nextElementSibling;
-        const modeLabel = selectedModeCard?.querySelector('.choice-main')?.textContent?.trim() || selectedModeCard?.textContent?.trim() || 'Similar';
-        const profileLabel = selectedProfileCard?.querySelector('.choice-main')?.textContent?.trim() || selectedProfileCard?.textContent?.trim() || 'Balanced Mix';
-        const genres = requestPayload.preferred_genres.join(', ') || 'Any';
-        responseMeta.innerHTML = `Mode: ${modeLabel} | History Lens: ${profileLabel} | Genres: ${genres}`;
-        
-        responseSection.style.display = "block";
-        streamState.text = "";
-        streamState.renderQueued = false;
-        formattedRecs.innerHTML = buildSkeletonGallery();
-
-        try {
-          const response = await fetch('/api/recommend_stream', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': formData.get('csrf_token')
-            },
-            body: JSON.stringify(requestPayload)
-          });
-
-          if (!response.ok) {
-             throw new Error("Failed to connect to recommendation server.");
+        if (!response.ok) {
+          if (response.status === 429) {
+            throw new Error("Rate limit reached: You can only request recommendations 5 times per hour. Please try again later.");
           }
+          throw new Error("Failed to connect to recommendation server.");
+        }
 
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let sseBuffer = "";
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let sseBuffer = "";
+        let fullText = "";
 
-          while(true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-            sseBuffer += decoder.decode(value, { stream: true });
-            const events = sseBuffer.split("\n\n");
-            sseBuffer = events.pop() || "";
+          sseBuffer += decoder.decode(value, { stream: true });
+          const events = sseBuffer.split("\n\n");
+          sseBuffer = events.pop() || "";
 
-            for (const eventBlock of events) {
-              const payloadRaw = eventBlock
-                .split("\n")
-                .filter((line) => line.startsWith("data: "))
-                .map((line) => line.slice(6))
-                .join("\n")
-                .trim();
+          for (const eventBlock of events) {
+            const payloadRaw = eventBlock
+              .split("\n")
+              .filter((line) => line.startsWith("data: "))
+              .map((line) => line.slice(6))
+              .join("\n")
+              .trim();
 
-              if (!payloadRaw) {
-                continue;
-              }
+            if (!payloadRaw) continue;
 
-              let data;
-              try {
-                data = JSON.parse(payloadRaw);
-              } catch (_parseError) {
-                // Ignore malformed fragments; complete events continue to stream.
-                continue;
-              }
-
-              if (data.error) {
-                 formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">${data.error}</p>`;
-                 throw new Error(data.error);
-              }
-
-              if (typeof data.token === "string") {
-                streamState.text += data.token;
-                queueStreamRender();
-              }
-            }
-          }
-
-          sseBuffer += decoder.decode();
-          const trailing = sseBuffer.trim();
-          if (trailing.startsWith("data: ")) {
             try {
-              const data = JSON.parse(trailing.split("\n").filter((line) => line.startsWith("data: ")).map((line) => line.slice(6)).join("\n"));
-              if (typeof data.token === "string") {
-                streamState.text += data.token;
+              const data = JSON.parse(payloadRaw);
+              if (data.error) {
+                formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">${data.error}</p>`;
+                throw new Error(data.error);
               }
-            } catch (_parseError) {
-              // Ignore trailing partial event payloads.
-            }
+              if (typeof data.token === "string") {
+                fullText += data.token;
+              }
+            } catch (_parseError) {}
           }
-
-          renderStreamSlots();
-          updateStreamStatus("Done. 4 recommendation slots ready.");
-
-        } catch (error) {
-          console.error(error);
-          formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">Error: ${error.message || "An unexpected error occurred."}</p>`;
-        } finally {
-          submitButton.classList.remove("loading");
-          submitButton.disabled = false;
-          submitButton.textContent = "[ GENERATE RECOMMENDATIONS ]";
         }
-      });
-    }
 
-    if (formattedRecs.querySelector(".movie-frame")) {
-      void hydrateCardPosters();
-    }
-  });
+        console.log("[DEBUG] fullText received:", fullText);
+        const items = parseStreamedText(fullText);
+        console.log("[DEBUG] items parsed:", items);
+
+        if (!items || !items.length) {
+          formattedRecs.innerHTML = `<div style="font-family:'VT323',monospace;font-size:1.2rem;color:var(--discover-gold);padding:1rem;background:rgba(20,25,35,0.8);border-radius:10px;border:1px solid rgba(255,200,100,0.3);">
+            <p><strong>[ NEURAL STREAM NOTICE ]</strong> No structured card matches parsed from stream.</p>
+            <details style="margin-top:0.5rem;font-size:0.95rem;color:var(--discover-muted);"><summary style="cursor:pointer;color:var(--discover-cyan);">View Raw LLM Output Stream</summary><pre style="white-space:pre-wrap;margin-top:0.5rem;color:var(--discover-light);">${fullText || '(Empty response stream)'}</pre></details>
+          </div>`;
+        } else {
+          await renderGalleryCards(items);
+        }
+
+        statusText.textContent = `Complete (${items.length} Synced)`;
+
+      } catch (error) {
+        console.error(error);
+        statusText.textContent = "Error";
+      } finally {
+        submitButton.classList.remove("loading");
+        submitButton.disabled = false;
+        submitButton.textContent = "[ LAUNCH NEURAL DISCOVERY ]";
+      }
+    });
+  }
+});
 </script>
+
 <script>
   initCanvasBg({
     canvasId: "canvas",
