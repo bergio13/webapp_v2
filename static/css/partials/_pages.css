@@ -1971,26 +1971,28 @@ select option {
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .stat-value {
   font-family: "VT323", monospace;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   color: var(--ocean-green);
   text-shadow: 0 0 5px rgba(122, 168, 152, 0.3);
   margin: 0;
+  line-height: 1;
 }
 
 .stat-label {
   font-family: "VT323", monospace;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: var(--ocean-light);
-  margin: 0;
+  margin: 4px 0 0 0;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .main-column,

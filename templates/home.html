@@ -58,21 +58,22 @@
 
   .home-title {
     font-family: 'Rajdhani', sans-serif;
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 700;
     text-transform: uppercase;
     color: white;
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     margin: 0;
-    text-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+    text-shadow: 0 0 15px rgba(100, 181, 246, 0.4);
     display: flex;
     align-items: center;
+    line-height: 1;
   }
   
   .home-title span {
     color: var(--ocean-blue);
-    margin-right: 15px;
-    font-size: 2.5rem;
+    margin-right: 10px;
+    font-size: 2.2rem;
   }
 
   .home-ascii {
@@ -80,8 +81,143 @@
   }
 
   .header-row {
-    margin-left: 1%;
-    margin-right: 2%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+    width: 100%;
+  }
+
+  /* Sleek Cyber Highlight Card */
+  .home-highlight-card {
+    position: relative;
+    border-radius: 14px;
+    border: 1px solid rgba(126, 181, 196, 0.25) !important;
+    background: rgba(19, 28, 39, 0.5) !important;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .highlight-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px) brightness(0.4);
+    transform: scale(1.15);
+    z-index: 0;
+  }
+
+  .highlight-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .highlight-poster {
+    width: 54px;
+    height: 80px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid rgba(126, 181, 196, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    flex-shrink: 0;
+  }
+
+  .highlight-info {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .highlight-tag {
+    font-family: 'VT323', monospace;
+    font-size: 1.05rem;
+    color: var(--ocean-green);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.9;
+    line-height: 1;
+  }
+
+  .highlight-title {
+    font-family: 'VT323', monospace;
+    font-size: 1.8rem;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  }
+
+  .highlight-badge-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Compact 3-Column Stats Grid */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+    width: 100%;
+  }
+
+  .stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 6px;
+    border-radius: 10px;
+    border: 1px solid rgba(126, 181, 196, 0.15);
+    background: rgba(19, 28, 39, 0.55);
+    text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .stat-box:hover {
+    transform: translateY(-2px);
+    border-color: rgba(126, 181, 196, 0.35);
+  }
+
+  .stat-value {
+    font-family: "VT323", monospace;
+    font-size: 2rem;
+    color: var(--ocean-green);
+    line-height: 1;
+    margin: 0;
+    text-shadow: 0 0 6px rgba(122, 168, 152, 0.3);
+  }
+
+  .stat-label {
+    font-family: "VT323", monospace;
+    font-size: 0.9rem;
+    color: var(--ocean-light);
+    margin: 4px 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+    white-space: nowrap;
   }
 
   .table-home thead th {
@@ -116,16 +252,20 @@
 
   .btn-add-movie-terminal {
     font-family: "VT323", "Courier New", monospace !important;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     background: rgba(129, 199, 132, 0.12) !important;
-    border: 2px solid var(--ocean-green) !important;
+    border: 1.5px solid var(--ocean-green) !important;
     color: var(--ocean-green) !important;
-    border-radius: 4px !important;
-    padding: 12px 24px;
+    border-radius: 6px !important;
+    padding: 8px 16px;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     letter-spacing: 1px;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
 
   .btn-add-movie-terminal:hover {
@@ -156,23 +296,6 @@
     .ascii-header {
       display: none;
     }
-    .header-row {
-      flex-direction: column;
-      align-items: flex-start;
-      margin-right: 0;
-      margin-left: 0;
-    }
-
-    .btn-add-movie-terminal {
-      width: auto;
-      min-height: 46px;
-      box-sizing: border-box;
-    }
-
-    .home-title {
-      margin-top: 1rem;
-      font-size: 2.5rem;
-    }
 
     .table-container {
       overflow-x: auto;
@@ -187,14 +310,65 @@
   }
 
   @media (max-width: 600px) {
+    .header-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
     .home-title {
-      font-size: 2.1rem;
+      font-size: 1.65rem;
       letter-spacing: 1px;
     }
 
+    .home-title span {
+      font-size: 1.4rem;
+      margin-right: 6px;
+    }
+
     .btn-add-movie-terminal {
-      font-size: 1.15rem;
-      padding: 10px 14px;
+      font-size: 1rem;
+      padding: 6px 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .highlight-content {
+      padding: 10px 12px;
+      gap: 10px;
+    }
+
+    .highlight-poster {
+      width: 44px;
+      height: 66px;
+    }
+
+    .highlight-tag {
+      font-size: 0.9rem;
+    }
+
+    .highlight-title {
+      font-size: 1.35rem;
+    }
+
+    .stats-row {
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .stat-box {
+      padding: 8px 4px;
+    }
+
+    .stat-value {
+      font-size: 1.55rem;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.2px;
     }
 
     .table-home {
@@ -411,19 +585,18 @@
         </a>
       </div>
 
-      <!-- HERO HOLOGRAM -->
+      <!-- HIGHLIGHT OF THE MONTH -->
       {% if highest_rated %}
-      <div class="cyber-card glass-panel panel-smoke-heavy" style="margin-bottom: 20px; padding: 0; overflow: hidden; display: flex; align-items: center; min-height: 200px;">
+      <div class="home-highlight-card cyber-card glass-panel panel-smoke-heavy">
         <div class="scanline-overlay"></div>
-        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('{{highest_rated['poster']}}'); background-size: cover; background-position: center; filter: blur(20px) brightness(0.4); z-index: 0;"></div>
-        
-        <div style="position: relative; z-index: 1; display: flex; align-items: center; padding: 20px; width: 100%; flex-wrap: wrap; gap: 20px;">
-          <img src="{{highest_rated['poster']}}" style="width: 100px; border-radius: 4px; box-shadow: 0 0 8px rgba(126, 181, 196, 0.3); border: 1px solid var(--ocean-blue); opacity: 0.92;" />
-          <div style="flex-grow: 1;">
-            <h2 style="font-family: 'VT323', monospace; color: #d0dde5; font-size: 2.5rem; margin: 0; text-shadow: 0 0 6px rgba(208,221,229,0.2);">{{ highest_rated['movie'].upper() }}</h2>
-            <p style="font-family: 'VT323', monospace; color: var(--ocean-green); font-size: 1.3rem; margin: 0; letter-spacing: 2px; opacity: 0.85;">HIGHLIGHT OF THE MONTH</p>
+        <div class="highlight-backdrop" style="background-image: url('{{highest_rated['poster']}}');"></div>
+        <div class="highlight-content">
+          <img src="{{highest_rated['poster']}}" class="highlight-poster" alt="{{highest_rated['movie']}}" />
+          <div class="highlight-info">
+            <span class="highlight-tag">Highlight of the month</span>
+            <h2 class="highlight-title">{{ highest_rated['movie'].upper() }}</h2>
           </div>
-          <div style="text-align: center; padding-right: 20px;">
+          <div class="highlight-badge-wrap">
             {{ render_sentiment_badge(highest_rated['rating']) }}
           </div>
         </div>
@@ -432,17 +605,17 @@
 
       <!-- STATS ROW -->
       <div class="stats-row">
-        <div class="cyber-card glass-panel panel-smoke-heavy">
-          <p class="stat-label">Total Logs</p>
+        <div class="stat-box glass-panel">
           <p class="stat-value">{{ total }}</p>
+          <p class="stat-label">Total Logs</p>
         </div>
-        <div class="cyber-card glass-panel panel-smoke-heavy">
+        <div class="stat-box glass-panel">
+          <p class="stat-value">{{ avg_rating }}<span style="font-size: 1.1rem; color: var(--ocean-grey); opacity: 0.7;"> / 5</span></p>
           <p class="stat-label">Avg Rating</p>
-          <p class="stat-value">{{ avg_rating }}<span style="font-size: 1.2rem; color: var(--text-primary);"> / 5</span></p>
         </div>
-        <div class="cyber-card glass-panel panel-smoke-heavy">
-          <p class="stat-label">Cinema Trips</p>
+        <div class="stat-box glass-panel">
           <p class="stat-value">{{ cinema }}</p>
+          <p class="stat-label">Cinema Trips</p>
         </div>
       </div>
 
