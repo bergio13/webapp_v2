@@ -88,6 +88,7 @@
   padding-right: 1%;
   margin-left: var(--layout-sidebar-offset);
 }
+
 .table-lista1 {
   width: 100%;
   border-collapse: collapse;
@@ -174,7 +175,9 @@
     0 0 151px rgb(0, 204, 255);
   cursor: pointer;
   font-size: 16px;
-  margin-top: 20% /*8%*/;
+  margin-top: 20%
+    /*8%*/
+  ;
   border: 0.1rem solid var(--bg-primary);
   border-radius: 2rem;
   padding: 0.8em;
@@ -321,21 +324,32 @@
 .column {
   float: left;
   width: 21%;
-  padding: 40px 40px /*46.5px 50px*/;
+  padding: 40px 40px
+    /*46.5px 50px*/
+  ;
   text-align: center;
   cursor: pointer;
-  color: black /*#ececec*/;
-  background-color: whitesmoke /*#2a2a37*/;
+  color: black
+    /*#ececec*/
+  ;
+  background-color: whitesmoke
+    /*#2a2a37*/
+  ;
   transition: 200ms ease;
-  border-width: 2px /*1px*/;
-  margin: 1px /*0px*/;
+  border-width: 2px
+    /*1px*/
+  ;
+  margin: 1px
+    /*0px*/
+  ;
   border-style: solid;
-  border-image: linear-gradient(
-      to top left,
-      black /*yellow*/,
-      black /*rgb(92, 0, 128)*/
-    )
-    1 100%;
+  border-image: linear-gradient(to top left,
+      black
+      /*yellow*/
+      ,
+      black
+      /*rgb(92, 0, 128)*/
+    ) 1 100%;
   border-image-slice: 1;
 }
 
@@ -344,20 +358,29 @@
   /*#2a2a37*/
   float: left;
   width: 21%;
-  padding: 40px 40px /*46.5px 50px*/;
+  padding: 40px 40px
+    /*46.5px 50px*/
+  ;
   text-align: center;
   cursor: pointer;
-  color: black /*#ececec*/;
+  color: black
+    /*#ececec*/
+  ;
   transition: 200ms ease;
-  border-width: 2px /*1px*/;
-  margin: 1px /*0px*/;
+  border-width: 2px
+    /*1px*/
+  ;
+  margin: 1px
+    /*0px*/
+  ;
   border-style: solid;
-  border-image: linear-gradient(
-      to top left,
-      black /*yellow*/,
-      black /*rgb(92, 0, 128)*/
-    )
-    1 100%;
+  border-image: linear-gradient(to top left,
+      black
+      /*yellow*/
+      ,
+      black
+      /*rgb(92, 0, 128)*/
+    ) 1 100%;
   border-image-slice: 1;
 }
 
@@ -380,45 +403,35 @@
 
 .friend_list_page::before {
   background:
-    radial-gradient(
-      #4ba7b8 15%,
+    radial-gradient(#4ba7b8 15%,
       transparent 16%,
       transparent 49%,
       #4ba7b8 50%,
-      transparent 51%
-    ),
-    radial-gradient(
-      circle at top left,
+      transparent 51%),
+    radial-gradient(circle at top left,
       #4ba7b8 10%,
       transparent 10%,
       transparent 39%,
       #4ba7b8 40%,
-      transparent 41%
-    ),
-    radial-gradient(
-      circle at top right,
+      transparent 41%),
+    radial-gradient(circle at top right,
       #4ba7b8 10%,
       transparent 10%,
       transparent 39%,
       #4ba7b8 40%,
-      transparent 41%
-    ),
-    radial-gradient(
-      circle at bottom left,
+      transparent 41%),
+    radial-gradient(circle at bottom left,
       #4ba7b8 10%,
       transparent 10%,
       transparent 39%,
       #4ba7b8 40%,
-      transparent 41%
-    ),
-    radial-gradient(
-      circle at bottom right,
+      transparent 41%),
+    radial-gradient(circle at bottom right,
       #4ba7b8 10%,
       transparent 10%,
       transparent 39%,
       #4ba7b8 40%,
-      transparent 41%
-    );
+      transparent 41%);
   background-size: 2em 2em;
   background-color: #1f1b48;
   opacity: 1;
@@ -454,12 +467,13 @@
   background-color: #1d2634;
   border-width: 1px;
   border-style: solid;
-  border-image: linear-gradient(
-      to right,
-      black /*yellow*/,
-      black /*rgb(106, 235, 252)*/
-    )
-    1 100%;
+  border-image: linear-gradient(to right,
+      black
+      /*yellow*/
+      ,
+      black
+      /*rgb(106, 235, 252)*/
+    ) 1 100%;
   border-image-slice: 1;
 }
 
@@ -473,12 +487,13 @@
   background-color: #1d2634;
   border-width: 1px;
   border-style: solid;
-  border-image: linear-gradient(
-      to right,
-      #ececec /*yellow*/,
-      #ececec /*rgb(106, 235, 252)*/
-    )
-    1 100%;
+  border-image: linear-gradient(to right,
+      #ececec
+      /*yellow*/
+      ,
+      #ececec
+      /*rgb(106, 235, 252)*/
+    ) 1 100%;
   border-image-slice: 1;
 }
 
@@ -490,7 +505,9 @@
 
 .closebtn {
   float: right;
-  color: white /*yellow*/;
+  color: white
+    /*yellow*/
+  ;
   font-size: 35px;
   cursor: pointer;
   top: 0;
@@ -509,16 +526,20 @@ table {
 .tabletr {
   color: black;
   text-align: left;
-  background: -webkit-linear-gradient(
-    to right,
-    whitesmoke /*yellow*/,
-    grey /*rgb(106, 235, 252)*/
-  );
-  background: linear-gradient(
-    to right,
-    whitesmoke /*yellow*/,
-    grey /*rgb(106, 235, 252)*/
-  );
+  background: -webkit-linear-gradient(to right,
+      whitesmoke
+      /*yellow*/
+      ,
+      grey
+      /*rgb(106, 235, 252)*/
+    );
+  background: linear-gradient(to right,
+      whitesmoke
+      /*yellow*/
+      ,
+      grey
+      /*rgb(106, 235, 252)*/
+    );
 }
 
 thead tr {
@@ -959,6 +980,10 @@ form {
   margin: 4rem auto 1rem;
 }
 
+.field-director {
+  margin: 2rem auto 1rem
+}
+
 .field-add {
   width: 100%;
   position: relative;
@@ -1027,7 +1052,7 @@ form {
 }
 
 .field:focus-within .label,
-.input:not(:placeholder-shown) + .label {
+.input:not(:placeholder-shown)+.label {
   transform: scale(0.8) translateY(-5rem);
 }
 
@@ -1124,7 +1149,9 @@ select option {
     "header header header"
     "main main main";
   height: 100%;
-  background-color: #2a2a37 /*#6649b8*/;
+  background-color: #2a2a37
+    /*#6649b8*/
+  ;
   /*background: -webkit-linear-gradient(
     to right,
     #41295a,
@@ -1429,7 +1456,7 @@ select option {
 }
 
 /* Remove blur only on hovered card */
-.carta:hover ~ .carta .img-carta-back {
+.carta:hover~.carta .img-carta-back {
   filter: none;
   /* Remove the blur effect */
   opacity: 0;
@@ -1552,18 +1579,12 @@ select option {
   main {
     margin-left: var(--layout-sidebar-offset);
     padding: var(--layout-mobile-gutter);
-    padding-bottom: calc(
-      var(--layout-mobile-bottom-nav) + env(safe-area-inset-bottom, 0) +
-        var(--layout-mobile-gutter)
-    );
+    padding-bottom: calc(var(--layout-mobile-bottom-nav) + env(safe-area-inset-bottom, 0) + var(--layout-mobile-gutter));
   }
 
   .flash-container {
     top: auto;
-    bottom: calc(
-      var(--layout-mobile-bottom-nav) + env(safe-area-inset-bottom, 0) +
-        var(--layout-mobile-gutter)
-    );
+    bottom: calc(var(--layout-mobile-bottom-nav) + env(safe-area-inset-bottom, 0) + var(--layout-mobile-gutter));
     left: var(--layout-mobile-gutter);
     right: var(--layout-mobile-gutter);
     width: auto;
@@ -1745,7 +1766,7 @@ select option {
   }
 
   .explore-cards .carta:hover,
-  .explore-cards .carta:hover ~ .carta {
+  .explore-cards .carta:hover~.carta {
     transform: none;
   }
 
@@ -1798,14 +1819,12 @@ select option {
   background: rgba(13, 22, 33, 0.5);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  clip-path: polygon(
-    15px 0,
-    100% 0,
-    100% calc(100% - 15px),
-    calc(100% - 15px) 100%,
-    0 100%,
-    0 15px
-  );
+  clip-path: polygon(15px 0,
+      100% 0,
+      100% calc(100% - 15px),
+      calc(100% - 15px) 100%,
+      0 100%,
+      0 15px);
   padding: 1.5rem;
   transition: all 0.3s ease;
 }
@@ -1855,14 +1874,12 @@ select option {
   right: 0;
   bottom: 0;
   border: 2px solid var(--ocean-blue);
-  clip-path: polygon(
-    15px 0,
-    100% 0,
-    100% calc(100% - 15px),
-    calc(100% - 15px) 100%,
-    0 100%,
-    0 15px
-  );
+  clip-path: polygon(15px 0,
+      100% 0,
+      100% calc(100% - 15px),
+      calc(100% - 15px) 100%,
+      0 100%,
+      0 15px);
   opacity: 0.3;
   pointer-events: none;
 }
@@ -1929,11 +1946,9 @@ select option {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 50%,
-    rgba(100, 181, 246, 0.1) 51%
-  );
+  background: linear-gradient(to bottom,
+      transparent 50%,
+      rgba(100, 181, 246, 0.1) 51%);
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 10;
@@ -2044,9 +2059,11 @@ select option {
 .movie-frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 2 / 3; /* Standard movie poster ratio */
+  aspect-ratio: 2 / 3;
+  /* Standard movie poster ratio */
   border-radius: 12px;
-  overflow: hidden; /* Keeps the overlay contained */
+  overflow: hidden;
+  /* Keeps the overlay contained */
   background: rgba(30, 30, 40, 0.4);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   transition:
@@ -2064,7 +2081,8 @@ select option {
 .movie-poster {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Prevents stretching */
+  object-fit: cover;
+  /* Prevents stretching */
   transition:
     filter 0.4s ease,
     transform 0.4s ease;
@@ -2088,12 +2106,10 @@ select option {
   box-sizing: border-box;
 
   /* The Frosted Glass Material */
-  background: linear-gradient(
-    to top,
-    rgba(10, 14, 20, 0.95) 0%,
-    rgba(10, 14, 20, 0.6) 70%,
-    transparent 100%
-  );
+  background: linear-gradient(to top,
+      rgba(10, 14, 20, 0.95) 0%,
+      rgba(10, 14, 20, 0.6) 70%,
+      transparent 100%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 
@@ -2116,7 +2132,8 @@ select option {
 
 /* --- OVERLAY TYPOGRAPHY & ACTIONS --- */
 .overlay-content {
-  transform: translateY(15px); /* Staggered entrance effect */
+  transform: translateY(15px);
+  /* Staggered entrance effect */
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   transition-delay: 0.05s;
 }
@@ -2193,7 +2210,8 @@ select option {
   flex-shrink: 0;
 }
 
-@media (hover: none), (pointer: coarse) {
+@media (hover: none),
+(pointer: coarse) {
   .movie-frame {
     transform: none;
   }
