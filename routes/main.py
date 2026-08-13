@@ -214,26 +214,28 @@ def api_upcoming():
     if not api_key:
         return jsonify({"movies": []})
     try:
+        import datetime
+        today = datetime.datetime.today()
+        today_str = today.strftime("%Y-%m-%d")
+        next_year_str = (today + datetime.timedelta(days=365)).strftime("%Y-%m-%d")
+        
         url = (
-            f"https://api.themoviedb.org/3/movie/upcoming"
-            f"?api_key={api_key}&language=en-US&page=1"
+            f"https://api.themoviedb.org/3/discover/movie"
+            f"?api_key={api_key}&language=en-US&sort_by=popularity.desc"
+            f"&primary_release_date.gte={today_str}&primary_release_date.lte={next_year_str}&page=1"
         )
         resp = http_requests.get(url, timeout=5)
         data = resp.json()
         movies = []
-        import datetime
-        today = datetime.datetime.today().strftime('%Y-%m-%d')
         for m in (data.get("results") or []):
-            release_date = m.get("release_date", "")
-            if release_date and release_date > today:
-                poster = m.get("poster_path")
-                if poster:
-                    movies.append({
-                        "id": m.get("id"),
-                        "title": m.get("title", ""),
-                        "poster": f"https://image.tmdb.org/t/p/w185{poster}",
-                        "rating": round(m.get("vote_average", 0), 1),
-                    })
+            poster = m.get("poster_path")
+            if poster:
+                movies.append({
+                    "id": m.get("id"),
+                    "title": m.get("title", ""),
+                    "poster": f"https://image.tmdb.org/t/p/w185{poster}",
+                    "rating": round(m.get("vote_average", 0), 1),
+                })
             if len(movies) >= 8:
                 break
         return jsonify({"movies": movies})
