@@ -462,7 +462,7 @@ def build_user_watch_history_summary(
         f"Watch history lens: {lens_label} "
         f"({len(selected_movies)} picked from {total_movies} total entries):\n"
     )
-    sentiment_map = {1: "Flawed (1/5)", 2: "Mediocre (2/5)", 3: "Average (3/5)", 4: "Great (4/5)", 5: "Masterpiece (5/5)"}
+    sentiment_map = {1: "Trash (1/5)", 2: "Skippable (2/5)", 3: "Mid (3/5)", 4: "Great (4/5)", 5: "Masterpiece (5/5)"}
     for idx, movie in enumerate(selected_movies, 1):
         raw_r = movie.get("rating")
         r_val = int(raw_r) if isinstance(raw_r, (int, float)) else None

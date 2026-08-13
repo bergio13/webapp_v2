@@ -14,7 +14,7 @@
       <div class="row">
         {% for item in items %}
         {% set item_id = item.name if item.name is defined else item %}
-        {% set sentiment_names = {'1': '1 - Flawed', '2': '2 - Mediocre', '3': '3 - Average', '4': '4 - Great', '5': '5 - Masterpiece'} %}
+        {% set sentiment_names = {'1': '1 - Trash', '2': '2 - Skippable', '3': '3 - Mid', '4': '4 - Great', '5': '5 - Masterpiece'} %}
         {% set display_title = sentiment_names.get(item_id|string, item_id) if groupby == 'rating' else item_id %}
         <div class="column-directors" onclick="openTab('{{ item_id }}');">
           <h4 class="title">{{ display_title }}</h4>

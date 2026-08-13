@@ -461,7 +461,7 @@ body_class %} list_page{% endblock %} {% block body %}
     if (lvl > 5) lvl = Math.ceil(lvl / 2);
     if (lvl < 1) lvl = 1;
     if (lvl > 5) lvl = 5;
-    const labels = {1: "Flawed", 2: "Mediocre", 3: "Average", 4: "Great", 5: "Masterpiece"};
+    const labels = {1: "Trash", 2: "Skippable", 3: "Mid", 4: "Great", 5: "Masterpiece"};
     const icons = {
       1: `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
       2: `<svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>`,

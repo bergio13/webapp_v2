@@ -4,21 +4,21 @@
   {% if lvl < 1 %}{% set lvl = 1 %}{% endif %}
   {% if lvl > 5 %}{% set lvl = 5 %}{% endif %}
 
-  <div class="sentiment-badge sentiment-level-{{ lvl }}{% if compact %} compact{% endif %}" title="{% if lvl == 1 %}Flawed{% elif lvl == 2 %}Mediocre{% elif lvl == 3 %}Average{% elif lvl == 4 %}Great{% elif lvl == 5 %}Masterpiece{% endif %}">
+  <div class="sentiment-badge sentiment-level-{{ lvl }}{% if compact %} compact{% endif %}" title="{% if lvl == 1 %}Trash{% elif lvl == 2 %}Skippable{% elif lvl == 3 %}Mid{% elif lvl == 4 %}Great{% elif lvl == 5 %}Masterpiece{% endif %}">
     {% if lvl == 1 %}
-      <!-- Flawed: Alert Warning Vector -->
+      <!-- Trash: Alert Warning Vector -->
       <svg viewBox="0 0 24 24">
         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
         <line x1="12" y1="9" x2="12" y2="13"/>
         <line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
     {% elif lvl == 2 %}
-      <!-- Mediocre: Thumbs Down Vector -->
+      <!-- Skippable: Thumbs Down Vector -->
       <svg viewBox="0 0 24 24">
         <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/>
       </svg>
     {% elif lvl == 3 %}
-      <!-- Average: Equilibrium Gauge -->
+      <!-- Mid: Equilibrium Gauge -->
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="9"/>
         <line x1="8" y1="12" x2="16" y2="12"/>
@@ -37,7 +37,7 @@
 
     {% if show_label %}
       <span>
-        {% if lvl == 1 %}Flawed{% elif lvl == 2 %}Mediocre{% elif lvl == 3 %}Average{% elif lvl == 4 %}Great{% elif lvl == 5 %}Masterpiece{% endif %}
+        {% if lvl == 1 %}Trash{% elif lvl == 2 %}Skippable{% elif lvl == 3 %}Mid{% elif lvl == 4 %}Great{% elif lvl == 5 %}Masterpiece{% endif %}
       </span>
     {% endif %}
   </div>

@@ -3,46 +3,46 @@
   <input type="hidden" name="rating" id="rating" value="{{ initial_rating | default(3) }}" required />
   
   <div class="sentiment-selector" role="radiogroup" aria-label="Sentiment Rating Selector">
-    <!-- Level 1: Flawed -->
+    <!-- Level 1: Trash -->
     <button type="button" 
             class="sentiment-option {% if (initial_rating | default(3) | int) == 1 %}active{% endif %}" 
             data-level="1" 
             role="radio" 
             aria-checked="{% if (initial_rating | default(3) | int) == 1 %}true{% else %}false{% endif %}"
-            title="1 - Flawed">
+            title="1 - Trash">
       <svg viewBox="0 0 24 24">
         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
         <line x1="12" y1="9" x2="12" y2="13"/>
         <line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
-      <span class="sentiment-text">Flawed</span>
+      <span class="sentiment-text">Trash</span>
     </button>
 
-    <!-- Level 2: Mediocre -->
+    <!-- Level 2: Skippable -->
     <button type="button" 
             class="sentiment-option {% if (initial_rating | default(3) | int) == 2 %}active{% endif %}" 
             data-level="2" 
             role="radio" 
             aria-checked="{% if (initial_rating | default(3) | int) == 2 %}true{% else %}false{% endif %}"
-            title="2 - Mediocre">
+            title="2 - Skippable">
       <svg viewBox="0 0 24 24">
         <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/>
       </svg>
-      <span class="sentiment-text">Mediocre</span>
+      <span class="sentiment-text">Skippable</span>
     </button>
 
-    <!-- Level 3: Average -->
+    <!-- Level 3: Mid -->
     <button type="button" 
             class="sentiment-option {% if (initial_rating | default(3) | int) == 3 %}active{% endif %}" 
             data-level="3" 
             role="radio" 
             aria-checked="{% if (initial_rating | default(3) | int) == 3 %}true{% else %}false{% endif %}"
-            title="3 - Average">
+            title="3 - Mid">
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="9"/>
         <line x1="8" y1="12" x2="16" y2="12"/>
       </svg>
-      <span class="sentiment-text">Average</span>
+      <span class="sentiment-text">Mid</span>
     </button>
 
     <!-- Level 4: Great -->
