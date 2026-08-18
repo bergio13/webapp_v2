@@ -8,7 +8,7 @@ body_class %} explore_page{% endblock %}{% block content%}
       {% for m in movies %}
       <a href="/tmdb_redirect?title={{m['movie'] | urlencode}}&tv={{'1' if m.get('tv_show') else '0'}}" target="_blank" style="text-decoration: none;">
         <article class="movie-frame">
-          <img src="{{m.poster}}" alt="{{m.movie}}" class="movie-poster" loading="lazy">
+          <img src="{{m.poster}}" alt="{{m.movie}}" class="movie-poster" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';">
           <div class="frame-overlay">
             <div class="overlay-content">
               <h3 class="frame-title">{{m.movie.upper()}}</h3>

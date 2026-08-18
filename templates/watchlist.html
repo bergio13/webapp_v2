@@ -113,11 +113,23 @@
     box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 0 15px rgba(126, 181, 196, 0.2);
   }
 
+  .w-poster-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background: linear-gradient(110deg, #131c27 8%, #1f2e40 18%, #131c27 33%);
+    background-size: 200% 100%;
+    animation: posterShimmer 2s linear infinite;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(126, 181, 196, 0.2);
+  }
+
   .w-poster {
     width: 100%;
-    aspect-ratio: 2/3;
+    height: 100%;
+    aspect-ratio: 2 / 3;
     object-fit: cover;
-    border-bottom: 1px solid rgba(126, 181, 196, 0.2);
+    display: block;
   }
 
   .w-info {
@@ -281,7 +293,9 @@
   <div class="w-grid">
     {% for item in items %}
     <div class="w-card">
-      <img src="{{ item.poster }}" alt="{{ item.title }}" class="w-poster" onerror="this.src='https://via.placeholder.com/200x300?text=No+Poster'">
+      <div class="w-poster-wrapper">
+        <img src="{{ item.poster }}" alt="{{ item.title }}" class="w-poster" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
+      </div>
       <div class="w-info">
         <h3 class="w-title">{{ item.title }}</h3>
         <p class="w-meta">{{ item.director }} • {{ item.p_year }}</p>

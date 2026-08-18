@@ -183,7 +183,7 @@ body %} {% block content %}
       {% for movie in movies %}
       <div class="library-card">
         <div class="card-poster-wrapper">
-          <img src="{{ movie['poster'] }}" class="card-poster" loading="lazy" />
+          <img src="{{ movie['poster'] }}" class="card-poster" loading="lazy" alt="{{ movie['movie'] }}" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
           <div style="position: absolute; bottom: 8px; right: 8px;">
             {{ render_sentiment_badge(movie['rating'], compact=True) }}
           </div>
@@ -330,7 +330,7 @@ body %} {% block content %}
           card.className = "library-card";
           card.innerHTML = `
             <div class="card-poster-wrapper">
-              <img src="${movie.poster}" class="card-poster" loading="lazy" />
+              <img src="${movie.poster}" class="card-poster" loading="lazy" alt="${movie.movie}" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
               <div class="card-rating">${movie.rating}</div>
             </div>
             <div class="card-details">

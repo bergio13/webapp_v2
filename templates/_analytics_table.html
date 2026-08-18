@@ -59,7 +59,7 @@
                   {% endif %}
 
                   <tr class="{{ tr_class }}">
-                    <td><img class="table-poster1" src="{{ movie['poster'] }}" /></td>
+                    <td><img class="table-poster1" src="{{ movie['poster'] }}" alt="{{ movie['movie'] }}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" /></td>
                     <td>
                       <a
                         class="table-link"

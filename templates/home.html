@@ -124,12 +124,14 @@
 
   .highlight-poster {
     width: 54px;
-    height: 80px;
+    aspect-ratio: 2 / 3;
+    height: auto;
     border-radius: 6px;
     object-fit: cover;
     border: 1px solid rgba(126, 181, 196, 0.35);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     flex-shrink: 0;
+    background: #131c27;
   }
 
   .highlight-info {
@@ -673,7 +675,7 @@
         <div class="scanline-overlay"></div>
         <div class="highlight-backdrop" style="background-image: url('{{highest_rated['poster']}}');"></div>
         <div class="highlight-content">
-          <img src="{{highest_rated['poster']}}" class="highlight-poster" alt="{{highest_rated['movie']}}" />
+          <img src="{{highest_rated['poster']}}" class="highlight-poster" alt="{{highest_rated['movie']}}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
           <div class="highlight-info">
             <span class="highlight-tag">Highlight of the month</span>
             <h2 class="highlight-title">{{ highest_rated['movie'].upper() }}</h2>
@@ -728,7 +730,9 @@
             <img
               class="table-poster1"
               src="{{movie['poster']}}"
-              style="width: 50px"
+              alt="{{movie['movie']}}"
+              loading="lazy"
+              onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';"
             />
           </td>
 

@@ -252,7 +252,7 @@
         <div class="movie-comparison-list">
           {% for movie in match_data.shared_movies %}
             <div class="compare-item">
-              <img src="{{ movie.poster }}" class="compare-poster" alt="{{ movie.movie }}">
+              <img src="{{ movie.poster }}" class="compare-poster" alt="{{ movie.movie }}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';">
               <div class="compare-info">
                 <h4 class="compare-title">{{ movie.movie }} ({{ movie.year }})</h4>
                 <div class="ratings-row" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
