@@ -234,7 +234,7 @@ def get_tv_details(title, year, season_num, manual_director=None):
             "title": title
         }
 
-def search_titles(query, is_tv=False):
+def search_titles(query, is_tv=False, limit=12):
     """
     Quick search for autocomplete suggestions.
     Returns a list of dicts with title, year, poster, and type.
@@ -271,7 +271,7 @@ def search_titles(query, is_tv=False):
                 "type": media_type
             })
             
-            if len(results) >= 5:
+            if len(results) >= limit:
                 break
                 
         return results
