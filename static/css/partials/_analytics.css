@@ -286,3 +286,12 @@
     font-size: 1.4rem;
   }
 }
+
+/* Row status indicators */
+.app-analytics-table tr.row-rewatch td {
+  color: var(--sentiment-2, #c89674) !important;
+}
+
+.app-analytics-table tr.row-current-year td {
+  color: var(--sentiment-4, #7dbfa3) !important;
+}

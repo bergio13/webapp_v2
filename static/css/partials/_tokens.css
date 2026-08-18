@@ -3,21 +3,35 @@
    All CSS custom properties (:root). Single source of truth.
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400&display=swap");
-
 :root {
   font-size: 16px;
-  font-family: "Sono", sans-serif;
 
-  /* --- Base colours --- */
-  --text-primary: #b6b6b6;
-  --text-secondary: #ececec;
+  /* --- Typography System --- */
+  --font-display: "Rajdhani", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "VT323", "Courier New", monospace;
+  --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
+
+  /* --- Base colors & Text Hierarchy --- */
+  --text-primary: #f0f4f8;
+  --text-secondary: #cdd9e5;
+  --text-muted: #8394a1;
   --text-tertiary: #6649b8;
   --bg-primary: #23232e;
   --bg-secondary: #141418;
 
+  /* --- Surface & Elevation Tokens --- */
+  --surface-base: #23232e;
+  --surface-card: rgba(22, 33, 46, 0.72);
+  --surface-card-hover: rgba(30, 45, 62, 0.85);
+  --surface-border: rgba(126, 181, 196, 0.18);
+  --surface-border-hover: rgba(126, 181, 196, 0.45);
+  --surface-specular: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 16px rgba(126, 181, 196, 0.15);
+
   /* --- Layout --- */
-  --transition-speed: 600ms;
+  --transition-speed: 300ms;
   --layout-sidebar-offset: 5rem;
   --layout-mobile-bottom-nav: 5rem;
   --layout-mobile-gutter: 0.75rem;

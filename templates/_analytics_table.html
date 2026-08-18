@@ -51,14 +51,14 @@
                 {% endif %}
 
                 {% if show_movie %}
-                  {% set tr_style = "" %}
+                  {% set tr_class = "" %}
                   {% if movie['rewatch'] == 1 %}
-                    {% set tr_style = "color: brown" %}
+                    {% set tr_class = "row-rewatch" %}
                   {% elif movie['p_year']|string == now|string %}
-                    {% set tr_style = "color: green" %}
+                    {% set tr_class = "row-current-year" %}
                   {% endif %}
 
-                  <tr style="{{ tr_style }}">
+                  <tr class="{{ tr_class }}">
                     <td><img class="table-poster1" src="{{ movie['poster'] }}" /></td>
                     <td>
                       <a
