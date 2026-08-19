@@ -19,100 +19,103 @@ body %} {% block content %}
 </div>
 
 <!-- Main Content -->
-<div class="list_list app-panel app-panel-mobile app-panel-mobile-compact" style="display: none">
-  <!-- Top ASCII DB Header (Frameless, Natural Floating on Canvas) -->
-  <div class="ascii-header app-ascii-header app-ascii-hide-mobile">
-    ╔═══ {{ username|upper }}_LIST.db :: total_entries: {{ total_count if total_count is defined else movies|length }} ═══╝
-  </div>
-
-  <!-- Primary Navigation Tabs with Dotted Scanline Divider -->
-  <div class="library-tabs-divider-group">
-    <div class="library-tabs">
-      <a href="/list/{{username}}" class="library-tab active">{{ username|upper }}'S WATCHED</a>
-    </div>
-    <div class="library-scanline-divider"></div>
-  </div>
-
-  <!-- Title & Interactive Terminal Toolbar Row -->
-  <div class="library-action-toolbar">
-    <!-- Lavender Glowing Terminal Title -->
-    <h2 class="library-lavender-title">
-      <span class="prompt">//</span> {{ username }}'s List
-    </h2>
-
-    <!-- Right Controls: find_title, sort, filters, view toggle -->
-    <div class="library-toolbar-controls">
-      <div class="terminal-search-wrapper">
-        <span class="terminal-search-label">find_title:</span>
-        <input type="text" id="movie-search-input" class="terminal-search-field" placeholder="type..." autocomplete="off" />
+<div class="list_list app-panel app-panel-mobile" style="display: none">
+  <!-- UNIFIED CYBER DECK PANEL -->
+  <div class="cyber-deck-panel">
+    <!-- Top Row: Title, Tab Switcher & ASCII Database Metadata -->
+    <div class="cyber-deck-header-row">
+      <div class="cyber-deck-title-group">
+        <h1 class="cyber-deck-heading">
+          <a href="/list/{{ username }}" class="cyber-deck-tab active">WATCHED</a>
+          <a href="/profile/{{ username }}" class="cyber-deck-tab">PROFILE</a>
+          <a href="/compare/{{ username }}" class="cyber-deck-tab">COMPARE</a>
+        </h1>
       </div>
 
-      <select id="movie-sort-select" class="terminal-sort-select" aria-label="Sort movies by">
-        <option value="v_date:desc">Watched ▾</option>
-        <option value="v_date:asc">Watched ▴</option>
-        <option value="rating:desc">Rating ▾</option>
-        <option value="rating:asc">Rating ▴</option>
-        <option value="p_year:desc">Year ▾</option>
-        <option value="p_year:asc">Year ▴</option>
-        <option value="movie:asc">Title A-Z</option>
-      </select>
-
-      <button type="button" class="terminal-filter-btn" id="filter-toggle-btn" onclick="toggleFilterDrawer()" title="Multi-Tag Filters">
-        <i class="fa-solid fa-sliders"></i>
-        <span>Filters</span>
-        <span class="filter-badge-count" id="filter-count-badge" style="display: none;">0</span>
-      </button>
-
-      <div class="view-toggle" style="display: flex; gap: 6px;">
-        <button id="btn-grid-view" class="view-toggle-btn active" title="Grid View" aria-label="Grid View">
-          <i class="fa-solid fa-table-cells-large"></i>
-        </button>
-        <button id="btn-table-view" class="view-toggle-btn" title="Table View" aria-label="Table View">
-          <i class="fa-solid fa-list"></i>
-        </button>
+      <div class="cyber-deck-meta-badge">
+        <span class="meta-bracket">╔═</span>
+        <span class="meta-dbname">{{ username|upper }}_LIST.db</span>
+        <span class="meta-sep">::</span>
+        <span class="meta-count" id="total-entries-badge">{{ total_count if total_count is defined else movies|length }} ENTRIES</span>
+        <span class="meta-bracket">═╝</span>
       </div>
     </div>
-  </div>
 
-  <!-- Collapsible Multi-Tag Filter Drawer -->
-  <div class="filter-drawer" id="filter-drawer">
-    <div class="filter-chip-row">
-      <span class="filter-chip-label">Sentiment:</span>
-      <button type="button" class="filter-chip chip-sentiment active" data-rating="">All</button>
-      <button type="button" class="filter-chip chip-sentiment chip-sentiment-5" data-rating="5">
-        <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/></svg> Masterpiece
-      </button>
-      <button type="button" class="filter-chip chip-sentiment chip-sentiment-4" data-rating="4">
-        <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg> Great
-      </button>
-      <button type="button" class="filter-chip chip-sentiment chip-sentiment-3" data-rating="3">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Mid
-      </button>
-      <button type="button" class="filter-chip chip-sentiment chip-sentiment-2" data-rating="2">
-        <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1 2 2h-3"/></svg> Skippable
-      </button>
-      <button type="button" class="filter-chip chip-sentiment chip-sentiment-1" data-rating="1">
-        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Trash
-      </button>
+    <!-- Bottom Row: Search & Controls -->
+    <div class="cyber-deck-controls-row">
+      <div class="filter-search-box">
+        <span class="filter-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="movie-search-input" class="filter-search-input" placeholder="Search title, director, or year..." autocomplete="off" />
+      </div>
+
+      <div class="filter-controls-right">
+        <select id="movie-sort-select" class="filter-sort-select" aria-label="Sort movies by">
+          <option value="v_date:desc">Watched ▾</option>
+          <option value="v_date:asc">Watched ▴</option>
+          <option value="rating:desc">Rating ▾</option>
+          <option value="rating:asc">Rating ▴</option>
+          <option value="p_year:desc">Year ▾</option>
+          <option value="p_year:asc">Year ▴</option>
+          <option value="movie:asc">Title A-Z</option>
+        </select>
+
+        <button type="button" class="filter-toggle-btn" id="filter-toggle-btn" onclick="toggleFilterDrawer()" title="Toggle Multi-Tag Filters">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Filters</span>
+          <span class="filter-badge-count" id="filter-count-badge" style="display: none;">0</span>
+        </button>
+
+        <div class="view-toggle" style="display: flex; gap: 6px;">
+          <button id="btn-grid-view" class="view-toggle-btn active" title="Grid View" aria-label="Grid View">
+            <i class="fa-solid fa-table-cells-large"></i>
+          </button>
+          <button id="btn-table-view" class="view-toggle-btn" title="Table View" aria-label="Table View">
+            <i class="fa-solid fa-list"></i>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="filter-chip-row filter-chip-row-secondary">
-      <span class="filter-chip-label">Format:</span>
-      <button type="button" class="filter-chip chip-media active" data-media="">All</button>
-      <button type="button" class="filter-chip chip-media" data-media="movie"><i class="fa-solid fa-film"></i> Movies</button>
-      <button type="button" class="filter-chip chip-media" data-media="tv"><i class="fa-solid fa-tv"></i> TV</button>
+    <!-- Collapsible Cyber Filter Drawer -->
+    <div class="filter-drawer" id="filter-drawer">
+      <div class="filter-chip-row">
+        <span class="filter-chip-label">Sentiment:</span>
+        <button type="button" class="filter-chip chip-sentiment active" data-rating="">All</button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-5" data-rating="5">
+          <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/></svg> Masterpiece
+        </button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-4" data-rating="4">
+          <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg> Great
+        </button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-3" data-rating="3">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Mid
+        </button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-2" data-rating="2">
+          <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1 2 2h-3"/></svg> Skippable
+        </button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-1" data-rating="1">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Trash
+        </button>
+      </div>
 
-      <span class="filter-chip-label" style="margin-left: 8px;">Context:</span>
-      <button type="button" class="filter-chip chip-context" data-cinema="1"><i class="fa-solid fa-film"></i> Cinema</button>
-      <button type="button" class="filter-chip chip-context" data-rewatch="1"><i class="fa-solid fa-repeat"></i> Rewatch</button>
+      <div class="filter-chip-row filter-chip-row-secondary">
+        <span class="filter-chip-label">Format:</span>
+        <button type="button" class="filter-chip chip-media active" data-media="">All</button>
+        <button type="button" class="filter-chip chip-media" data-media="movie"><i class="fa-solid fa-film"></i> Movies</button>
+        <button type="button" class="filter-chip chip-media" data-media="tv"><i class="fa-solid fa-tv"></i> TV</button>
 
-      <span class="filter-chip-label" style="margin-left: 8px;">Breakdown:</span>
-      <a href="/directors/{{username}}" class="breakdown-pill"><i class="fa-solid fa-clapperboard"></i> Directors</a>
-      <a href="/genres/{{username}}" class="breakdown-pill"><i class="fa-solid fa-tags"></i> Genres</a>
-      <a href="/years/{{username}}" class="breakdown-pill"><i class="fa-solid fa-calendar"></i> Years</a>
-      <a href="/ratings/{{username}}" class="breakdown-pill"><i class="fa-solid fa-star"></i> Ratings</a>
+        <span class="filter-chip-label" style="margin-left: 8px;">Context:</span>
+        <button type="button" class="filter-chip chip-context" data-cinema="1"><i class="fa-solid fa-film"></i> Cinema</button>
+        <button type="button" class="filter-chip chip-context" data-rewatch="1"><i class="fa-solid fa-repeat"></i> Rewatch</button>
 
-      <button type="button" class="filter-reset-btn" id="filter-reset-btn" style="display: none;">[ ✕ Reset Filters ]</button>
+        <span class="filter-chip-label" style="margin-left: 8px;">Breakdown:</span>
+        <a href="/directors/{{username}}" class="breakdown-pill"><i class="fa-solid fa-clapperboard"></i> Directors</a>
+        <a href="/genres/{{username}}" class="breakdown-pill"><i class="fa-solid fa-tags"></i> Genres</a>
+        <a href="/years/{{username}}" class="breakdown-pill"><i class="fa-solid fa-calendar"></i> Years</a>
+        <a href="/ratings/{{username}}" class="breakdown-pill"><i class="fa-solid fa-star"></i> Ratings</a>
+
+        <button type="button" class="filter-reset-btn" id="filter-reset-btn" style="display: none;">[ ✕ Reset Filters ]</button>
+      </div>
     </div>
   </div>
 
@@ -345,6 +348,7 @@ body %} {% block content %}
 
 <script src="/static/js/grid.js"></script>
 
+<script>
   // --- Reactive Filter State & Controller ---
   const filterState = {
     username: "{{ username }}",

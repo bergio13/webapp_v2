@@ -22,8 +22,8 @@
       </div>
 
       <div class="dossier-summary-col">
-        <div class="dossier-archetype-line">
-          <span class="dossier-archetype-text">[ {{ cinephile_archetype }} ]</span>
+        <div class="dossier-username-line">
+          <span class="dossier-username-text">{{ user['username'] }}</span>
         </div>
         <div class="dossier-meta-subtext">
           <span>{{ length }} FILMS</span>
@@ -35,11 +35,14 @@
       </div>
 
       <div class="dossier-quick-actions">
+        <a href="/lista" class="btn-minimal-action" title="View Library">
+          [ <i class="fa-solid fa-clapperboard"></i> LIBRARY ]
+        </a>
         <button type="button" id="btn-share-profile" class="btn-minimal-action" title="Share Profile">
-          [ ⎘ SHARE ]
+          [ <i class="fa-solid fa-share-nodes"></i> SHARE ]
         </button>
         <a href="/logout" class="btn-minimal-action btn-minimal-logout" title="Logout">
-          [ ⎋ LOGOUT ]
+          [ <i class="fa-solid fa-arrow-right-from-bracket"></i> LOGOUT ]
         </a>
       </div>
     </div>

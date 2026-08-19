@@ -787,19 +787,18 @@ body_class %} friends_page{% endblock %}{% block body%} {% block content %}
       <div class="friends-grid">
         {% for friend in friends %}
         <div class="friend-card" style="position: relative;">
-          <a href="/list/{{ friend.f_username }}" class="friend-card-link">
+          <a href="/profile/{{ friend.f_username }}" class="friend-card-link" title="View {{ friend.f_username }}'s Profile">
             <div class="friend-avatar">{{ friend.f_username[0].upper() }}</div>
             <div class="friend-name">{{ friend.f_username }}</div>
           </a>
 
           <div class="friend-actions">
-            <a href="/watchlist/shared/{{ friend.user_id }}" class="watchlist-btn">[ WATCHLIST ]</a>
-            <a href="/compare/{{ friend.f_username }}" class="compare-btn">[ COMPARE ]</a>
+            <a href="/watchlist/shared/{{ friend.user_id }}" class="watchlist-btn" title="View Watchlist">[ WATCHLIST ]</a>
             <form method="post" action="/unfollow" style="margin: 0;">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
               <input type="hidden" name="username" value="{{ friend.f_username }}" />
               <input type="hidden" name="user_id" value="{{ friend.user_id }}" />
-              <button type="submit" class="unfollow-btn" onclick='return confirm("Are you sure you want to unfollow " + {{ friend.f_username|tojson }} + "?");'>[X]</button>
+              <button type="submit" class="unfollow-btn" onclick='return confirm("Are you sure you want to unfollow " + {{ friend.f_username|tojson }} + "?");' title="Unfollow">[X]</button>
             </form>
           </div>
         </div>

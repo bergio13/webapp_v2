@@ -27,6 +27,8 @@ def list_about():
 @login_required
 def list_about_friend(username):
     users = get_user_id(username)
+    if not users:
+        return jsonify([])
     return jsonify(get_movies(users[0]["id"]))
 
 

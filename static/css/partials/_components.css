@@ -1468,39 +1468,54 @@ ul.add li {
     padding: 0;
     gap: 12px;
     margin-bottom: 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .cyber-deck-header-row {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     padding-bottom: 10px;
     text-align: center;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .cyber-deck-title-group {
     justify-content: center;
-    gap: 16px;
+    gap: 10px;
     width: 100%;
+    max-width: 100%;
   }
 
   .cyber-deck-heading {
     justify-content: center;
-    gap: 16px;
+    gap: 8px 12px;
     width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
   }
 
   .cyber-deck-tab {
-    font-size: 1.55rem;
-    padding: 2px 4px;
+    font-size: clamp(1.15rem, 4.2vw, 1.45rem);
+    letter-spacing: 0.8px;
+    padding: 1px 2px;
+    white-space: nowrap;
   }
 
   .cyber-deck-meta-badge {
-    font-size: 0.95rem;
-    letter-spacing: 1px;
+    font-size: clamp(0.82rem, 3.2vw, 0.95rem);
+    letter-spacing: 0.8px;
     justify-content: center;
-    opacity: 0.8;
+    opacity: 0.85;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .cyber-deck-controls-row {
@@ -2972,15 +2987,15 @@ body.movie-drawer-open {
   min-width: 0;
 }
 
-.dossier-archetype-line {
+.dossier-username-line {
   margin-bottom: 2px;
 }
 
-.dossier-archetype-text {
+.dossier-username-text {
   font-family: var(--font-mono, monospace);
-  font-size: 0.84rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #c4a96d;
+  color: #f1f5f9;
   letter-spacing: 0.04em;
 }
 

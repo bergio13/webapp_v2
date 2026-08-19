@@ -563,8 +563,15 @@ function renderLastThreeYearsMonthlyChart(yearlySeries) {
 }
 
 async function main() {
-  const username = document.getElementById("username")?.textContent?.trim();
-  const endpoint = username ? `/data/${username}` : "/data";
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  let username = "";
+  if (pathParts[0] === "profile" && pathParts.length > 1) {
+    username = decodeURIComponent(pathParts[1]);
+  } else {
+    username = document.getElementById("profile-username")?.textContent?.trim() || 
+               document.getElementById("username")?.textContent?.trim() || "";
+  }
+  const endpoint = username ? `/data/${encodeURIComponent(username)}` : "/data";
   jsondata = await getJson(endpoint);
 
   const genreCounts = { ...genres };
