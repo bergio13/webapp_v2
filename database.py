@@ -145,7 +145,7 @@ def get_movies_paginated(parent_id, order_column='v_date', desc=True, page=1, li
 
         if rating is not None and str(rating).isdigit() and int(rating) in [1, 2, 3, 4, 5]:
             r_int = int(rating)
-            query = query.or_(f"rating.eq.{r_int},rating.eq.{r_int * 2},rating.eq.{r_int * 2 - 1}")
+            query = query.eq('rating', r_int)
 
         if media_type == 'movie':
             query = query.or_('tv_show.eq.0,tv_show.is.null')

@@ -77,3 +77,35 @@ def test_export_csv_endpoint(monkeypatch):
         assert reader[0] == ["Title", "Year", "Director", "Genre", "Rating", "Watched Date", "Cinema", "Rewatch", "TV Show"]
         assert reader[1][0] == "Interstellar"
         assert reader[1][1] == "2014"
+
+
+def test_api_movies_rating_filter(monkeypatch):
+    mock_db = [
+        {"id": 1, "movie": "M1", "director": "D1", "genre": "G1", "p_year": 2020, "v_date": "2024-01-01", "rating": 3, "cinema": 0, "rewatch": 0, "tv_show": 0, "poster": ""},
+        {"id": 2, "movie": "M2", "director": "D2", "genre": "G2", "p_year": 2021, "v_date": "2024-01-02", "rating": 2, "cinema": 0, "rewatch": 0, "tv_show": 0, "poster": ""},
+        {"id": 3, "movie": "M3", "director": "D3", "genre": "G3", "p_year": 2022, "v_date": "2024-01-03", "rating": 5, "cinema": 0, "rewatch": 0, "tv_show": 0, "poster": ""},
+    ]
+
+    def mock_get_movies_paginated(user_id, **kwargs):
+        req_rating = kwargs.get("rating")
+        filtered = [m for m in mock_db if req_rating is None or m["rating"] == req_rating]
+        return filtered, len(filtered)
+
+    monkeypatch.setattr("routes.main.get_movies_paginated", mock_get_movies_paginated)
+
+    with app.test_request_context("/api/movies?rating=3"):
+        login_user(MockUser())
+        from routes.main import api_movies
+        resp = api_movies()
+        data = resp.get_json()
+        assert data["total_count"] == 1
+        assert data["movies"][0]["rating"] == 3
+
+    with app.test_request_context("/api/movies?rating=2"):
+        login_user(MockUser())
+        from routes.main import api_movies
+        resp = api_movies()
+        data = resp.get_json()
+        assert data["total_count"] == 1
+        assert data["movies"][0]["rating"] == 2
+
