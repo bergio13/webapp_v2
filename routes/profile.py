@@ -60,3 +60,39 @@ def profile_friend(username):
         current_app.logger.exception("Failed to load friend profile page for %s", username)
         flash("Something went wrong, please refresh the page", category="error")
     return render_template("_profile.html", username=username, user=users[0], **profile_stats)
+
+
+@profile_bp.route("/api/export_csv")
+@login_required
+def export_csv():
+    """Export the user's full watched movie database as a CSV attachment."""
+    import csv
+    import io
+    from flask import Response
+
+    movies = get_movies(current_user.id)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Title", "Year", "Director", "Genre", "Rating", "Watched Date", "Cinema", "Rewatch", "TV Show"])
+
+    for m in movies:
+        writer.writerow([
+            m.get("movie", ""),
+            m.get("p_year", ""),
+            m.get("director", ""),
+            m.get("genre", ""),
+            m.get("rating", ""),
+            str(m.get("v_date", "")),
+            1 if m.get("cinema") else 0,
+            1 if m.get("rewatch") else 0,
+            1 if m.get("tv_show") else 0,
+        ])
+
+    username = getattr(current_user, "username", "my")
+    filename = f"{username}_kineto_library.csv"
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+

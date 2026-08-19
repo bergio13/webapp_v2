@@ -601,15 +601,88 @@ async function main() {
   const top10Keys = top10.map(([name]) => name);
   const top10Values = top10.map(([, value]) => value);
 
-  renderTopGenresBar(top6Keys, top6Values);
-  renderMonthlyMoviesLine(monthCounts);
-  renderGenresRadar(top10Keys, top10Values);
+  let chartsRendered = false;
+  function renderAllCharts() {
+    if (chartsRendered) return;
+    chartsRendered = true;
+    renderTopGenresBar(top6Keys, top6Values);
+    renderMonthlyMoviesLine(monthCounts);
+    renderGenresRadar(top10Keys, top10Values);
 
-  const advancedStats = extractAdvancedStats(jsondata);
-  renderTvVsMoviesChart(advancedStats);
-  renderDiversityChart(advancedStats);
-  renderHabitCountsChart(advancedStats);
-  renderLastThreeYearsMonthlyChart(buildLastThreeYearsSeries(jsondata));
+    const advancedStats = extractAdvancedStats(jsondata);
+    renderTvVsMoviesChart(advancedStats);
+    renderDiversityChart(advancedStats);
+    renderHabitCountsChart(advancedStats);
+    renderLastThreeYearsMonthlyChart(buildLastThreeYearsSeries(jsondata));
+  }
+
+  // ───────── Tab Switcher Logic ─────────
+  const tabBtns = document.querySelectorAll(".profile-tab-btn-min, .profile-tab-btn");
+  const tabPanes = document.querySelectorAll(".profile-tab-pane");
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetTabId = btn.getAttribute("data-tab");
+
+      tabBtns.forEach((b) => {
+        b.classList.remove("is-active");
+        b.setAttribute("aria-selected", "false");
+        const openBr = b.querySelector(".tab-open");
+        const closeBr = b.querySelector(".tab-close");
+        if (openBr) openBr.textContent = "[";
+        if (closeBr) closeBr.textContent = "]";
+      });
+      tabPanes.forEach((p) => {
+        p.classList.remove("is-active");
+        p.style.display = "none";
+      });
+
+      btn.classList.add("is-active");
+      btn.setAttribute("aria-selected", "true");
+      const activeOpen = btn.querySelector(".tab-open");
+      const activeClose = btn.querySelector(".tab-close");
+      if (activeOpen) activeOpen.textContent = ">";
+      if (activeClose) activeClose.textContent = "<";
+
+      const targetPane = document.getElementById(targetTabId);
+      if (targetPane) {
+        targetPane.classList.add("is-active");
+        targetPane.style.display = "block";
+
+        // Trigger chart rendering and resize when switching to chart tabs
+        if (targetTabId === "tab-genome" || targetTabId === "tab-habits") {
+          renderAllCharts();
+          window.dispatchEvent(new Event("resize"));
+        }
+      }
+    });
+  });
+
+  // ───────── Share / Copy Link Logic ─────────
+  function setupCopyButton(btnId) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const originalText = btn.textContent;
+        btn.textContent = "[ ✓ LINK COPIED! ]";
+        btn.classList.add("btn-active");
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove("btn-active");
+        }, 2200);
+      } catch (err) {
+        alert("Profile link copied: " + window.location.href);
+      }
+    });
+  }
+
+  setupCopyButton("btn-share-profile");
+  setupCopyButton("btn-copy-profile-link");
+
+  // Initial render of charts in background
+  setTimeout(renderAllCharts, 100);
 }
 
 main();
