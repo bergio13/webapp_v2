@@ -166,14 +166,26 @@ if (canvas && ctx) {
   }
 
   const effect = new Effect(canvas);
-  effect.render(ctx);
 
+  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let animationFrameId = null;
+  let isRunning = false;
   let lastTime = 0;
   const fps = 60;
   const nextFrame = 1000 / fps;
   let timer = 0;
 
+  function shouldAnimate() {
+    return !document.hidden && !motionQuery.matches;
+  }
+
+  function renderStaticFrame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    effect.render(ctx);
+  }
+
   function animate(timeStamp) {
+    if (!isRunning) return;
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
 
@@ -184,14 +196,51 @@ if (canvas && ctx) {
     } else {
       timer += deltaTime;
     }
-    requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate);
   }
 
-  animate(0);
+  function startAnimation() {
+    if (!isRunning && shouldAnimate()) {
+      isRunning = true;
+      lastTime = performance.now();
+      animationFrameId = requestAnimationFrame(animate);
+    }
+  }
 
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
+  function stopAnimation() {
+    isRunning = false;
+    if (animationFrameId !== null) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+  }
+
+  function updateAnimationState() {
+    if (shouldAnimate()) {
+      startAnimation();
+    } else {
+      stopAnimation();
+      if (motionQuery.matches && !document.hidden) {
+        renderStaticFrame();
+      }
+    }
+  }
+
+  document.addEventListener("visibilitychange", updateAnimationState);
+
+  if (typeof motionQuery.addEventListener === "function") {
+    motionQuery.addEventListener("change", updateAnimationState);
+  } else if (typeof motionQuery.addListener === "function") {
+    motionQuery.addListener(updateAnimationState);
+  }
+
+  if (shouldAnimate()) {
+    startAnimation();
+  } else if (!document.hidden) {
+    renderStaticFrame();
+  }
+
+  const prefersReducedMotion = motionQuery.matches;
   const isFinePointer = window.matchMedia("(pointer: fine)").matches;
 
   if (!prefersReducedMotion && isFinePointer) {

@@ -47,12 +47,63 @@ class Effect {
 }
 
 const effect = new Effect(canvas.width, canvas.height);
-effect.render(ctx);
-console.log(effect);
 
-function animate() {
+const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let animationFrameId = null;
+let isRunning = false;
+
+function shouldAnimate() {
+  return !document.hidden && !motionQuery.matches;
+}
+
+function renderStaticFrame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   effect.render(ctx);
-  requestAnimationFrame(animate);
 }
-animate();
+
+function animate() {
+  if (!isRunning) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  effect.render(ctx);
+  animationFrameId = requestAnimationFrame(animate);
+}
+
+function startAnimation() {
+  if (!isRunning && shouldAnimate()) {
+    isRunning = true;
+    animationFrameId = requestAnimationFrame(animate);
+  }
+}
+
+function stopAnimation() {
+  isRunning = false;
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+}
+
+function updateAnimationState() {
+  if (shouldAnimate()) {
+    startAnimation();
+  } else {
+    stopAnimation();
+    if (motionQuery.matches && !document.hidden) {
+      renderStaticFrame();
+    }
+  }
+}
+
+document.addEventListener("visibilitychange", updateAnimationState);
+
+if (typeof motionQuery.addEventListener === "function") {
+  motionQuery.addEventListener("change", updateAnimationState);
+} else if (typeof motionQuery.addListener === "function") {
+  motionQuery.addListener(updateAnimationState);
+}
+
+if (shouldAnimate()) {
+  startAnimation();
+} else if (!document.hidden) {
+  renderStaticFrame();
+}

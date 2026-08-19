@@ -117,18 +117,25 @@ function connect() {
   }
 }
 
-let isAnimating = true;
+const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let animationFrameId = null;
+let isRunning = false;
 
-document.addEventListener("visibilitychange", function () {
-  isAnimating = !document.hidden;
-});
+function shouldAnimate() {
+  return !document.hidden && !motionQuery.matches;
+}
+
+function renderStaticFrame() {
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  for (let i = 0; i < particlesArray.length; i++) {
+    particlesArray[i].draw();
+  }
+  connect();
+}
 
 // animation loop
 function animate() {
-  if (!isAnimating) {
-    requestAnimationFrame(animate);
-    return;
-  }
+  if (!isRunning) return;
 
   ctx.clearRect(0, 0, innerWidth, innerHeight);
 
@@ -136,7 +143,41 @@ function animate() {
     particlesArray[i].update();
   }
   connect();
-  requestAnimationFrame(animate);
+  animationFrameId = requestAnimationFrame(animate);
+}
+
+function startAnimation() {
+  if (!isRunning && shouldAnimate()) {
+    isRunning = true;
+    animationFrameId = requestAnimationFrame(animate);
+  }
+}
+
+function stopAnimation() {
+  isRunning = false;
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+}
+
+function updateAnimationState() {
+  if (shouldAnimate()) {
+    startAnimation();
+  } else {
+    stopAnimation();
+    if (motionQuery.matches && !document.hidden) {
+      renderStaticFrame();
+    }
+  }
+}
+
+document.addEventListener("visibilitychange", updateAnimationState);
+
+if (typeof motionQuery.addEventListener === "function") {
+  motionQuery.addEventListener("change", updateAnimationState);
+} else if (typeof motionQuery.addListener === "function") {
+  motionQuery.addListener(updateAnimationState);
 }
 
 // resize event
@@ -145,6 +186,9 @@ window.addEventListener("resize", function () {
   canvas.height = innerHeight;
   mouse.radius = (canvas.height / 80) * (canvas.height / 80);
   init();
+  if (!shouldAnimate() && !document.hidden) {
+    renderStaticFrame();
+  }
 });
 
 // mouse out event
@@ -154,4 +198,9 @@ window.addEventListener("mouseout", function () {
 });
 
 init();
-animate();
+
+if (shouldAnimate()) {
+  startAnimation();
+} else if (!document.hidden) {
+  renderStaticFrame();
+}

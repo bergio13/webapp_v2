@@ -344,9 +344,61 @@
       }
     }
     ctx.restore();
-    requestAnimationFrame(loop);
+    if (kinIsRunning) {
+      kinAnimFrame = requestAnimationFrame(loop);
+    }
   }
-  requestAnimationFrame(loop);
+
+  var kinMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var kinAnimFrame = null;
+  var kinIsRunning = false;
+
+  function shouldKinAnimate() {
+    return !document.hidden && !kinMotionQuery.matches;
+  }
+
+  function startKinLoop() {
+    if (!kinIsRunning && shouldKinAnimate()) {
+      kinIsRunning = true;
+      lastTime = performance.now();
+      kinAnimFrame = requestAnimationFrame(loop);
+    }
+  }
+
+  function stopKinLoop() {
+    kinIsRunning = false;
+    if (kinAnimFrame !== null) {
+      cancelAnimationFrame(kinAnimFrame);
+      kinAnimFrame = null;
+    }
+  }
+
+  function updateKinState() {
+    if (shouldKinAnimate()) {
+      startKinLoop();
+    } else {
+      stopKinLoop();
+      if (kinMotionQuery.matches && !document.hidden) {
+        lastTime = performance.now();
+        loop(lastTime);
+        stopKinLoop();
+      }
+    }
+  }
+
+  document.addEventListener('visibilitychange', updateKinState);
+  if (typeof kinMotionQuery.addEventListener === 'function') {
+    kinMotionQuery.addEventListener('change', updateKinState);
+  } else if (typeof kinMotionQuery.addListener === 'function') {
+    kinMotionQuery.addListener(updateKinState);
+  }
+
+  if (shouldKinAnimate()) {
+    startKinLoop();
+  } else if (!document.hidden) {
+    loop(performance.now());
+    stopKinLoop();
+  }
 
   // ═══════════════════════════════════
   // POSTER CAROUSEL

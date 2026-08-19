@@ -227,24 +227,73 @@
       effect = new FlowEffect(canvas, opts);
     }
 
-    window.addEventListener("resize", () => {
-      effect.resize(window.innerWidth, window.innerHeight);
-    });
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let animationFrameId = null;
+    let isRunning = false;
 
-    let isAnimating = true;
-    document.addEventListener("visibilitychange", () => {
-      const wasHidden = !isAnimating;
-      isAnimating = !document.hidden;
-      if (isAnimating && wasHidden) animate();
-    });
-
-    function animate() {
-      if (!isAnimating) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      effect.render(ctx);
-      requestAnimationFrame(animate);
+    function shouldAnimate() {
+      return !document.hidden && !motionQuery.matches;
     }
 
-    animate();
+    function renderStaticFrame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      effect.render(ctx);
+    }
+
+    function animate() {
+      if (!isRunning) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      effect.render(ctx);
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    function startAnimation() {
+      if (!isRunning && shouldAnimate()) {
+        isRunning = true;
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    }
+
+    function stopAnimation() {
+      isRunning = false;
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    }
+
+    function updateAnimationState() {
+      if (shouldAnimate()) {
+        startAnimation();
+      } else {
+        stopAnimation();
+        // If reduced motion is requested and tab is visible, draw a calm static frame
+        if (motionQuery.matches && !document.hidden) {
+          renderStaticFrame();
+        }
+      }
+    }
+
+    window.addEventListener("resize", () => {
+      effect.resize(window.innerWidth, window.innerHeight);
+      if (!shouldAnimate() && !document.hidden) {
+        renderStaticFrame();
+      }
+    });
+
+    document.addEventListener("visibilitychange", updateAnimationState);
+
+    if (typeof motionQuery.addEventListener === "function") {
+      motionQuery.addEventListener("change", updateAnimationState);
+    } else if (typeof motionQuery.addListener === "function") {
+      motionQuery.addListener(updateAnimationState);
+    }
+
+    // Initial start or static render
+    if (shouldAnimate()) {
+      startAnimation();
+    } else if (!document.hidden) {
+      renderStaticFrame();
+    }
   };
 })();
