@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     
-    <link rel="stylesheet" href="/static/css/style.css?v=4.3" />
+    <link rel="stylesheet" href="/static/css/style.css?v=4.4" />
     {% endblock %}
   </head>
 
@@ -322,9 +322,12 @@
               flash.remove(); // Remove the element
           }, 300); // Match the transition duration in the CSS
       });
-  }, 3000); 
-
+    }, 3000);
     </script>
+
+    <!-- Global In-App Movie Detail Drawer -->
+    {% include 'components/_movie_drawer.html' %}
+    <script src="/static/js/movie_drawer.js"></script>
   
   </body>
 </html>

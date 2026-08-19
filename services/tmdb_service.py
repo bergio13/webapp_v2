@@ -308,3 +308,199 @@ def get_director_by_id(media_id, media_type):
         print(f"Error in tmdb_service.get_director_by_id: {e}")
         
     return ""
+
+def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, country="IT"):
+    """
+    Fetch comprehensive media details from TMDB including trailer, watch providers, credits, and synopsis.
+    """
+    api_key = os.environ.get('TMDB_API_KEY') or tmdb.api_key
+    if not api_key:
+        return {"success": False, "error": "TMDB API Key missing"}
+
+    media_type = "tv" if is_tv else "movie"
+    target_id = tmdb_id
+
+    # 1. Resolve target ID if not provided
+    if not target_id and title:
+        import re
+        clean_title = re.sub(r',?\s*season\s*\d+.*$', '', title, flags=re.IGNORECASE).strip()
+        search_results = search_titles(clean_title or title, is_tv=is_tv, limit=8)
+        
+        if search_results:
+            best_match = None
+            if year:
+                for r in search_results:
+                    if str(r.get("year", "")) == str(year):
+                        best_match = r
+                        break
+            if not best_match:
+                best_match = search_results[0]
+                
+            target_id = best_match.get("id")
+            media_type = best_match.get("type", media_type)
+
+    if not target_id:
+        return {"success": False, "error": "Media not found on TMDB"}
+
+    # 2. Fetch full details with append_to_response
+    url = f"https://api.themoviedb.org/3/{media_type}/{target_id}?api_key={api_key}&append_to_response=videos,watch/providers,credits"
+    try:
+        resp = requests.get(url, timeout=6)
+        if resp.status_code != 200:
+            # If failed as movie, retry as TV or vice versa
+            alt_type = "tv" if media_type == "movie" else "movie"
+            alt_url = f"https://api.themoviedb.org/3/{alt_type}/{target_id}?api_key={api_key}&append_to_response=videos,watch/providers,credits"
+            resp = requests.get(alt_url, timeout=6)
+            if resp.status_code == 200:
+                media_type = alt_type
+            else:
+                return {"success": False, "error": f"TMDB returned status {resp.status_code}"}
+
+        data = resp.json()
+
+        # Parse basic fields
+        is_tv_show = (media_type == "tv")
+        media_title = data.get("name") if is_tv_show else data.get("title")
+        orig_title = data.get("original_name") if is_tv_show else data.get("original_title")
+        release_date = data.get("first_air_date") if is_tv_show else data.get("release_date")
+        rel_year = release_date[:4] if release_date else (str(year) if year else "")
+        tagline = data.get("tagline") or ""
+        overview = data.get("overview") or "No plot summary available."
+        vote_avg = round(float(data.get("vote_average", 0)), 1) if data.get("vote_average") else None
+        
+        # Runtime formatting
+        runtime_mins = None
+        if not is_tv_show:
+            runtime_mins = data.get("runtime")
+        else:
+            ep_runtimes = data.get("episode_run_time") or []
+            if ep_runtimes:
+                runtime_mins = ep_runtimes[0]
+
+        formatted_runtime = ""
+        if runtime_mins and runtime_mins > 0:
+            hrs = runtime_mins // 60
+            mins = runtime_mins % 60
+            formatted_runtime = f"{hrs}h {mins}m" if hrs > 0 else f"{mins}m"
+
+        # Poster & Backdrop
+        poster_path = data.get("poster_path")
+        backdrop_path = data.get("backdrop_path")
+        poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+        backdrop = f"https://image.tmdb.org/t/p/w1280{backdrop_path}" if backdrop_path else None
+
+        # Genres
+        genres = [g.get("name") for g in data.get("genres", []) if g.get("name")]
+
+        # Director / Creator
+        director = "Unknown"
+        credits_data = data.get("credits", {})
+        if is_tv_show:
+            created_by = data.get("created_by", [])
+            if created_by:
+                director = created_by[0].get("name", "Unknown")
+            elif credits_data.get("crew"):
+                for cm in credits_data["crew"]:
+                    if cm.get("job") in ["Director", "Creator", "Executive Producer"]:
+                        director = cm.get("name", "Unknown")
+                        break
+        else:
+            if credits_data.get("crew"):
+                for cm in credits_data["crew"]:
+                    if cm.get("job") == "Director":
+                        director = cm.get("name", "Unknown")
+                        break
+
+        # Cast (Top 8)
+        cast_list = []
+        for cast_member in credits_data.get("cast", [])[:8]:
+            p_path = cast_member.get("profile_path")
+            cast_list.append({
+                "name": cast_member.get("name"),
+                "character": cast_member.get("character") or "Cast",
+                "profile": f"https://image.tmdb.org/t/p/w185{p_path}" if p_path else None
+            })
+
+        # Videos / Trailer
+        videos = data.get("videos", {}).get("results", [])
+        trailer_obj = None
+        # Sort trailers: prioritize Official Trailer, then Trailer, then Teaser
+        scored_videos = []
+        for v in videos:
+            if v.get("site") == "YouTube":
+                v_type = v.get("type", "")
+                is_official = bool(v.get("official"))
+                score = 0
+                if v_type == "Trailer":
+                    score = 100 + (50 if is_official else 0)
+                elif v_type == "Teaser":
+                    score = 50 + (25 if is_official else 0)
+                elif v_type == "Clip":
+                    score = 20
+                scored_videos.append((score, v))
+
+        scored_videos.sort(key=lambda x: x[0], reverse=True)
+        if scored_videos:
+            best_v = scored_videos[0][1]
+            v_key = best_v.get("key")
+            trailer_obj = {
+                "key": v_key,
+                "name": best_v.get("name") or "Official Trailer",
+                "site": "YouTube",
+                "embed_url": f"https://www.youtube-nocookie.com/embed/{v_key}?autoplay=1&rel=0"
+            }
+
+        # Watch Providers (JustWatch)
+        wp_all = data.get("watch/providers", {}).get("results", {})
+        available_countries = sorted(list(wp_all.keys()))
+        
+        target_country = (country or "IT").upper()
+        wp_country_data = wp_all.get(target_country) or wp_all.get("IT") or wp_all.get("US") or {}
+        
+        def format_provider_list(prov_list):
+            formatted = []
+            for p in prov_list or []:
+                logo_path = p.get("logo_path")
+                formatted.append({
+                    "name": p.get("provider_name"),
+                    "logo": f"https://image.tmdb.org/t/p/w92{logo_path}" if logo_path else None
+                })
+            return formatted
+
+        watch_providers = {
+            "country": target_country,
+            "link": wp_country_data.get("link") or f"https://www.themoviedb.org/{media_type}/{target_id}/watch",
+            "flatrate": format_provider_list(wp_country_data.get("flatrate")),
+            "rent": format_provider_list(wp_country_data.get("rent")),
+            "buy": format_provider_list(wp_country_data.get("buy")),
+            "free": format_provider_list(wp_country_data.get("free") or wp_country_data.get("ads")),
+            "available_countries": available_countries
+        }
+
+        return {
+            "success": True,
+            "id": target_id,
+            "media_type": media_type,
+            "title": media_title or title,
+            "original_title": orig_title,
+            "tagline": tagline,
+            "overview": overview,
+            "release_date": release_date,
+            "year": rel_year,
+            "runtime": runtime_mins,
+            "formatted_runtime": formatted_runtime,
+            "vote_average": vote_avg,
+            "poster": poster,
+            "backdrop": backdrop,
+            "genres": genres,
+            "director": director,
+            "cast": cast_list,
+            "trailer": trailer_obj,
+            "watch_providers": watch_providers,
+            "tmdb_url": f"https://www.themoviedb.org/{media_type}/{target_id}"
+        }
+
+    except Exception as e:
+        print(f"Error fetching full media details: {e}")
+        return {"success": False, "error": str(e)}
+

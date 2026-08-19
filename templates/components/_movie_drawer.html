@@ -1,0 +1,174 @@
+<!-- Movie Detail Drawer Component (Slide-in Cyber-Deck) -->
+<div id="movie-drawer-backdrop" class="movie-drawer-backdrop" aria-hidden="true"></div>
+
+<aside id="movie-drawer-panel" class="movie-drawer-panel" aria-label="Media Details Matrix" aria-hidden="true" role="dialog">
+  <!-- Top ASCII Header Bar -->
+  <div class="drawer-header-bar">
+    <div class="drawer-header-title">
+      <span class="drawer-header-bracket">╔═</span>
+      <span class="drawer-header-text">MEDIA_MATRIX.db</span>
+      <span class="drawer-header-bracket">═╝</span>
+    </div>
+    <button type="button" id="drawer-close-btn" class="drawer-close-btn" aria-label="Close Drawer">
+      [ ✕ ESC ]
+    </button>
+  </div>
+
+  <!-- Loading Skeleton State -->
+  <div id="drawer-skeleton-loader" class="drawer-skeleton-loader">
+    <div class="skeleton-banner"></div>
+    <div class="skeleton-content">
+      <div class="skeleton-line skeleton-title"></div>
+      <div class="skeleton-line skeleton-subtitle"></div>
+      <div class="skeleton-box skeleton-desc"></div>
+      <div class="skeleton-box skeleton-trailer"></div>
+      <div class="skeleton-box skeleton-providers"></div>
+    </div>
+  </div>
+
+  <!-- Scrollable Content Body -->
+  <div id="drawer-body" class="drawer-body" style="display: none;">
+    <!-- Backdrop & Hero Section -->
+    <div class="drawer-hero">
+      <div id="drawer-backdrop" class="drawer-backdrop"></div>
+      <div class="drawer-hero-gradient"></div>
+      
+      <div class="drawer-hero-content">
+        <div class="drawer-poster-wrap">
+          <img id="drawer-poster-img" src="" alt="Poster" class="drawer-poster-img" loading="lazy" />
+        </div>
+        <div class="drawer-hero-meta">
+          <div class="drawer-badges-row">
+            <span id="drawer-media-type-badge" class="drawer-meta-badge badge-type">MOVIE</span>
+            <span id="drawer-year-badge" class="drawer-meta-badge badge-year">2024</span>
+            <span id="drawer-runtime-badge" class="drawer-meta-badge badge-runtime">2h 15m</span>
+            <span id="drawer-rating-badge" class="drawer-meta-badge badge-rating">★ 8.5</span>
+          </div>
+
+          <h2 id="drawer-title" class="drawer-title">Film Title</h2>
+          <div id="drawer-orig-title-row" class="drawer-orig-title-row" style="display: none;">
+            <span class="drawer-label">ORIGINAL:</span>
+            <span id="drawer-orig-title" class="drawer-orig-title-text">Original Title</span>
+          </div>
+
+          <div class="drawer-director-row">
+            <span class="drawer-label">DIRECTED BY:</span>
+            <span id="drawer-director" class="drawer-director-text">Director Name</span>
+          </div>
+
+          <div id="drawer-genres-list" class="drawer-genres-list">
+            <!-- Genre pills populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Details Container -->
+    <div class="drawer-main-content">
+      <!-- Tagline -->
+      <blockquote id="drawer-tagline" class="drawer-tagline" style="display: none;"></blockquote>
+
+      <!-- Overview / Synopsis -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">
+          <span class="sect-icon">//</span> SYNOPSIS
+        </div>
+        <p id="drawer-overview" class="drawer-overview-text">Plot overview text goes here...</p>
+      </div>
+
+      <!-- Official Trailer Embed -->
+      <div id="drawer-trailer-section" class="drawer-section" style="display: none;">
+        <div class="drawer-section-title">
+          <span class="sect-icon">▶</span> OFFICIAL TRAILER
+        </div>
+        <div class="drawer-trailer-container">
+          <div id="drawer-trailer-frame-wrapper" class="drawer-trailer-frame-wrapper">
+            <!-- Responsive 16:9 iframe injected on demand -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Where to Watch / Streaming Providers (JustWatch) -->
+      <div id="drawer-providers-section" class="drawer-section">
+        <div class="drawer-section-header-row">
+          <div class="drawer-section-title">
+            <span class="sect-icon">⚲</span> WHERE TO WATCH
+          </div>
+          <div class="drawer-country-selector-wrap">
+            <label for="drawer-country-select" class="country-select-label">REGION:</label>
+            <select id="drawer-country-select" class="drawer-country-select">
+              <option value="IT">🇮🇹 Italy</option>
+              <option value="US">🇺🇸 United States</option>
+              <option value="GB">🇬🇧 United Kingdom</option>
+              <option value="DE">🇩🇪 Germany</option>
+              <option value="FR">🇫🇷 France</option>
+              <option value="ES">🇪🇸 Spain</option>
+              <option value="CA">🇨🇦 Canada</option>
+              <option value="AU">🇦🇺 Australia</option>
+              <option value="JP">🇯🇵 Japan</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="drawer-providers-content" class="drawer-providers-content">
+          <!-- Stream / Flatrate -->
+          <div id="drawer-flatrate-block" class="provider-block" style="display: none;">
+            <div class="provider-block-title">STREAM:</div>
+            <div id="drawer-flatrate-list" class="provider-badges-list"></div>
+          </div>
+
+          <!-- Rent -->
+          <div id="drawer-rent-block" class="provider-block" style="display: none;">
+            <div class="provider-block-title">RENT:</div>
+            <div id="drawer-rent-list" class="provider-badges-list"></div>
+          </div>
+
+          <!-- Buy -->
+          <div id="drawer-buy-block" class="provider-block" style="display: none;">
+            <div class="provider-block-title">BUY:</div>
+            <div id="drawer-buy-list" class="provider-badges-list"></div>
+          </div>
+
+          <!-- Free / Ads -->
+          <div id="drawer-free-block" class="provider-block" style="display: none;">
+            <div class="provider-block-title">FREE:</div>
+            <div id="drawer-free-list" class="provider-badges-list"></div>
+          </div>
+
+          <!-- No Providers Found Fallback -->
+          <div id="drawer-no-providers" class="drawer-no-providers" style="display: none;">
+            <span class="meta-dim">No streaming options currently listed for this region.</span>
+          </div>
+
+          <div class="drawer-justwatch-attribution">
+            <span>Streaming data powered by </span>
+            <a id="drawer-justwatch-link" href="https://www.justwatch.com" target="_blank" rel="noopener noreferrer">JustWatch</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Cast -->
+      <div id="drawer-cast-section" class="drawer-section" style="display: none;">
+        <div class="drawer-section-title">
+          <span class="sect-icon">✦</span> TOP CAST
+        </div>
+        <div id="drawer-cast-list" class="drawer-cast-list">
+          <!-- Cast avatar cards -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Sticky Action Toolbar -->
+  <div class="drawer-footer-actions">
+    <a id="drawer-action-log" href="/add_movie" class="btn-drawer-action btn-drawer-log">
+      [ + ADD TO WATCHED ]
+    </a>
+    <button type="button" id="drawer-action-watchlist" class="btn-drawer-action btn-drawer-watchlist">
+      [ + WATCHLIST ]
+    </button>
+    <a id="drawer-action-tmdb" href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" class="btn-drawer-action btn-drawer-tmdb">
+      [ TMDB ↗ ]
+    </a>
+  </div>
+</aside>

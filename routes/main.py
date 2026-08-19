@@ -303,3 +303,52 @@ def tmdb_redirect():
     safe_title = urllib.parse.quote(search_title)
     return redirect(f"https://www.themoviedb.org/search?query={safe_title}")
 
+
+@main_bp.route("/api/media_details")
+def api_media_details():
+    title = request.args.get("title")
+    year = request.args.get("year")
+    tmdb_id = request.args.get("tmdb_id")
+    is_tv_str = str(request.args.get("tv") or request.args.get("is_tv") or "").strip().lower()
+    is_tv = is_tv_str in ["1", "true", "t", "yes"]
+    country = request.args.get("country", "IT").strip().upper()
+    
+    if not title and not tmdb_id:
+        return jsonify({"success": False, "error": "Missing title or tmdb_id parameter"}), 400
+        
+    try:
+        details = tmdb_service.get_full_media_details(
+            tmdb_id=tmdb_id,
+            title=title,
+            year=year,
+            is_tv=is_tv,
+            country=country
+        )
+        
+        # Add user library status if authenticated
+        if details.get("success") and current_user.is_authenticated:
+            try:
+                watched_set = get_watched_title_year_lookup(current_user.id)
+                m_title = (details.get("title") or title or "").strip().lower()
+                m_year = str(details.get("year") or year or "").strip()
+                
+                is_watched = any(
+                    wt.strip().lower() == m_title and (not m_year or not wy or str(wy) == m_year)
+                    for wt, wy in watched_set
+                )
+                details["user_status"] = {
+                    "is_watched": is_watched,
+                    "is_authenticated": True
+                }
+            except Exception:
+                details["user_status"] = {"is_watched": False, "is_authenticated": True}
+        else:
+            details["user_status"] = {"is_watched": False, "is_authenticated": bool(current_user.is_authenticated)}
+            
+        return jsonify(details)
+    except Exception as e:
+        from flask import current_app
+        current_app.logger.exception("Error in /api/media_details")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
