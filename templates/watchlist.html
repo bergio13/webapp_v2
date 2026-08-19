@@ -260,32 +260,25 @@
 <script src="/static/js/canvas_bg.js"></script>
 
 <div class="watchlist-container">
-  <div class="library-tabs">
-    <a href="/lista" class="library-tab">Watched</a>
-    <a href="/watchlist" class="library-tab active">Watchlist</a>
-  </div>
+  {% include '_analytics_wayfinder.html' %}
 
-  <h2 class="section-title">
-    <span>//</span> {% if is_shared %}Shared Watchlist [ {{ friend_username }} ]{% else %}My Watchlist{% endif %}
-  </h2>
-
-  <div class="add-form-container">
-    <form method="post" action="/watchlist/add" class="w-form" id="addForm">
+  <!-- Controls Toolbar (Search to Add + Filter Current) -->
+  <div class="cyber-deck-controls-row" style="margin-bottom: 26px;">
+    <form method="post" action="/watchlist/add" id="addForm" style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 420px;">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       {% if is_shared %}
       <input type="hidden" name="friend_id" value="{{ friend_id }}" />
       {% endif %}
-      
-      <!-- Hidden fields populated by autocomplete -->
       <input type="hidden" id="year" name="year" />
       <input type="hidden" id="tv" name="tv" value="0" />
 
-      <div class="w-input-group">
-        <input type="text" id="title" name="title" class="w-input" placeholder="Search for a movie to add..." autocomplete="off" required />
+      <div class="filter-search-box" style="position: relative; width: 100%; max-width: 100%;">
+        <span class="filter-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="title" name="title" class="filter-search-input" placeholder="Search movie to add..." autocomplete="off" required />
         <div id="autocomplete-list" class="autocomplete-items"></div>
       </div>
-      
-      <button type="submit" class="w-btn">[ + ADD ]</button>
+
+      <button type="submit" class="btn-add-cyber" style="height: 38px;">[ + ADD ]</button>
     </form>
   </div>
 
@@ -372,6 +365,27 @@
         autocompleteList.innerHTML = '';
       }
     });
+
+    // Instant Watchlist Filter
+    const watchlistFilter = document.getElementById('watchlist-filter-input');
+    if (watchlistFilter) {
+      watchlistFilter.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.w-grid .w-card');
+        let visibleCount = 0;
+        cards.forEach(card => {
+          const title = (card.querySelector('.w-title')?.textContent || '').toLowerCase();
+          const meta = (card.querySelector('.w-meta')?.textContent || '').toLowerCase();
+          const match = title.includes(q) || meta.includes(q);
+          card.style.display = match ? 'flex' : 'none';
+          if (match) visibleCount++;
+        });
+        const countEl = document.getElementById('watchlist-count');
+        if (countEl) {
+          countEl.textContent = `${visibleCount} visible`;
+        }
+      });
+    }
   });
 </script>
 

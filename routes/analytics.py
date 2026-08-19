@@ -146,6 +146,7 @@ def show_years():
     try:
         movies = get_movies_groupby_year(current_user.id)
         anni = get_years(current_user.id)
+        anni.sort(key=lambda x: int(x.get("name") or 0) if str(x.get("name", "")).isdigit() else 0, reverse=True)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load years page")
@@ -170,6 +171,7 @@ def show_years_friends(username):
     try:
         movies = get_movies_groupby_year(friend["id"])
         anni = get_years(friend["id"])
+        anni.sort(key=lambda x: int(x.get("name") or 0) if str(x.get("name", "")).isdigit() else 0, reverse=True)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load friend years page for %s", username)

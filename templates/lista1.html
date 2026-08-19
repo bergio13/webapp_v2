@@ -32,39 +32,102 @@ body_class %} list_page{% endblock %} {% block body %}
 
 <!-- Main Content -->
 <div class="list_list app-panel app-panel-mobile" style="display: none">
-  <div class="ascii-header app-ascii-header app-ascii-hide-mobile">
-    ╔═══ WATCHED_LIST.db :: total_entries: {{ movies|length }} ═══╝
-  </div>
-
-  <div class="library-tabs">
-    <a href="/lista" class="library-tab active">Watched</a>
-    <a href="/watchlist" class="library-tab">Watchlist</a>
-  </div>
-
-
-  {% include '_analytics_wayfinder.html' %}
-
-  <!-- Filter and Add Movie Section -->
-  <div class="filter-add-section app-toolbar app-toolbar-stack-mobile">
-    <h2 class="page-title app-title-terminal app-title-themed app-title-mobile-centered"><span>//</span> Watched List</h2>
-
-    <div class="buttons-container app-toolbar-actions app-toolbar-actions-mobile custom-toolbar-actions">
-      <div style="display: flex; align-items: center; gap: 5px; height: 32px;">
-        <span style="color: var(--neon-cyan); font-family: 'VT323', monospace; font-size: 1.1rem; line-height: 1;">find_title:</span>
-        <input type="text" id="movie-search-input" placeholder="type..." 
-               style="background: rgba(26, 26, 46, 0.6); border: 1px solid rgba(0, 242, 254, 0.2); color: white; padding: 4px 8px; font-family: 'VT323', monospace; font-size: 1.1rem; border-radius: 4px; width: 140px; outline: none; height: 32px; box-sizing: border-box;" />
+  <!-- UNIFIED CYBER DECK PANEL -->
+  <div class="cyber-deck-panel">
+    <!-- Top Row: Title, Watchlist Switcher & ASCII Database Metadata -->
+    <div class="cyber-deck-header-row">
+      <div class="cyber-deck-title-group">
+        <h1 class="cyber-deck-heading">
+          <a href="/lista" class="cyber-deck-tab active">WATCHED</a>
+          <a href="/watchlist" class="cyber-deck-tab">WATCHLIST</a>
+        </h1>
       </div>
-      <a href="/add_movie" class="add-movie-btn app-toolbar-link app-toolbar-link-mobile"
-         style="margin: 0 !important; display: flex !important; align-items: center !important; height: 32px; font-size: 1.1rem; font-family: 'VT323', monospace; text-decoration: none;"
-        >[ + ADD ]</a
-      >
-      <div class="view-toggle" style="display: flex; gap: 10px;">
-        <button id="btn-grid-view" class="view-toggle-btn active" title="Grid View">
-          <i class="fa-solid fa-table-cells-large"></i>
+
+      <div class="cyber-deck-meta-badge">
+        <span class="meta-bracket">╔═</span>
+        <span class="meta-dbname">WATCHED_LIST.db</span>
+        <span class="meta-sep">::</span>
+        <span class="meta-count" id="total-entries-badge">{{ total_count if total_count is defined else movies|length }} ENTRIES</span>
+        <span class="meta-bracket">═╝</span>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Search & Controls -->
+    <div class="cyber-deck-controls-row">
+      <div class="filter-search-box">
+        <span class="filter-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="movie-search-input" class="filter-search-input" placeholder="Search title, director, or year..." autocomplete="off" />
+      </div>
+
+      <div class="filter-controls-right">
+        <select id="movie-sort-select" class="filter-sort-select" aria-label="Sort movies by">
+          <option value="v_date:desc">Watched ▾</option>
+          <option value="v_date:asc">Watched ▴</option>
+          <option value="rating:desc">Rating ▾</option>
+          <option value="rating:asc">Rating ▴</option>
+          <option value="p_year:desc">Year ▾</option>
+          <option value="p_year:asc">Year ▴</option>
+          <option value="movie:asc">Title A-Z</option>
+        </select>
+
+        <button type="button" class="filter-toggle-btn" id="filter-toggle-btn" onclick="toggleFilterDrawer()" title="Toggle Multi-Tag Filters">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Filters</span>
+          <span class="filter-badge-count" id="filter-count-badge" style="display: none;">0</span>
         </button>
-        <button id="btn-table-view" class="view-toggle-btn" title="Table View">
-          <i class="fa-solid fa-list"></i>
+
+        <a href="/add_movie" class="btn-add-cyber" title="Add New Entry">[ + ADD ]</a>
+
+        <div class="view-toggle" style="display: flex; gap: 6px;">
+          <button id="btn-grid-view" class="view-toggle-btn active" title="Grid View" aria-label="Grid View">
+            <i class="fa-solid fa-table-cells-large"></i>
+          </button>
+          <button id="btn-table-view" class="view-toggle-btn" title="Table View" aria-label="Table View">
+            <i class="fa-solid fa-list"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsible Cyber Filter Drawer -->
+    <div class="filter-drawer" id="filter-drawer">
+      <div class="filter-chip-row">
+        <span class="filter-chip-label">Sentiment:</span>
+        <button type="button" class="filter-chip chip-sentiment active" data-rating="">All</button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-5" data-rating="5">
+          <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/></svg> Masterpiece
         </button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-4" data-rating="4">
+          <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg> Great
+        </button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-3" data-rating="3">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Mid
+        </button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-2" data-rating="2">
+          <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg> Skippable
+        </button>
+        <button type="button" class="filter-chip chip-sentiment chip-sentiment-1" data-rating="1">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Trash
+        </button>
+      </div>
+
+      <div class="filter-chip-row filter-chip-row-secondary">
+        <span class="filter-chip-label">Format:</span>
+        <button type="button" class="filter-chip chip-media active" data-media="">All</button>
+        <button type="button" class="filter-chip chip-media" data-media="movie"><i class="fa-solid fa-film"></i> Movies</button>
+        <button type="button" class="filter-chip chip-media" data-media="tv"><i class="fa-solid fa-tv"></i> TV</button>
+
+        <span class="filter-chip-label" style="margin-left: 8px;">Context:</span>
+        <button type="button" class="filter-chip chip-context" data-cinema="1"><i class="fa-solid fa-film"></i> Cinema</button>
+        <button type="button" class="filter-chip chip-context" data-rewatch="1"><i class="fa-solid fa-repeat"></i> Rewatch</button>
+
+        <span class="filter-chip-label" style="margin-left: 8px;">Breakdown:</span>
+        <a href="/directors" class="breakdown-pill"><i class="fa-solid fa-clapperboard"></i> Directors</a>
+        <a href="/genres" class="breakdown-pill"><i class="fa-solid fa-tags"></i> Genres</a>
+        <a href="/years" class="breakdown-pill"><i class="fa-solid fa-calendar"></i> Years</a>
+        <a href="/ratings" class="breakdown-pill"><i class="fa-solid fa-star"></i> Ratings</a>
+
+        <button type="button" class="filter-reset-btn" id="filter-reset-btn" style="display: none;">[ ✕ Reset Filters ]</button>
       </div>
     </div>
   </div>
@@ -96,8 +159,8 @@ body_class %} list_page{% endblock %} {% block body %}
     .library-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-      padding: 10px 0;
+      gap: 22px;
+      padding: 16px 0 32px;
     }
     
     @media (max-width: 600px) {
@@ -139,21 +202,6 @@ body_class %} list_page{% endblock %} {% block body %}
       height: 100%;
       object-fit: cover;
       display: block;
-    }
-    
-    .card-rating {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background: rgba(13, 22, 33, 0.85);
-      color: #c4a96d;
-      font-family: "VT323", monospace;
-      font-size: 1.4rem;
-      padding: 2px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(196, 169, 109, 0.4);
-      backdrop-filter: blur(4px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
     }
     
     .card-footer {
@@ -277,66 +325,67 @@ body_class %} list_page{% endblock %} {% block body %}
   <!-- Table View -->
   <div id="view-table-container" style="display: none;">
     <div class="table-wrapper app-table-scroll app-table-scroll-mobile">
-    <table class="table-lista1 app-grid-table app-table-responsive app-table-mobile-width app-table-mobile-structured">
-      <thead>
-        <tr style="text-align: left">
-          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(0)">VIEW_DATE ↕</th>
-          <th style="padding: 10px"></th>
-          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(2)">TITLE ↕</th>
-          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(3, true)">YEAR ↕</th>
-          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(4)">DIRECTOR ↕</th>
-          <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(5, true)">RATING ↕</th>
-          <th style="padding: 10px"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% set current_month = None %} {% for movie in movies %} {% set
-        movie_month = movie['v_date'].strftime('%b %Y') %}
-        <tr style="color: white">
-          <td style="padding: 10px" data-sort-value="{{ movie['v_date'].strftime('%Y-%m-%d') }}">
-            {{ movie['v_date'].strftime('%b %Y') }} {% if movie['cinema'] | int
-            == 1 %}
-            <i class="fa-solid fa-film" style="font-size: 16px"></i>
-            {% endif %} {% if movie['rewatch'] | int == 1 %}
-            <i class="fa-solid fa-repeat" style="font-size: 16px"></i>
-            {% endif %}
-          </td>
-          <td style="padding: 10px">
-            <img
-              class="table-poster1 app-table-poster-responsive"
-              src="{{movie['poster']}}"
-              style="width: 50px"
-              loading="lazy"
-            />
-          </td>
-          <td style="padding: 10px">
-            <a
-              href="/tmdb_redirect?title={{movie['movie'] | urlencode}}&tv={{'1' if movie.get('tv_show') else '0'}}"
-              target="_blank"
-              style="color: inherit"
-              >{{movie['movie'].upper()}}</a
-            >
-          </td>
-          <td style="padding: 10px">{{movie['p_year']}}</td>
-          <td style="padding: 10px">{{movie['director'].upper()}}</td>
-          <td style="padding: 10px; text-align: center">
-            {{ render_sentiment_badge(movie['rating'], compact=True) }}
-          </td>
-          <td style="padding: 10px">
-            <button type="button" class="table-button-list app-table-action-danger" 
-                    data-id="{{ movie['id'] }}" 
-                    data-movie="{{ movie['movie'] }}" 
-                    data-csrf="{{ csrf_token() }}"
-                    onclick="handleDelete(this)">
-              X
-            </button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+      <table class="table-lista1 app-grid-table app-table-responsive app-table-mobile-width app-table-mobile-structured">
+        <thead>
+          <tr style="text-align: left">
+            <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(0)">VIEW_DATE ↕</th>
+            <th style="padding: 10px"></th>
+            <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(2)">TITLE ↕</th>
+            <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(3, true)">YEAR ↕</th>
+            <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(4)">DIRECTOR ↕</th>
+            <th style="padding: 10px; cursor: pointer; color: var(--neon-cyan);" onclick="sortTable(5, true)">RATING ↕</th>
+            <th style="padding: 10px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for movie in movies %}
+          <tr style="color: white">
+            <td style="padding: 10px" data-sort-value="{{ movie['v_date'].strftime('%Y-%m-%d') }}">
+              {{ movie['v_date'].strftime('%b %Y') }}
+              {% if movie['cinema'] | int == 1 %}
+              <i class="fa-solid fa-film" style="font-size: 16px"></i>
+              {% endif %}
+              {% if movie['rewatch'] | int == 1 %}
+              <i class="fa-solid fa-repeat" style="font-size: 16px"></i>
+              {% endif %}
+            </td>
+            <td style="padding: 10px">
+              <img
+                class="table-poster1 app-table-poster-responsive"
+                src="{{movie['poster']}}"
+                style="width: 50px"
+                loading="lazy"
+              />
+            </td>
+            <td style="padding: 10px">
+              <a
+                href="/tmdb_redirect?title={{movie['movie'] | urlencode}}&tv={{'1' if movie.get('tv_show') else '0'}}"
+                target="_blank"
+                style="color: inherit"
+                >{{movie['movie'].upper()}}</a
+              >
+            </td>
+            <td style="padding: 10px">{{movie['p_year']}}</td>
+            <td style="padding: 10px">{{movie['director'].upper()}}</td>
+            <td style="padding: 10px; text-align: center">
+              {{ render_sentiment_badge(movie['rating'], compact=True) }}
+            </td>
+            <td style="padding: 10px">
+              <button type="button" class="table-button-list app-table-action-danger" 
+                      data-id="{{ movie['id'] }}" 
+                      data-movie="{{ movie['movie'] }}" 
+                      data-csrf="{{ csrf_token() }}"
+                      onclick="handleDelete(this)">
+                X
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-  </div>
+
   <div id="infinite-scroll-sensor" style="height: 10px;"></div>
 
   <p class="legend-terminal app-legend">
@@ -419,19 +468,108 @@ body_class %} list_page{% endblock %} {% block body %}
     rows.forEach(row => tbody.appendChild(row));
   }
 
-  let currentPage = 2;
-  let hasNext = true;
-  let isLoading = false;
-  let currentSearch = "";
-  
+  // --- Reactive Filter State & Controller ---
+  const filterState = {
+    search: "",
+    rating: "",
+    media_type: "",
+    cinema: "",
+    rewatch: "",
+    sort_by: "v_date",
+    order: "desc",
+    page: 1,
+    limit: 50,
+    hasNext: true,
+    isLoading: false
+  };
+
   const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting && hasNext && !isLoading) {
+    if (entries[0].isIntersecting && filterState.hasNext && !filterState.isLoading) {
       loadMoreMovies();
     }
   }, { threshold: 0.1 });
-  
   const sensor = document.getElementById('infinite-scroll-sensor');
   if (sensor) observer.observe(sensor);
+
+  function toggleFilterDrawer() {
+    const drawer = document.getElementById("filter-drawer");
+    const toggleBtn = document.getElementById("filter-toggle-btn");
+    if (!drawer) return;
+    const isOpen = drawer.classList.toggle("open");
+    if (toggleBtn) {
+      toggleBtn.classList.toggle("active", isOpen);
+    }
+  }
+
+  function updateFilterCountBadge() {
+    let count = 0;
+    if (filterState.rating !== "") count++;
+    if (filterState.media_type !== "") count++;
+    if (filterState.cinema !== "") count++;
+    if (filterState.rewatch !== "") count++;
+
+    const toggleBtn = document.getElementById("filter-toggle-btn");
+    const badge = document.getElementById("filter-count-badge");
+    if (badge) {
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = "inline-block";
+        if (toggleBtn) toggleBtn.classList.add("has-filters");
+      } else {
+        badge.style.display = "none";
+        if (toggleBtn) toggleBtn.classList.remove("has-filters");
+      }
+    }
+  }
+
+  function checkResetButtonVisibility() {
+    const isFiltered = filterState.search !== "" || 
+                       filterState.rating !== "" || 
+                       filterState.media_type !== "" || 
+                       filterState.cinema !== "" || 
+                       filterState.rewatch !== "" ||
+                       filterState.sort_by !== "v_date" ||
+                       filterState.order !== "desc";
+    const resetBtn = document.getElementById("filter-reset-btn");
+    if (resetBtn) {
+      resetBtn.style.display = isFiltered ? "inline-block" : "none";
+    }
+    updateFilterCountBadge();
+  }
+
+  function resetAllFilters() {
+    filterState.search = "";
+    filterState.rating = "";
+    filterState.media_type = "";
+    filterState.cinema = "";
+    filterState.rewatch = "";
+    filterState.sort_by = "v_date";
+    filterState.order = "desc";
+
+    const searchInput = document.getElementById("movie-search-input");
+    if (searchInput) searchInput.value = "";
+
+    const sortSelect = document.getElementById("movie-sort-select");
+    if (sortSelect) sortSelect.value = "v_date:desc";
+
+    document.querySelectorAll(".filter-chip").forEach(chip => {
+      chip.classList.remove("active");
+      if (chip.classList.contains("chip-sentiment") && chip.getAttribute("data-rating") === "") {
+        chip.classList.add("active");
+      }
+      if (chip.classList.contains("chip-media") && chip.getAttribute("data-media") === "") {
+        chip.classList.add("active");
+      }
+    });
+
+    checkResetButtonVisibility();
+    reloadFilterResults();
+  }
+
+  const resetBtn = document.getElementById("filter-reset-btn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", resetAllFilters);
+  }
 
   const searchInput = document.getElementById('movie-search-input');
   let debounceTimer;
@@ -439,17 +577,72 @@ body_class %} list_page{% endblock %} {% block body %}
     searchInput.addEventListener('input', (e) => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        currentSearch = e.target.value.trim();
-        currentPage = 1;
-        hasNext = true;
-        document.querySelector(".table-lista1 tbody").innerHTML = "";
-        
-        const gridContainer = document.getElementById("library-grid");
-        if (gridContainer) gridContainer.innerHTML = "";
-        
-        loadMoreMovies();
-      }, 300);
+        filterState.search = e.target.value.trim();
+        checkResetButtonVisibility();
+        reloadFilterResults();
+      }, 250);
     });
+  }
+
+  const sortSelect = document.getElementById('movie-sort-select');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', (e) => {
+      const [field, dir] = e.target.value.split(':');
+      filterState.sort_by = field;
+      filterState.order = dir || 'desc';
+      checkResetButtonVisibility();
+      reloadFilterResults();
+    });
+  }
+
+  document.querySelectorAll('.chip-sentiment').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.chip-sentiment').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      filterState.rating = this.getAttribute('data-rating') || '';
+      checkResetButtonVisibility();
+      reloadFilterResults();
+    });
+  });
+
+  document.querySelectorAll('.chip-media').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.chip-media').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      filterState.media_type = this.getAttribute('data-media') || '';
+      checkResetButtonVisibility();
+      reloadFilterResults();
+    });
+  });
+
+  document.querySelectorAll('.chip-context').forEach(chip => {
+    chip.addEventListener('click', function() {
+      this.classList.toggle('active');
+      if (this.hasAttribute('data-cinema')) {
+        filterState.cinema = this.classList.contains('active') ? '1' : '';
+      }
+      if (this.hasAttribute('data-rewatch')) {
+        filterState.rewatch = this.classList.contains('active') ? '1' : '';
+      }
+      checkResetButtonVisibility();
+      reloadFilterResults();
+    });
+  });
+
+  function reloadFilterResults() {
+    filterState.page = 1;
+    filterState.hasNext = true;
+    
+    const tbody = document.querySelector(".table-lista1 tbody");
+    if (tbody) tbody.innerHTML = "";
+    
+    const gridContainer = document.getElementById("library-grid");
+    if (gridContainer) gridContainer.innerHTML = "";
+
+    const prevEmpty = document.getElementById("filter-empty-state");
+    if (prevEmpty) prevEmpty.remove();
+
+    loadMoreMovies();
   }
   
   function createSentimentBadgeHtml(level) {
@@ -469,107 +662,136 @@ body_class %} list_page{% endblock %} {% block body %}
   }
 
   async function loadMoreMovies() {
-    isLoading = true;
-    const url = `/api/movies?page=${currentPage}&limit=50&search=${encodeURIComponent(currentSearch)}`;
+    if (filterState.isLoading) return;
+    filterState.isLoading = true;
+
+    const params = new URLSearchParams({
+      page: filterState.page,
+      limit: filterState.limit,
+      search: filterState.search,
+      rating: filterState.rating,
+      media_type: filterState.media_type,
+      cinema: filterState.cinema,
+      rewatch: filterState.rewatch,
+      sort_by: filterState.sort_by,
+      order: filterState.order
+    });
+
+    const url = `/api/movies?${params.toString()}`;
     
     try {
       const response = await fetch(url);
       const data = await response.json();
       
+      const metaBadge = document.getElementById("total-entries-badge");
+      if (metaBadge && data.total_count !== undefined) {
+        metaBadge.textContent = `${data.total_count} ENTRIES`;
+      }
+      
+      const tbody = document.querySelector(".table-lista1 tbody");
+      const gridContainer = document.getElementById("library-grid");
+
       if (data.movies && data.movies.length > 0) {
-        const tbody = document.querySelector(".table-lista1 tbody");
-        const gridContainer = document.getElementById("library-grid");
-        
         data.movies.forEach(movie => {
           const vDate = new Date(movie.v_date);
           const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          const dateStr = `${monthNames[vDate.getUTCMonth()]} ${vDate.getUTCFullYear()}`;
+          const dateStr = isNaN(vDate.getTime()) ? movie.v_date : `${monthNames[vDate.getUTCMonth()]} ${vDate.getUTCFullYear()}`;
           
           let cinemaIcon = movie.cinema == 1 ? '<i class="fa-solid fa-film" style="font-size: 16px" title="Cinema"></i>' : '';
           let rewatchIcon = movie.rewatch == 1 ? '<i class="fa-solid fa-repeat" style="font-size: 16px" title="Rewatch"></i>' : '';
           
           const csrfVal = document.querySelector('[name="csrf_token"]') ? document.querySelector('[name="csrf_token"]').value : '';
           
-          // Append to Table
-          const tr = document.createElement('tr');
-          tr.style.color = "white";
-          tr.innerHTML = `
-            <td style="padding: 10px" data-sort-value="${movie.v_date}">
-              ${dateStr} ${cinemaIcon} ${rewatchIcon}
-            </td>
-            <td style="padding: 10px">
-              <img class="table-poster1 app-table-poster-responsive" src="${movie.poster}" style="width: 50px" loading="lazy" />
-            </td>
-            <td style="padding: 10px">
-              <a href="/tmdb_redirect?title=${encodeURIComponent(movie.movie)}&tv=${movie.tv_show ? 1 : 0}" target="_blank" style="color: inherit">${movie.movie.toUpperCase()}</a>
-            </td>
-            <td style="padding: 10px">${movie.p_year}</td>
-            <td style="padding: 10px">${movie.director.toUpperCase()}</td>
-            <td style="padding: 10px; text-align: center">${createSentimentBadgeHtml(movie.rating)}</td>
-            <td style="padding: 10px">
-              <button type="button" class="table-button-list app-table-action-danger" 
-                      data-id="${movie.id}" 
-                      data-movie="${movie.movie}" 
-                      data-csrf="${csrfVal}"
-                      onclick="handleDelete(this)">
-                X
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-
-          // Append to Grid
-          const card = document.createElement('div');
-          card.className = "library-card";
-          card.innerHTML = `
-            <div class="card-poster-wrapper">
-              <img src="${movie.poster}" class="card-poster" loading="lazy" alt="${movie.movie}" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
-              <div style="position: absolute; bottom: 8px; right: 8px;">${createSentimentBadgeHtml(movie.rating)}</div>
-            </div>
-            <div class="card-details">
-              <a href="/tmdb_redirect?title=${encodeURIComponent(movie.movie)}&tv=${movie.tv_show ? 1 : 0}" target="_blank" class="card-title">
-                ${movie.movie.toUpperCase()}
-              </a>
-              <div class="card-meta">
-                ${movie.director.toUpperCase()} • ${movie.p_year}
-              </div>
-              <div class="card-footer">
-                <div class="card-date">
-                  ${dateStr} ${cinemaIcon} ${rewatchIcon}
-                </div>
-                <button type="button" class="small-remove-btn" 
+          if (tbody) {
+            const tr = document.createElement('tr');
+            tr.style.color = "white";
+            tr.innerHTML = `
+              <td style="padding: 10px" data-sort-value="${movie.v_date}">
+                ${dateStr} ${cinemaIcon} ${rewatchIcon}
+              </td>
+              <td style="padding: 10px">
+                <img class="table-poster1 app-table-poster-responsive" src="${movie.poster}" style="width: 44px" loading="lazy" alt="${movie.movie}" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
+              </td>
+              <td style="padding: 10px">
+                <a href="/tmdb_redirect?title=${encodeURIComponent(movie.movie)}&tv=${movie.tv_show ? 1 : 0}" target="_blank" style="color: inherit">${movie.movie.toUpperCase()}</a>
+              </td>
+              <td style="padding: 10px">${movie.p_year}</td>
+              <td style="padding: 10px">${movie.director ? movie.director.toUpperCase() : 'UNKNOWN'}</td>
+              <td style="padding: 10px; text-align: center">${createSentimentBadgeHtml(movie.rating)}</td>
+              <td style="padding: 10px">
+                <button type="button" class="table-button-list app-table-action-danger" 
                         data-id="${movie.id}" 
                         data-movie="${movie.movie}" 
                         data-csrf="${csrfVal}"
-                        onclick="handleDelete(this)"
-                        title="Remove Movie">
-                  x
+                        onclick="handleDelete(this)">
+                  X
                 </button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          }
+
+          if (gridContainer) {
+            const card = document.createElement('div');
+            card.className = "library-card";
+            card.innerHTML = `
+              <div class="card-poster-wrapper">
+                <img src="${movie.poster}" class="card-poster" loading="lazy" alt="${movie.movie}" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
+                <div style="position: absolute; bottom: 8px; right: 8px;">${createSentimentBadgeHtml(movie.rating)}</div>
               </div>
-            </div>
-          `;
-          gridContainer.appendChild(card);
+              <div class="card-details">
+                <a href="/tmdb_redirect?title=${encodeURIComponent(movie.movie)}&tv=${movie.tv_show ? 1 : 0}" target="_blank" class="card-title">
+                  ${movie.movie.toUpperCase()}
+                </a>
+                <div class="card-meta">
+                  ${movie.director ? movie.director.toUpperCase() : 'UNKNOWN'} • ${movie.p_year}
+                </div>
+                <div class="card-footer">
+                  <div class="card-date">
+                    ${dateStr} ${cinemaIcon} ${rewatchIcon}
+                  </div>
+                  <button type="button" class="small-remove-btn" 
+                          data-id="${movie.id}" 
+                          data-movie="${movie.movie}" 
+                          data-csrf="${csrfVal}"
+                          onclick="handleDelete(this)"
+                          title="Remove Movie">
+                    x
+                  </button>
+                </div>
+              </div>
+            `;
+            gridContainer.appendChild(card);
+          }
         });
         
-        currentPage++;
+        filterState.page++;
+      } else if (filterState.page === 1) {
+        const emptyDiv = document.createElement("div");
+        emptyDiv.id = "filter-empty-state";
+        emptyDiv.className = "filter-empty-state";
+        emptyDiv.innerHTML = `
+          <h3>// NO MATCHING ENTRIES FOUND</h3>
+          <p>No films or TV shows match your active search & filter matrix.</p>
+          <button type="button" class="filter-reset-btn" onclick="resetAllFilters()" style="margin-top: 12px; display: inline-block;">[ RESET ALL FILTERS ]</button>
+        `;
+        const listPanel = document.querySelector(".list_list");
+        if (listPanel) listPanel.appendChild(emptyDiv);
       }
       
-      hasNext = data.has_next;
+      filterState.hasNext = data.has_next || false;
     } catch (e) {
-      console.error("Error loading more movies:", e);
+      console.error("Error loading filtered movies:", e);
     } finally {
-      isLoading = false;
+      filterState.isLoading = false;
     }
   }
 
-  // View Toggle Logic
   document.getElementById('btn-grid-view').addEventListener('click', function() {
     this.classList.add('active');
     document.getElementById('btn-table-view').classList.remove('active');
     document.getElementById('view-grid-container').style.display = 'block';
     document.getElementById('view-table-container').style.display = 'none';
-    
-    // Save preference
     localStorage.setItem('kineto_library_view', 'grid');
   });
 
@@ -578,13 +800,10 @@ body_class %} list_page{% endblock %} {% block body %}
     document.getElementById('btn-grid-view').classList.remove('active');
     document.getElementById('view-table-container').style.display = 'block';
     document.getElementById('view-grid-container').style.display = 'none';
-    
-    // Save preference
     localStorage.setItem('kineto_library_view', 'table');
   });
 
   window.onload = () => {
-    // Check local storage for view preference
     const preferredView = localStorage.getItem('kineto_library_view');
     if (preferredView === 'table') {
       document.getElementById('btn-table-view').click();

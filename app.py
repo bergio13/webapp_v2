@@ -105,5 +105,5 @@ def create_app(config_class=Config) -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
+    debug_mode = os.environ.get("FLASK_DEBUG", "1") == "1"
     app.run(debug=debug_mode)

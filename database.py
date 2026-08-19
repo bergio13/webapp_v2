@@ -126,7 +126,7 @@ def get_movies(parent_id):
         logger.error(f"Error fetching movies for {parent_id}: {e}")
         return []
 
-def get_movies_paginated(parent_id, order_column='v_date', page=1, limit=50, search=None):
+def get_movies_paginated(parent_id, order_column='v_date', desc=True, page=1, limit=50, search=None, rating=None, media_type=None, cinema=None, rewatch=None, year=None):
     start_index = (page - 1) * limit
     end_index = start_index + limit - 1
     
@@ -134,9 +134,31 @@ def get_movies_paginated(parent_id, order_column='v_date', page=1, limit=50, sea
         query = client.table('lista').select('*', count='exact').eq('parent_id', parent_id)
         
         if search:
-            query = query.ilike('movie', f'%{search}%')
+            clean_search = search.strip()
+            if clean_search.isdigit() and len(clean_search) == 4:
+                query = query.or_(f"movie.ilike.%{clean_search}%,director.ilike.%{clean_search}%,p_year.eq.{int(clean_search)}")
+            else:
+                query = query.or_(f"movie.ilike.%{clean_search}%,director.ilike.%{clean_search}%")
+
+        if year is not None and str(year).isdigit():
+            query = query.eq('p_year', int(year))
+
+        if rating is not None and str(rating).isdigit() and int(rating) in [1, 2, 3, 4, 5]:
+            r_int = int(rating)
+            query = query.or_(f"rating.eq.{r_int},rating.eq.{r_int * 2},rating.eq.{r_int * 2 - 1}")
+
+        if media_type == 'movie':
+            query = query.or_('tv_show.eq.0,tv_show.is.null')
+        elif media_type == 'tv':
+            query = query.eq('tv_show', 1)
+
+        if cinema is not None and int(cinema) == 1:
+            query = query.eq('cinema', 1)
+
+        if rewatch is not None and int(rewatch) == 1:
+            query = query.eq('rewatch', 1)
             
-        data = query.order(order_column, desc=True) \
+        data = query.order(order_column, desc=desc) \
             .range(start_index, end_index) \
             .execute()
             

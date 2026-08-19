@@ -40,13 +40,18 @@
             <tbody>
               {% for movie in movies %}
                 {% set show_movie = false %}
-                {% if groupby == 'director' and movie.director == item_id %}
+                {% set movie_year = (movie['p_year'] if movie['p_year'] is defined else movie.p_year)|string %}
+                {% set movie_director = (movie['director'] if movie['director'] is defined else movie.director)|string %}
+                {% set movie_genre = (movie['genre'] if movie['genre'] is defined else movie.genre)|string %}
+                {% set movie_rating = (movie['rating'] if movie['rating'] is defined else movie.rating)|string %}
+
+                {% if groupby == 'director' and movie_director == item_id|string %}
                   {% set show_movie = true %}
-                {% elif groupby == 'genre' and item_id in movie.genre.split(', ') %}
+                {% elif groupby == 'genre' and item_id|string in movie_genre.split(', ') %}
                   {% set show_movie = true %}
-                {% elif groupby == 'rating' and movie.rating|string == item_id|string %}
+                {% elif groupby == 'rating' and movie_rating == item_id|string %}
                   {% set show_movie = true %}
-                {% elif groupby == 'year' and movie.p_year|string == item_id|string %}
+                {% elif groupby == 'year' and movie_year == item_id|string %}
                   {% set show_movie = true %}
                 {% endif %}
 

@@ -13,33 +13,61 @@
   {% set path_ratings = '/ratings' %}
 {% endif %}
 
-{% set active_section = 'LIST' %}
-{% if request.path == path_directors %}
-  {% set active_section = 'DIRECTORS' %}
-{% elif request.path == path_genres %}
-  {% set active_section = 'GENRES' %}
-{% elif request.path == path_years %}
-  {% set active_section = 'YEARS' %}
-{% elif request.path == path_ratings %}
-  {% set active_section = 'RATINGS' %}
-{% endif %}
+{% set is_watchlist = request.path == '/watchlist' %}
+{% set is_breakdown = request.path.startswith('/directors') or request.path.startswith('/genres') or request.path.startswith('/years') or request.path.startswith('/ratings') %}
 
-<nav class="app-wayfinder" aria-label="List analytics sections">
-  <details class="app-wayfinder-menu">
-    <summary class="app-wayfinder-trigger" aria-label="Open analytics navigation">
-      <span class="app-wayfinder-trigger-left">
-        <span class="app-wayfinder-trigger-tag">[ FILTER ]</span>
-        <span class="app-wayfinder-trigger-active">{{ active_section }}</span>
-      </span>
-      <span class="app-wayfinder-caret" aria-hidden="true"></span>
-    </summary>
+<div class="cyber-deck-panel" style="margin-bottom: 20px;">
+  <div class="cyber-deck-header-row" style="border-bottom: none; padding-bottom: 0;">
+    <div class="cyber-deck-title-group">
+      <h1 class="cyber-deck-heading">
+        <a href="{{ path_list }}" class="cyber-deck-tab{% if not is_watchlist %} active{% endif %}">
+          {% if has_friend %}{{ username|upper }}'S WATCHED{% else %}WATCHED{% endif %}
+        </a>
 
-    <div class="app-wayfinder-panel" role="list">
-      <a href="{{ path_list }}" class="app-wayfinder-link{% if request.path == path_list %} active{% endif %}">LIST</a>
-      <a href="{{ path_directors }}" class="app-wayfinder-link{% if request.path == path_directors %} active{% endif %}">DIRECTORS</a>
-      <a href="{{ path_genres }}" class="app-wayfinder-link{% if request.path == path_genres %} active{% endif %}">GENRES</a>
-      <a href="{{ path_years }}" class="app-wayfinder-link{% if request.path == path_years %} active{% endif %}">YEARS</a>
-      <a href="{{ path_ratings }}" class="app-wayfinder-link{% if request.path == path_ratings %} active{% endif %}">RATINGS</a>
+        {% if not has_friend %}
+        <a href="/watchlist" class="cyber-deck-tab{% if is_watchlist %} active{% endif %}">
+          WATCHLIST
+        </a>
+        {% endif %}
+      </h1>
+
+      {% if is_breakdown %}
+      <div class="library-breakdowns-group" style="margin-left: 10px;">
+        <span class="breakdown-label">// BREAKDOWN:</span>
+        <a href="{{ path_directors }}" class="breakdown-pill{% if request.path == path_directors %} active{% endif %}"><i class="fa-solid fa-clapperboard"></i> Directors</a>
+        <a href="{{ path_genres }}" class="breakdown-pill{% if request.path == path_genres %} active{% endif %}"><i class="fa-solid fa-tags"></i> Genres</a>
+        <a href="{{ path_years }}" class="breakdown-pill{% if request.path == path_years %} active{% endif %}"><i class="fa-solid fa-calendar"></i> Years</a>
+        <a href="{{ path_ratings }}" class="breakdown-pill{% if request.path == path_ratings %} active{% endif %}"><i class="fa-solid fa-star"></i> Ratings</a>
+      </div>
+      {% endif %}
     </div>
-  </details>
-</nav>
+
+    <div class="cyber-deck-meta-badge">
+      <span class="meta-bracket">╔═</span>
+      <span class="meta-dbname">
+        {% if is_watchlist %}
+          WATCHLIST.db
+        {% elif has_friend %}
+          {{ username|upper }}_LIST.db
+        {% else %}
+          WATCHED_LIST.db
+        {% endif %}
+      </span>
+      <span class="meta-sep">::</span>
+      <span class="meta-count">
+        {% if total_count is defined and total_count is not none %}
+          {{ total_count }} ENTRIES
+        {% elif movies is defined and movies %}
+          {{ movies|length }} ENTRIES
+        {% elif watchlist is defined and watchlist %}
+          {{ watchlist|length }} ENTRIES
+        {% elif items is defined and items %}
+          {{ items|length }} ENTRIES
+        {% else %}
+          ONLINE
+        {% endif %}
+      </span>
+      <span class="meta-bracket">═╝</span>
+    </div>
+  </div>
+</div>

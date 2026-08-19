@@ -73,18 +73,18 @@ def hello():
 
 @main_bp.route("/lista")
 @login_required
-@cache.cached(timeout=120, key_prefix=make_user_cache_key)
 def lista():
     year_now, _ = get_current_year_month()
     try:
-        movies, _ = get_movies_paginated(current_user.id, page=1, limit=50)
+        movies, total_count = get_movies_paginated(current_user.id, page=1, limit=50)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load user list")
         movies = []
+        total_count = 0
         flash("Something went wrong, please refresh the page", category="error")
     return render_template(
-        "lista1.html", movies=movies, months=months, year_now=year_now, dict_months=dict_months
+        "lista1.html", movies=movies, total_count=total_count, months=months, year_now=year_now, dict_months=dict_months
     )
 
 
@@ -99,15 +99,16 @@ def lista_user(username):
 
     year_now, _ = get_current_year_month()
     try:
-        movies, _ = get_movies_paginated(user[0]["id"], page=1, limit=50)
+        movies, total_count = get_movies_paginated(user[0]["id"], page=1, limit=50)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load friend list for %s", username)
         movies = []
+        total_count = 0
         flash("Something went wrong, please refresh the page", category="error")
     return render_template(
         "_lista1.html",
-        movies=movies, months=months, year_now=year_now,
+        movies=movies, total_count=total_count, months=months, year_now=year_now,
         dict_months=dict_months, username=username,
     )
 
@@ -129,10 +130,35 @@ def api_movies():
         if user_data:
             user_id = user_data[0]["id"]
         else:
-            return jsonify({"movies": [], "has_next": False}), 404
+            return jsonify({"movies": [], "has_next": False, "total_count": 0}), 404
 
     search = request.args.get("search")
-    movies, total_count = get_movies_paginated(user_id, page=page, limit=limit, search=search)
+    year = request.args.get("year", type=int)
+    rating = request.args.get("rating", type=int)
+    media_type = request.args.get("media_type")
+    cinema = request.args.get("cinema", type=int)
+    rewatch = request.args.get("rewatch", type=int)
+    sort_by = request.args.get("sort_by", "v_date")
+    order = request.args.get("order", "desc")
+    desc = (order.lower() != "asc")
+
+    valid_sorts = {"v_date", "rating", "p_year", "movie"}
+    if sort_by not in valid_sorts:
+        sort_by = "v_date"
+
+    movies, total_count = get_movies_paginated(
+        user_id,
+        order_column=sort_by,
+        desc=desc,
+        page=page,
+        limit=limit,
+        search=search,
+        rating=rating,
+        media_type=media_type,
+        cinema=cinema,
+        rewatch=rewatch,
+        year=year,
+    )
 
     serialized = []
     for m in movies:
@@ -141,7 +167,11 @@ def api_movies():
             m_copy["v_date"] = m["v_date"].isoformat()
         serialized.append(m_copy)
 
-    return jsonify({"movies": serialized, "has_next": (page * limit) < total_count})
+    return jsonify({
+        "movies": serialized,
+        "has_next": (page * limit) < total_count,
+        "total_count": total_count,
+    })
 
 
 @main_bp.route("/api/watched_lookup")

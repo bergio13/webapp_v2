@@ -1,10 +1,16 @@
 function openTab(tabName) {
-  var i;
   var x = document.getElementsByClassName("containerTab");
-  for (i = 0; i < x.length; i++) {
+  var target = document.getElementById(tabName);
+  var isAlreadyOpen = target && (target.style.display === "block" || window.getComputedStyle(target).display === "block");
+
+  for (var i = 0; i < x.length; i++) {
     x[i].style.display = "none";
   }
-  document.getElementById(tabName).style.display = "block";
+
+  if (target && !isAlreadyOpen) {
+    target.style.display = "block";
+    target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
 }
 
 // Dropdwon button
