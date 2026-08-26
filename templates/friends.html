@@ -618,8 +618,8 @@
   /* Action Buttons */
   .friend-action-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.15fr;
-    gap: 5px;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
     border-top: 1px solid rgba(179, 157, 219, 0.15);
     padding-top: 10px;
     margin-top: 2px;
@@ -1070,8 +1070,8 @@
 
     .friend-action-row {
       display: grid;
-      grid-template-columns: 1fr 1fr 1.2fr;
-      gap: 6px;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
     .btn-dossier-act {
@@ -1397,7 +1397,6 @@
 
           <!-- Action Buttons -->
           <div class="friend-action-row">
-            <a href="/compare/{{ friend.f_username }}" class="btn-dossier-act" title="Taste Match Sync">[ SYNC ]</a>
             <a href="/list/{{ friend.f_username }}" class="btn-dossier-act" title="View Library">[ LIST ]</a>
             <a href="/watchlist/shared/{{ friend.user_id }}" class="btn-dossier-act" title="Shared Watchlist">[ WATCHLIST ]</a>
           </div>

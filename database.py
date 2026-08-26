@@ -372,10 +372,41 @@ def get_enriched_friends(parent_id):
         if not friends:
             return []
         
+        from utils import format_display_title
+        friend_ids = [f.get('user_id') for f in friends if f.get('user_id')]
+        
+        # Batch fetch all movies for all friends in 1 query
+        movies_by_friend = {uid: [] for uid in friend_ids}
+        if friend_ids:
+            try:
+                res = client.table('lista').select('*').in_('parent_id', friend_ids).execute()
+                for row in (res.data or []):
+                    uid = row.get('parent_id')
+                    if uid in movies_by_friend:
+                        try:
+                            v_date_obj = datetime.strptime(row['v_date'], "%Y-%m-%d").date() if isinstance(row['v_date'], str) else row['v_date']
+                        except Exception:
+                            v_date_obj = row['v_date']
+                        movies_by_friend[uid].append({
+                            "id": row.get('lista_id'),
+                            "movie": format_display_title(row.get('movie')),
+                            "director": row.get('director'),
+                            "genre": row.get('genre'),
+                            "p_year": row.get('p_year'),
+                            "v_date": v_date_obj,
+                            "rating": row.get('rating'),
+                            "rewatch": row.get('rewatch'),
+                            "tv_show": row.get('tv_show'),
+                            "poster": row.get('poster'),
+                            "cinema": row.get('cinema')
+                        })
+            except Exception as e:
+                logger.error(f"Error batch fetching friend movies: {e}")
+
         enriched = []
         for f in friends:
             f_uid = f.get('user_id')
-            f_movies = get_movies(f_uid) if f_uid else []
+            f_movies = movies_by_friend.get(f_uid, [])
             film_count = len(f_movies)
             cinephile_level = max(1, film_count // 20)
             
@@ -400,7 +431,7 @@ def get_enriched_friends(parent_id):
                     elif isinstance(v, str):
                         try:
                             return datetime.strptime(v, "%Y-%m-%d").date()
-                        except:
+                        except Exception:
                             pass
                     return v or datetime.min.date()
                 
@@ -412,16 +443,6 @@ def get_enriched_friends(parent_id):
                     "p_year": top_m.get("p_year", ""),
                     "poster": top_m.get("poster", "")
                 }
-            
-            # Sync score from taste match
-            sync_score = None
-            try:
-                match_res = get_taste_match(parent_id, f_uid)
-                if match_res and isinstance(match_res, dict) and "match_percent" in match_res:
-                    sync_score = match_res["match_percent"]
-            except Exception as ex:
-                logger.warning(f"Could not compute taste match for {parent_id} and {f_uid}: {ex}")
-                sync_score = None
                 
             enriched.append({
                 "id": f.get('id'),
@@ -431,7 +452,7 @@ def get_enriched_friends(parent_id):
                 "cinephile_level": cinephile_level,
                 "favorite_genre": favorite_genre,
                 "last_log": last_log,
-                "sync_score": sync_score
+                "sync_score": None  # Fast on-demand via /compare/<username>
             })
         return enriched
     except Exception as e:
