@@ -181,14 +181,16 @@ def get_tv_details(title, year, season_num, manual_director=None):
     """
     Search TMDB for a TV show and extract poster, genres, and creator/director.
     """
+    from utils import format_display_title
     try:
-        res = tv_api.search(title)
+        clean_title = re.sub(r',?\s*season\s*\d+.*$', '', title, flags=re.IGNORECASE).strip()
+        res = tv_api.search(clean_title or title)
         if not res:
             return {
                 "poster": "https://via.placeholder.com/200x300?text=No+Poster",
                 "genre": "Unknown",
                 "director": manual_director or "Unknown",
-                "title": title
+                "title": format_display_title(title)
             }
         
         # Try to find exact year match
@@ -204,17 +206,20 @@ def get_tv_details(title, year, season_num, manual_director=None):
             best_match = res[0]
             
         ids = best_match['id']
+        show_name = best_match.get('name') or best_match.get('original_name') or title
+        show_name = format_display_title(show_name)
         
         # Get season details for poster
         try:
             show_season = season_api.details(ids, season_num or 1)
             poster_path = show_season.poster_path
             poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else f"https://image.tmdb.org/t/p/w500{best_match.get('poster_path') or ''}"
-            full_title = f"{title}, {show_season.name}" if show_season.name else title
-        except:
+            season_name = show_season.name if (hasattr(show_season, 'name') and show_season.name) else f"Season {season_num or 1}"
+            full_title = f"{show_name}, {season_name}"
+        except Exception:
             poster_path = best_match.get('poster_path')
             poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/200x300?text=No+Poster"
-            full_title = title
+            full_title = f"{show_name}, Season {season_num or 1}" if season_num else show_name
             
         genre_ids = best_match.get('genre_ids', [])
         genre_list = [tv_genres.get(gid, "") for gid in genre_ids if tv_genres.get(gid)]
@@ -240,12 +245,12 @@ def get_tv_details(title, year, season_num, manual_director=None):
                                 if crew_member['job'] in ['Director', 'Creator', 'Executive Producer']:
                                     director = crew_member['name']
                                     break
-                    except:
+                    except Exception:
                         pass
                     
                     if not director or director == "Unknown":
                         director = "Various Directors"
-            except:
+            except Exception:
                 director = "Unknown"
                 
         return {
@@ -260,7 +265,7 @@ def get_tv_details(title, year, season_num, manual_director=None):
             "poster": "https://via.placeholder.com/200x300?text=Error",
             "genre": "Unknown",
             "director": manual_director or "Unknown",
-            "title": title
+            "title": format_display_title(title)
         }
 
 @_cached(ttl=1800)

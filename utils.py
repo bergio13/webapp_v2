@@ -38,9 +38,50 @@ dict_months = {
 # String helpers
 # ---------------------------------------------------------------------------
 
+def format_display_title(title: str) -> str:
+    """
+    Format a media title cleanly for display, capitalizing lowercased titles or TV show names
+    (e.g., 'superstore, Season 4' -> 'Superstore, Season 4', 'marty supreme' -> 'Marty Supreme').
+    """
+    if not title or not isinstance(title, str):
+        return title or ""
+    
+    t = title.strip()
+    if not t:
+        return ""
+
+    if ',' in t:
+        parts = t.split(',', 1)
+        show_name = parts[0].strip()
+        season_part = parts[1].strip()
+        if show_name and show_name[0].islower():
+            words = show_name.split()
+            show_name = " ".join(
+                w.capitalize() if not (w.lower() in {'a', 'an', 'the', 'of', 'in', 'on', 'at', 'to', 'for', 'and'} and i > 0) else w
+                for i, w in enumerate(words)
+            )
+            if show_name:
+                show_name = show_name[0].upper() + show_name[1:]
+        return f"{show_name}, {season_part}"
+    elif t[0].islower():
+        words = t.split()
+        res = " ".join(
+            w.capitalize() if not (w.lower() in {'a', 'an', 'the', 'of', 'in', 'on', 'at', 'to', 'for', 'and'} and i > 0) else w
+            for i, w in enumerate(words)
+        )
+        return (res[0].upper() + res[1:]) if res else t
+    
+    return t
+
+
 def clean_and_format(word: str) -> str:
-    """Normalise and lowercase a movie title for storage."""
-    return " ".join(word.strip().split()).lower()
+    """Normalise whitespace and clean a movie or TV title for storage."""
+    if not word:
+        return ""
+    cleaned = " ".join(word.strip().split())
+    if cleaned.islower():
+        return format_display_title(cleaned)
+    return cleaned
 
 
 def clean_and_capitalize_name(name: str) -> str:
@@ -319,6 +360,7 @@ def build_profile_stats(user_id) -> dict:
 def get_watched_title_year_lookup(user_id) -> set:
     """Return a ``{(normalized_title, year)}`` set for movies already watched."""
     try:
+        from database import get_movies
         movies = get_movies(user_id)
     except Exception:
         logger.exception("Failed to build watched lookup for user %s", user_id)
@@ -344,6 +386,7 @@ def get_user_watch_history_summary(
             "all_time": "All-Time Profile",
         }
     try:
+        from database import get_movies
         movies = get_movies(user_id)
         return build_user_watch_history_summary(
             movies,

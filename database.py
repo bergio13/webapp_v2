@@ -115,12 +115,13 @@ def insert_movies(title, director, genre, p_year, v_date, rating, rewatch, tv_sh
 
 def get_movies(parent_id):
     try:
+        from utils import format_display_title
         data = client.table('lista').select('*').eq("parent_id", parent_id).execute()
         lista_dicts = []
         for row in data.data:
             movie_dict = {
                 "id": row['lista_id'],
-                "movie": row['movie'],
+                "movie": format_display_title(row['movie']),
                 "director": row['director'],
                 "genre": row['genre'],
                 "p_year": row['p_year'],
@@ -173,11 +174,12 @@ def get_movies_paginated(parent_id, order_column='v_date', desc=True, page=1, li
             .range(start_index, end_index) \
             .execute()
             
+        from utils import format_display_title
         lista_dicts = []
         for row in data.data:
             movie_dict = {
                 "id": row['lista_id'],
-                "movie": row['movie'],
+                "movie": format_display_title(row['movie']),
                 "director": row['director'],
                 "genre": row['genre'],
                 "p_year": row['p_year'],
@@ -337,6 +339,7 @@ def get_friend_activity(parent_id, limit=20):
             .limit(limit) \
             .execute()
             
+        from utils import format_display_title
         lista_dicts = []
         for row in data.data:
             try:
@@ -345,7 +348,7 @@ def get_friend_activity(parent_id, limit=20):
                 v_date_obj = row['v_date']
                 
             lista_dicts.append({
-                "id": row['lista_id'], "movie": row['movie'], "director": row['director'],
+                "id": row['lista_id'], "movie": format_display_title(row['movie']), "director": row['director'],
                 "genre": row['genre'], "p_year": row['p_year'], "v_date": v_date_obj,
                 "rating": row['rating'], "rewatch": row['rewatch'], "tv_show": row['tv_show'],
                 "poster": row['poster'], "cinema": row['cinema'],
@@ -552,11 +555,12 @@ def get_taste_match(user_id, friend_id):
         
         diffs = [abs(um['rating'] - fm['rating']) for um, fm in shared_movie_pairs]
         
+        from utils import format_display_title
         for um, fm in shared_movie_pairs:
             u_r, f_r = um['rating'], fm['rating']
             diff = abs(u_r - f_r)
             item = {
-                "movie": fm.get('movie') or um.get('movie'),
+                "movie": format_display_title(fm.get('movie') or um.get('movie')),
                 "poster": fm.get('poster') or um.get('poster'),
                 "year": fm.get('p_year') or um.get('p_year'),
                 "director": fm.get('director') or um.get('director'),

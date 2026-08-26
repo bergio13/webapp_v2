@@ -47,3 +47,13 @@ def test_compare_route_renders():
         assert "MUTUAL FAVORITES" not in html
         assert "RECOMMENDATIONS" not in html
         assert "CINEMATIC SOULMATES" not in html
+
+def test_format_display_title():
+    from utils import format_display_title, clean_and_format
+    assert format_display_title("superstore, Season 4") == "Superstore, Season 4"
+    assert format_display_title("superstore, Season 2") == "Superstore, Season 2"
+    assert format_display_title("superstore") == "Superstore"
+    assert format_display_title("marty supreme") == "Marty Supreme"
+    assert format_display_title("Superstore, Season 4") == "Superstore, Season 4"
+    assert clean_and_format("superstore") == "Superstore"
+    assert clean_and_format("marty supreme") == "Marty Supreme"
