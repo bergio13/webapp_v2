@@ -814,26 +814,33 @@ async function main() {
   let habitsChartsRendered = false;
 
   function renderGenomeCharts() {
-    if (genomeChartsRendered) return;
+    if (genomeChartsRendered) {
+      window.dispatchEvent(new Event("resize"));
+      return;
+    }
     genomeChartsRendered = true;
     requestAnimationFrame(() => {
-      renderTopGenresBar(top6Keys, top6Values);
-      renderMonthlyMoviesLine(monthCounts);
+      const advancedStats = extractAdvancedStats(jsondata);
       renderGenresRadar(top10Keys, top10Values);
-      window.dispatchEvent(new Event("resize"));
+      renderTopGenresBar(top6Keys, top6Values);
+      renderDiversityChart(advancedStats);
+      setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
     });
   }
 
   function renderHabitsCharts() {
-    if (habitsChartsRendered) return;
+    if (habitsChartsRendered) {
+      window.dispatchEvent(new Event("resize"));
+      return;
+    }
     habitsChartsRendered = true;
     requestAnimationFrame(() => {
       const advancedStats = extractAdvancedStats(jsondata);
-      renderTvVsMoviesChart(advancedStats);
-      renderDiversityChart(advancedStats);
       renderHabitCountsChart(advancedStats);
+      renderTvVsMoviesChart(advancedStats);
+      renderMonthlyMoviesLine(monthCounts);
       renderLastThreeYearsMonthlyChart(buildLastThreeYearsSeries(jsondata));
-      window.dispatchEvent(new Event("resize"));
+      setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
     });
   }
 
@@ -870,12 +877,13 @@ async function main() {
         targetPane.classList.add("is-active");
         targetPane.style.display = "block";
 
-        // Lazy-render chart groups on demand
+        // Lazy-render chart groups on demand for active tab
         if (targetTabId === "tab-genome") {
           renderGenomeCharts();
         } else if (targetTabId === "tab-habits") {
           renderHabitsCharts();
         }
+        window.dispatchEvent(new Event("resize"));
       }
     });
   });
