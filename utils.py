@@ -11,7 +11,7 @@ import re
 from flask import request
 from flask_login import current_user
 
-from database import get_monthly_movies, get_movies
+from database import get_movies
 from recommendation_service import (
     build_user_watch_history_summary,
     build_watched_title_year_lookup,
@@ -127,12 +127,28 @@ def get_default_profile_stats() -> dict:
 def build_profile_stats(user_id) -> dict:
     """Compute full profile statistics for *user_id*."""
     stats = get_default_profile_stats()
-    _, month_now = get_current_year_month()
+    year_now, month_now = get_current_year_month()
     movies = get_movies(user_id)
 
     stats["movies"] = movies
     stats["length"] = len(movies)
-    stats["length_month"] = len(get_monthly_movies(user_id, month_now))
+
+    # Calculate monthly movies count directly in memory without extra network query
+    month_movies_count = 0
+    for m in movies:
+        v_d = m.get("v_date")
+        if isinstance(v_d, datetime.date):
+            if v_d.year == year_now and v_d.month == month_now:
+                month_movies_count += 1
+        elif isinstance(v_d, str) and len(v_d) >= 7:
+            try:
+                dt = datetime.datetime.strptime(v_d[:10], "%Y-%m-%d").date()
+                if dt.year == year_now and dt.month == month_now:
+                    month_movies_count += 1
+            except Exception:
+                pass
+
+    stats["length_month"] = month_movies_count
 
     ratings: list = []
     genre_scores: dict = {}

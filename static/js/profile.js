@@ -810,19 +810,31 @@ async function main() {
   const top10Keys = top10.map(([name]) => name);
   const top10Values = top10.map(([, value]) => value);
 
-  let chartsRendered = false;
-  function renderAllCharts() {
-    if (chartsRendered) return;
-    chartsRendered = true;
-    renderTopGenresBar(top6Keys, top6Values);
-    renderMonthlyMoviesLine(monthCounts);
-    renderGenresRadar(top10Keys, top10Values);
+  let genomeChartsRendered = false;
+  let habitsChartsRendered = false;
 
-    const advancedStats = extractAdvancedStats(jsondata);
-    renderTvVsMoviesChart(advancedStats);
-    renderDiversityChart(advancedStats);
-    renderHabitCountsChart(advancedStats);
-    renderLastThreeYearsMonthlyChart(buildLastThreeYearsSeries(jsondata));
+  function renderGenomeCharts() {
+    if (genomeChartsRendered) return;
+    genomeChartsRendered = true;
+    requestAnimationFrame(() => {
+      renderTopGenresBar(top6Keys, top6Values);
+      renderMonthlyMoviesLine(monthCounts);
+      renderGenresRadar(top10Keys, top10Values);
+      window.dispatchEvent(new Event("resize"));
+    });
+  }
+
+  function renderHabitsCharts() {
+    if (habitsChartsRendered) return;
+    habitsChartsRendered = true;
+    requestAnimationFrame(() => {
+      const advancedStats = extractAdvancedStats(jsondata);
+      renderTvVsMoviesChart(advancedStats);
+      renderDiversityChart(advancedStats);
+      renderHabitCountsChart(advancedStats);
+      renderLastThreeYearsMonthlyChart(buildLastThreeYearsSeries(jsondata));
+      window.dispatchEvent(new Event("resize"));
+    });
   }
 
   // ───────── Tab Switcher Logic ─────────
@@ -858,10 +870,11 @@ async function main() {
         targetPane.classList.add("is-active");
         targetPane.style.display = "block";
 
-        // Trigger chart rendering and resize when switching to chart tabs
-        if (targetTabId === "tab-genome" || targetTabId === "tab-habits") {
-          renderAllCharts();
-          window.dispatchEvent(new Event("resize"));
+        // Lazy-render chart groups on demand
+        if (targetTabId === "tab-genome") {
+          renderGenomeCharts();
+        } else if (targetTabId === "tab-habits") {
+          renderHabitsCharts();
         }
       }
     });
@@ -890,8 +903,12 @@ async function main() {
   setupCopyButton("btn-share-profile");
   setupCopyButton("btn-copy-profile-link");
 
-  // Initial render of charts in background
-  setTimeout(renderAllCharts, 100);
+  // Check if initially active tab requires charts
+  const initialActiveTab = document.querySelector(".profile-tab-pane.is-active");
+  if (initialActiveTab) {
+    if (initialActiveTab.id === "tab-genome") renderGenomeCharts();
+    else if (initialActiveTab.id === "tab-habits") renderHabitsCharts();
+  }
 }
 
 main();

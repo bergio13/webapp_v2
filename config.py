@@ -14,6 +14,7 @@ class Config:
     # ----------------------------------------------------------------- cache
     CACHE_TYPE = "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 300  # seconds
+    SEND_FILE_MAX_AGE_DEFAULT = 86400  # 24 hours for static asset caching
 
     # ------------------------------------------------------------------ mail
     MAIL_MAX_EMAILS = None

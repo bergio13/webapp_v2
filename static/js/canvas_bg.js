@@ -230,9 +230,10 @@
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let animationFrameId = null;
     let isRunning = false;
+    let isIntersecting = true;
 
     function shouldAnimate() {
-      return !document.hidden && !motionQuery.matches;
+      return !document.hidden && !motionQuery.matches && isIntersecting;
     }
 
     function renderStaticFrame() {
@@ -268,15 +269,25 @@
       } else {
         stopAnimation();
         // If reduced motion is requested and tab is visible, draw a calm static frame
-        if (motionQuery.matches && !document.hidden) {
+        if (motionQuery.matches && !document.hidden && isIntersecting) {
           renderStaticFrame();
         }
       }
     }
 
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          isIntersecting = entry.isIntersecting;
+          updateAnimationState();
+        });
+      }, { threshold: 0.05 });
+      observer.observe(canvas);
+    }
+
     window.addEventListener("resize", () => {
       effect.resize(window.innerWidth, window.innerHeight);
-      if (!shouldAnimate() && !document.hidden) {
+      if (!shouldAnimate() && !document.hidden && isIntersecting) {
         renderStaticFrame();
       }
     });
@@ -292,7 +303,7 @@
     // Initial start or static render
     if (shouldAnimate()) {
       startAnimation();
-    } else if (!document.hidden) {
+    } else if (!document.hidden && isIntersecting) {
       renderStaticFrame();
     }
   };

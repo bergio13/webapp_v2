@@ -4,12 +4,6 @@ endblock %} {% block body_class %} list_page list_page_friend_theme{% endblock %
 body %} {% block content %}
 
 
-<!-- FontAwesome -->
-<script
-  src="https://kit.fontawesome.com/a735d6df86.js"
-  crossorigin="anonymous"
-></script>
-
 <canvas class="canvas_list" id="canvas"></canvas>
 <script src="/static/js/canvas_bg.js"></script>
 
@@ -577,6 +571,9 @@ body %} {% block content %}
       const gridContainer = document.getElementById("library-grid");
 
       if (data.movies && data.movies.length > 0) {
+        const tableFrag = tbody ? document.createDocumentFragment() : null;
+        const gridFrag = gridContainer ? document.createDocumentFragment() : null;
+
         data.movies.forEach(movie => {
           const vDate = new Date(movie.v_date);
           const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -585,7 +582,7 @@ body %} {% block content %}
           let cinemaIcon = movie.cinema == 1 ? '<i class="fa-solid fa-film" style="font-size: 14px" title="Cinema"></i>' : '';
           let rewatchIcon = movie.rewatch == 1 ? '<i class="fa-solid fa-repeat" style="font-size: 14px" title="Rewatch"></i>' : '';
           
-          if (tbody) {
+          if (tableFrag) {
             const tr = document.createElement('tr');
             tr.style.color = "white";
             tr.innerHTML = `
@@ -600,10 +597,10 @@ body %} {% block content %}
               <td>${movie.director ? movie.director.toUpperCase() : 'UNKNOWN'}</td>
               <td style="text-align: center">${createSentimentBadgeHtml(movie.rating)}</td>
             `;
-            tbody.appendChild(tr);
+            tableFrag.appendChild(tr);
           }
 
-          if (gridContainer) {
+          if (gridFrag) {
             const card = document.createElement('div');
             card.className = "library-card";
             card.innerHTML = `
@@ -623,9 +620,12 @@ body %} {% block content %}
                 </div>
               </div>
             `;
-            gridContainer.appendChild(card);
+            gridFrag.appendChild(card);
           }
         });
+        
+        if (tbody && tableFrag) tbody.appendChild(tableFrag);
+        if (gridContainer && gridFrag) gridContainer.appendChild(gridFrag);
         
         filterState.page++;
       } else if (filterState.page === 1) {

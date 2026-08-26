@@ -2,14 +2,6 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %} {% block body_class %} home_page{% endblock %} {%block body
 %}{%block content %}
 
-<!-- FontAwesome for icons -->
-<script
-  src="https://kit.fontawesome.com/a735d6df86.js"
-  crossorigin="anonymous"
-></script>
-
-
-
 <style>
   /* Soft Cool-Neutral Palette */
   :root {
@@ -556,7 +548,7 @@
     justify-content: center;
     font-family: 'VT323', monospace;
     font-size: 1.2rem;
-    backdrop-filter: blur(4px);
+    background: rgba(19, 28, 39, 0.8);
     transition: all 0.3s ease;
     opacity: 0;
   }
@@ -651,7 +643,7 @@
 </script>
 
 <canvas class="canvas_home" id="canvas"></canvas>
-<script src="static/js/script_home.js"></script>
+<script src="/static/js/script_home.js?v=6"></script>
 
 <div class="list_list app-panel">
   <div class="home-layout">
@@ -903,6 +895,6 @@
     }
   }
 </script>
-<script src="/static/js/kin_mascot.js"></script>
-<script src="/static/js/upcoming_carousel.js"></script>
+<script src="/static/js/kin_mascot.js?v=5"></script>
+<script src="/static/js/upcoming_carousel.js?v=5"></script>
 {% endblock %} {% endblock %}

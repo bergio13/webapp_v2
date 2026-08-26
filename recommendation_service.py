@@ -1344,6 +1344,7 @@ Recommendation Mode: {mode_label}
 Mode Instructions: {mode_prompt}
 History Lens: {history_label}
 History Lens Instructions: {history_prompt}
+Preferred Genres: {genre_prompt}
 
 Please provide exactly 4 movie recommendations in the following format:
 1. **[Movie Title] ([Year]) - [Director]**
@@ -1362,6 +1363,7 @@ Avoid recommending exact title+year combinations already listed in watch history
 
     gemini_api_key = os.environ.get("GEMINI_API_KEY")
     if gemini_api_key:
+        gemini_models = ["gemini-2.5-flash", "gemini-2.0-flash"]
         for g_model in gemini_models:
             try:
                 gem_payload = {
@@ -1387,6 +1389,13 @@ Avoid recommending exact title+year combinations already listed in watch history
                 if logger:
                     logger.warning(f"Gemini API non-stream ({g_model}) failed: {e}")
 
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "HTTP-Referer": app_base_url,
+        "X-Title": "Kineto",
+        "Content-Type": "application/json",
+    }
+    model_candidates = [settings.model_id, *settings.model_fallbacks]
     try:
         overall_started_at = time.monotonic()
         overall_deadline = max(1.0, float(settings.total_timeout))

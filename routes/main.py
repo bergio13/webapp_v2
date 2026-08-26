@@ -176,6 +176,7 @@ def api_movies():
 
 @main_bp.route("/api/watched_lookup")
 @login_required
+@cache.cached(timeout=300, key_prefix=make_user_cache_key)
 def api_watched_lookup():
     watched_set = get_watched_title_year_lookup(current_user.id)
     return jsonify([{"title": t, "year": y} for t, y in watched_set])
@@ -209,6 +210,7 @@ def api_movie_details():
 
 @main_bp.route("/api/now-playing")
 @login_required
+@cache.cached(timeout=3600)
 def api_now_playing():
     """Return up to 8 movies currently playing in cinemas (TMDB now_playing)."""
     api_key = os.environ.get("TMDB_API_KEY")
@@ -238,6 +240,7 @@ def api_now_playing():
 
 @main_bp.route("/api/upcoming")
 @login_required
+@cache.cached(timeout=3600)
 def api_upcoming():
     """Return up to 8 movies upcoming in cinemas (TMDB upcoming)."""
     api_key = os.environ.get("TMDB_API_KEY")

@@ -5,15 +5,11 @@ from flask import Blueprint, flash, redirect, render_template
 from flask_login import current_user, login_required
 
 from database import (
-    get_directors,
-    get_genres,
     get_movies_groupby_director,
     get_movies_groupby_genre,
     get_movies_groupby_rating,
     get_movies_groupby_year,
-    get_ratings,
     get_user_id,
-    get_years,
 )
 from extensions import cache
 from utils import make_user_cache_key
@@ -33,12 +29,36 @@ def _resolve_friend(username: str):
     return user[0] if user else None
 
 
-def _get_genres_list(user_id) -> list:
-    """Return a sorted, deduplicated list of genre strings for *user_id*."""
-    generi = get_genres(user_id)
-    raw = ", ".join(g["name"] for g in generi)
-    tokens = {t.strip() for t in raw.split(",") if t.strip()}
+def _extract_genres_from_movies(movies: list) -> list:
+    """Return a sorted, deduplicated list of genre strings from movies."""
+    tokens = set()
+    for m in movies:
+        raw = str(m.get("genre") or "")
+        for t in raw.split(","):
+            cleaned = t.strip()
+            if cleaned and cleaned.lower() != "unknown":
+                tokens.add(cleaned)
     return sorted(tokens)
+
+
+def _extract_directors_from_movies(movies: list) -> list:
+    """Return distinct directors list from movies."""
+    names = {m.get("director") for m in movies if m.get("director") and str(m.get("director")).strip() != "Unknown"}
+    return [{"name": d} for d in sorted(names)]
+
+
+def _extract_years_from_movies(movies: list) -> list:
+    """Return distinct years list from movies sorted descending."""
+    years = {m.get("p_year") for m in movies if m.get("p_year")}
+    sorted_years = sorted(years, key=lambda x: int(x) if str(x).isdigit() else 0, reverse=True)
+    return [{"name": y} for y in sorted_years]
+
+
+def _extract_ratings_from_movies(movies: list) -> list:
+    """Return distinct ratings list from movies sorted descending."""
+    ratings = {m.get("rating") for m in movies if m.get("rating") is not None}
+    sorted_ratings = sorted(ratings, key=lambda x: float(x) if str(x).replace(".", "", 1).isdigit() else 0, reverse=True)
+    return [{"name": r} for r in sorted_ratings]
 
 
 # ---------------------------------------------------------------------------
@@ -51,7 +71,7 @@ def _get_genres_list(user_id) -> list:
 def show_directors():
     try:
         movies = get_movies_groupby_director(current_user.id)
-        directors = get_directors(current_user.id)
+        directors = _extract_directors_from_movies(movies)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load directors page")
@@ -75,7 +95,7 @@ def show_directors_friends(username):
         return redirect("/friends")
     try:
         movies = get_movies_groupby_director(friend["id"])
-        directors = get_directors(friend["id"])
+        directors = _extract_directors_from_movies(movies)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load friend directors page for %s", username)
@@ -98,7 +118,7 @@ def show_directors_friends(username):
 def show_genres():
     try:
         movies = get_movies_groupby_genre(current_user.id)
-        final_genres = _get_genres_list(current_user.id)
+        final_genres = _extract_genres_from_movies(movies)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load genres page")
@@ -122,7 +142,7 @@ def show_genres_friends(username):
         return redirect("/friends")
     try:
         movies = get_movies_groupby_genre(friend["id"])
-        final_genres = _get_genres_list(friend["id"])
+        final_genres = _extract_genres_from_movies(movies)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load friend genres page for %s", username)
@@ -145,8 +165,7 @@ def show_genres_friends(username):
 def show_years():
     try:
         movies = get_movies_groupby_year(current_user.id)
-        anni = get_years(current_user.id)
-        anni.sort(key=lambda x: int(x.get("name") or 0) if str(x.get("name", "")).isdigit() else 0, reverse=True)
+        anni = _extract_years_from_movies(movies)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load years page")
@@ -170,8 +189,7 @@ def show_years_friends(username):
         return redirect("/friends")
     try:
         movies = get_movies_groupby_year(friend["id"])
-        anni = get_years(friend["id"])
-        anni.sort(key=lambda x: int(x.get("name") or 0) if str(x.get("name", "")).isdigit() else 0, reverse=True)
+        anni = _extract_years_from_movies(movies)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load friend years page for %s", username)
@@ -194,8 +212,7 @@ def show_years_friends(username):
 def show_ratings():
     try:
         movies = get_movies_groupby_rating(current_user.id)
-        ratings = get_ratings(current_user.id)
-        ratings.sort(key=lambda x: str(x.get("name", "")), reverse=True)
+        ratings = _extract_ratings_from_movies(movies)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load ratings page")
@@ -219,8 +236,7 @@ def show_ratings_friends(username):
         return redirect("/friends")
     try:
         movies = get_movies_groupby_rating(friend["id"])
-        ratings = get_ratings(friend["id"])
-        ratings.sort(key=lambda x: str(x.get("name", "")), reverse=True)
+        ratings = _extract_ratings_from_movies(movies)
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load friend ratings page for %s", username)

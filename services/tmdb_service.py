@@ -1,4 +1,6 @@
 import os
+import time
+from functools import wraps
 import requests
 from tmdbv3api import TMDb, Movie, TV, Season, Search
 
@@ -10,6 +12,31 @@ movie_api = Movie()
 tv_api = TV()
 season_api = Season()
 search_api = Search()
+
+_CACHE_TTL = 3600  # 1 hour
+
+def _cached(ttl=_CACHE_TTL, maxsize=1000):
+    """In-memory TTL cache decorator for TMDB lookups."""
+    def decorator(func):
+        cache_store = {}
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            key = (args, tuple(sorted(kwargs.items())))
+            now = time.time()
+            if key in cache_store:
+                val, timestamp = cache_store[key]
+                if now - timestamp < ttl:
+                    return val
+            result = func(*args, **kwargs)
+            if result is not None:
+                if len(cache_store) >= maxsize:
+                    sorted_keys = sorted(cache_store.keys(), key=lambda k: cache_store[k][1])
+                    for k in sorted_keys[:maxsize // 5]:
+                        cache_store.pop(k, None)
+                cache_store[key] = (result, now)
+            return result
+        return wrapper
+    return decorator
 
 movie_genres = {
     28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
@@ -25,6 +52,7 @@ tv_genres = {
     10767: "Talk", 10768: "War & Politics", 37: "Western"
 }
 
+@_cached(ttl=3600)
 def get_movie_details(title, year, manual_director=None):
     """
     Search TMDB for a movie or TV show, extracting poster, genres, and director.
@@ -148,6 +176,7 @@ def get_movie_details(title, year, manual_director=None):
             "rating": None,
         }
 
+@_cached(ttl=3600)
 def get_tv_details(title, year, season_num, manual_director=None):
     """
     Search TMDB for a TV show and extract poster, genres, and creator/director.
@@ -234,6 +263,7 @@ def get_tv_details(title, year, season_num, manual_director=None):
             "title": title
         }
 
+@_cached(ttl=1800)
 def search_titles(query, is_tv=False, limit=12):
     """
     Quick search for autocomplete suggestions.
@@ -279,6 +309,7 @@ def search_titles(query, is_tv=False, limit=12):
         print(f"Error in tmdb_service.search_titles: {e}")
         return []
 
+@_cached(ttl=86400)
 def get_director_by_id(media_id, media_type):
     """
     Fetch the director or creator for a specific media ID.
@@ -309,6 +340,7 @@ def get_director_by_id(media_id, media_type):
         
     return ""
 
+@_cached(ttl=3600)
 def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, country="IT"):
     """
     Fetch comprehensive media details from TMDB including trailer, watch providers, credits, and synopsis.

@@ -7,7 +7,6 @@
 <canvas class="canvas_discover" id="canvas"></canvas>
 <div class="discover-atmosphere" aria-hidden="true"></div>
 <script src="/static/js/canvas_bg.js"></script>
-<script src="https://kit.fontawesome.com/a735d6df86.js" crossorigin="anonymous"></script>
 
 <main class="discover-main">
   <div class="discover-wrap">
@@ -92,19 +91,21 @@
       </div>
     </section>
 
-    <!-- STREAMING RESPONSE SECTION -->
-    <section class="cyber-card glass-panel discover-card response-card" id="response-section" style="display: none;">
+    <!-- STREAMING / NON-STREAMING RESPONSE SECTION -->
+    <section class="cyber-card glass-panel discover-card response-card" id="response-section" {% if not ai_response %}style="display: none;"{% endif %}>
       <div class="response-headline">
         <div class="headline-title-wrap">
           <h2>NEURAL_SYNTHESIS_RESULTS</h2>
           <div class="live-status-pill" id="live-status-pill">
-            <span class="status-dot"></span> <span id="status-text">Ready</span>
+            <span class="status-dot"></span> <span id="status-text">{% if ai_response %}Complete{% else %}Ready{% endif %}</span>
           </div>
         </div>
-        <p id="response-meta-text">Configuring neural synthesis...</p>
+        <p id="response-meta-text">{% if ai_response %}Direct synthesis complete.{% else %}Configuring neural synthesis...{% endif %}</p>
       </div>
 
-      <div class="formatted-recommendations" id="formatted-recommendations"></div>
+      <div class="formatted-recommendations" id="formatted-recommendations">
+        {% if ai_response %}{{ ai_response|safe }}{% endif %}
+      </div>
     </section>
 
   </div>

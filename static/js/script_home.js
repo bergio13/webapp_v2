@@ -1,187 +1,203 @@
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+if (canvas) {
+  const ctx = canvas.getContext("2d");
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
 
-// Canvas settings
-ctx.fillStyle = "black";
-ctx.lineWidth = 1;
+  const colors = ["#3d5a6e", "#4a6d7c", "#2d4654", "#5a7d8a"];
 
-class Particle {
-  constructor(effect) {
-    this.effect = effect;
-    this.reset();
-  }
-
-  reset() {
-    this.x = Math.random() * this.effect.width;
-    this.y = Math.random() * this.effect.height;
-    this.speedX = 0;
-    this.speedY = 0;
-    this.speedModifier = Math.random() * 1.5 + 0.5;
-    this.history = [{ x: this.x, y: this.y }];
-    this.maxLength = Math.random() * 450 + 50;
-    this.angle = 0;
-    this.timer = this.maxLength * 2; // Lifespan timer
-    this.colors = ["#3d5a6e", "#4a6d7c", "#2d4654", "#5a7d8a"];
-    this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
-  }
-
-  draw(context) {
-    context.beginPath();
-    context.moveTo(this.history[0].x, this.history[0].y);
-    for (let i = 1; i < this.history.length; i++) {
-      context.lineTo(this.history[i].x, this.history[i].y);
+  class Particle {
+    constructor(effect) {
+      this.effect = effect;
+      this.reset();
     }
-    context.strokeStyle = this.color;
-    context.stroke();
-  }
 
-  update() {
-    this.timer--;
-    if (this.timer > 0) {
-      let x = Math.floor(this.x / this.effect.cellSize);
-      let y = Math.floor(this.y / this.effect.cellSize);
-      let index = y * this.effect.cols + x;
-      this.angle = this.effect.flowField[index];
-
-      this.speedX = Math.cos(this.angle);
-      this.speedY = Math.sin(this.angle);
-      this.x += this.speedX * this.speedModifier;
-      this.y += this.speedY * this.speedModifier;
-
-      this.history.push({ x: this.x, y: this.y });
-      if (this.history.length > this.maxLength) {
-        this.history.shift(); // Keep only the max number of points
-      }
-    } else if (this.history.length > 1) {
-      this.history.shift(); // Shrink the trail when the timer ends
-    } else {
-      this.reset(); // Recycle particle by resetting it
+    reset() {
+      this.x = Math.random() * this.effect.width;
+      this.y = Math.random() * this.effect.height;
+      this.speedModifier = Math.random() * 1.5 + 0.5;
+      this.history = [{ x: this.x, y: this.y }];
+      this.maxLength = Math.floor(Math.random() * 200 + 100); // 100-300 points for long sweeping flow lines
+      this.timer = this.maxLength * 2;
+      this.colorIndex = Math.floor(Math.random() * colors.length);
     }
-  }
-}
 
-class Effect {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.width = this.canvas.width;
-    this.height = this.canvas.height;
-    this.particles = [];
-    this.numberOfParticles = 750;
-    this.cellSize = 20;
-    this.cols = Math.floor(this.width / this.cellSize);
-    this.rows = Math.floor(this.height / this.cellSize);
-    this.flowField = [];
-    this.curve = 1.5;
-    this.zoom = 0.15;
-    this.time = 0;
+    update() {
+      this.timer--;
+      if (this.timer > 0) {
+        const xCell = Math.floor(this.x / this.effect.cellSize);
+        const yCell = Math.floor(this.y / this.effect.cellSize);
+        const index = yCell * this.effect.cols + xCell;
 
-    window.addEventListener("resize", (e) => {
-      this.resize(e.target.innerWidth, e.target.innerHeight);
-    });
+        let angle = 0;
+        if (index >= 0 && index < this.effect.flowField.length) {
+          angle = this.effect.flowField[index];
+        }
 
-    this.init();
-  }
+        this.x += Math.cos(angle) * this.speedModifier;
+        this.y += Math.sin(angle) * this.speedModifier;
 
-  init() {
-    this.createFlowField();
-    this.particles = [];
-    for (let i = 0; i < this.numberOfParticles; i++) {
-      this.particles.push(new Particle(this));
-    }
-  }
-
-  createFlowField() {
-    this.cols = Math.floor(this.width / this.cellSize);
-    this.rows = Math.floor(this.height / this.cellSize);
-    this.flowField = [];
-
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        let angle =
-          (Math.cos(x * this.zoom) + Math.sin(y * this.zoom)) * this.curve;
-        this.flowField.push(angle);
+        this.history.push({ x: this.x, y: this.y });
+        if (this.history.length > this.maxLength) {
+          this.history.shift();
+        }
+      } else if (this.history.length > 1) {
+        this.history.shift();
+      } else {
+        this.reset();
       }
     }
   }
 
-  resize(width, height) {
-    this.canvas.width = width;
-    this.canvas.height = height;
-    this.width = width;
-    this.height = height;
-    this.createFlowField();
-    this.particles.forEach((particle) => particle.reset()); // Reset all particles on resize
+  class Effect {
+    constructor(canvas) {
+      this.canvas = canvas;
+      this.width = width;
+      this.height = height;
+      this.numberOfParticles = 500;
+      this.cellSize = 20;
+      this.cols = Math.floor(this.width / this.cellSize);
+      this.rows = Math.floor(this.height / this.cellSize);
+      this.flowField = [];
+      this.curve = 1.5;
+      this.zoom = 0.15;
+      this.particles = [];
+
+      let resizeTimeout;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          this.resize(window.innerWidth, window.innerHeight);
+        }, 150);
+      });
+
+      this.init();
+    }
+
+    init() {
+      this.createFlowField();
+      this.particles = [];
+      for (let i = 0; i < this.numberOfParticles; i++) {
+        this.particles.push(new Particle(this));
+      }
+    }
+
+    createFlowField() {
+      this.cols = Math.floor(this.width / this.cellSize);
+      this.rows = Math.floor(this.height / this.cellSize);
+      this.flowField = new Float32Array(this.cols * this.rows);
+
+      for (let y = 0; y < this.rows; y++) {
+        for (let x = 0; x < this.cols; x++) {
+          const angle =
+            (Math.cos(x * this.zoom) + Math.sin(y * this.zoom)) * this.curve;
+          this.flowField[y * this.cols + x] = angle;
+        }
+      }
+    }
+
+    resize(w, h) {
+      this.width = width = this.canvas.width = w;
+      this.height = height = this.canvas.height = h;
+      this.createFlowField();
+      this.particles.forEach((p) => p.reset());
+    }
+
+    render(context) {
+      context.clearRect(0, 0, this.width, this.height);
+      context.lineWidth = 1;
+
+      // Group paths by color: executes only 4 stroke calls per frame total
+      for (let c = 0; c < colors.length; c++) {
+        context.beginPath();
+        context.strokeStyle = colors[c];
+
+        for (let i = 0; i < this.particles.length; i++) {
+          const p = this.particles[i];
+          if (p.colorIndex === c && p.history.length > 1) {
+            context.moveTo(p.history[0].x, p.history[0].y);
+            for (let j = 1; j < p.history.length; j++) {
+              context.lineTo(p.history[j].x, p.history[j].y);
+            }
+          }
+          if (c === 0) {
+            p.update();
+          }
+        }
+        context.stroke();
+      }
+    }
   }
 
-  render(context) {
-    this.particles.forEach((particle) => {
-      particle.update();
-      particle.draw(context);
-    });
+  const effect = new Effect(canvas);
+
+  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let animationFrameId = null;
+  let isRunning = false;
+  let isIntersecting = true;
+
+  function shouldAnimate() {
+    return !document.hidden && !motionQuery.matches && isIntersecting;
   }
-}
 
-const effect = new Effect(canvas);
+  function renderStaticFrame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    effect.render(ctx);
+  }
 
-const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-let animationFrameId = null;
-let isRunning = false;
-
-function shouldAnimate() {
-  return !document.hidden && !motionQuery.matches;
-}
-
-function renderStaticFrame() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  effect.render(ctx);
-}
-
-function animate() {
-  if (!isRunning) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  effect.render(ctx);
-  animationFrameId = requestAnimationFrame(animate);
-}
-
-function startAnimation() {
-  if (!isRunning && shouldAnimate()) {
-    isRunning = true;
+  function animate() {
+    if (!isRunning) return;
+    effect.render(ctx);
     animationFrameId = requestAnimationFrame(animate);
   }
-}
 
-function stopAnimation() {
-  isRunning = false;
-  if (animationFrameId !== null) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-}
-
-function updateAnimationState() {
-  if (shouldAnimate()) {
-    startAnimation();
-  } else {
-    stopAnimation();
-    if (motionQuery.matches && !document.hidden) {
-      renderStaticFrame();
+  function startAnimation() {
+    if (!isRunning && shouldAnimate()) {
+      isRunning = true;
+      animationFrameId = requestAnimationFrame(animate);
     }
   }
-}
 
-document.addEventListener("visibilitychange", updateAnimationState);
+  function stopAnimation() {
+    isRunning = false;
+    if (animationFrameId !== null) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+  }
 
-if (typeof motionQuery.addEventListener === "function") {
-  motionQuery.addEventListener("change", updateAnimationState);
-} else if (typeof motionQuery.addListener === "function") {
-  motionQuery.addListener(updateAnimationState);
-}
+  function updateAnimationState() {
+    if (shouldAnimate()) {
+      startAnimation();
+    } else {
+      stopAnimation();
+      if (motionQuery.matches && !document.hidden && isIntersecting) {
+        renderStaticFrame();
+      }
+    }
+  }
 
-// Initial start or static frame
-if (shouldAnimate()) {
-  startAnimation();
-} else if (!document.hidden) {
-  renderStaticFrame();
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        isIntersecting = entry.isIntersecting;
+        updateAnimationState();
+      });
+    }, { threshold: 0.05 });
+    observer.observe(canvas);
+  }
+
+  document.addEventListener("visibilitychange", updateAnimationState);
+
+  if (typeof motionQuery.addEventListener === "function") {
+    motionQuery.addEventListener("change", updateAnimationState);
+  } else if (typeof motionQuery.addListener === "function") {
+    motionQuery.addListener(updateAnimationState);
+  }
+
+  if (shouldAnimate()) {
+    startAnimation();
+  } else if (!document.hidden && isIntersecting) {
+    renderStaticFrame();
+  }
 }

@@ -167,27 +167,34 @@ DISCOVER_AVAILABLE_GENRES = [
 
 def build_openrouter_settings() -> OpenRouterSettings:
     """Create an ``OpenRouterSettings`` payload for the recommendation service."""
+    import sys
+    webapp = sys.modules.get("app")
+    def _get(name, default):
+        if webapp and hasattr(webapp, name):
+            return getattr(webapp, name)
+        return globals().get(name, default)
+
     return OpenRouterSettings(
-        api_url=OPENROUTER_API_URL,
-        model_id=OPENROUTER_MODEL_ID,
-        model_fallbacks=OPENROUTER_MODEL_FALLBACKS,
-        request_timeout=OPENROUTER_REQUEST_TIMEOUT,
-        total_timeout=OPENROUTER_TOTAL_TIMEOUT,
-        model_deadline=OPENROUTER_MODEL_DEADLINE,
-        max_completion_tokens=OPENROUTER_MAX_COMPLETION_TOKENS,
-        max_attempts=OPENROUTER_MAX_ATTEMPTS,
-        retry_base_delay=OPENROUTER_RETRY_BASE_DELAY,
-        retry_max_delay=OPENROUTER_RETRY_MAX_DELAY,
-        retry_429_max_delay=OPENROUTER_RETRY_429_MAX_DELAY,
-        retry_jitter=OPENROUTER_RETRY_JITTER,
-        provider_sort=OPENROUTER_PROVIDER_SORT,
-        provider_allow_fallbacks=OPENROUTER_PROVIDER_ALLOW_FALLBACKS,
-        provider_require_parameters=OPENROUTER_PROVIDER_REQUIRE_PARAMETERS,
-        provider_only=OPENROUTER_PROVIDER_ONLY,
-        provider_ignore=OPENROUTER_PROVIDER_IGNORE,
-        preferred_max_latency=OPENROUTER_PREFERRED_MAX_LATENCY,
-        preferred_min_throughput=OPENROUTER_PREFERRED_MIN_THROUGHPUT,
-        service_tier=OPENROUTER_SERVICE_TIER,
+        api_url=_get("OPENROUTER_API_URL", OPENROUTER_API_URL),
+        model_id=_get("OPENROUTER_MODEL_ID", OPENROUTER_MODEL_ID),
+        model_fallbacks=_get("OPENROUTER_MODEL_FALLBACKS", OPENROUTER_MODEL_FALLBACKS),
+        request_timeout=_get("OPENROUTER_REQUEST_TIMEOUT", OPENROUTER_REQUEST_TIMEOUT),
+        total_timeout=_get("OPENROUTER_TOTAL_TIMEOUT", OPENROUTER_TOTAL_TIMEOUT),
+        model_deadline=_get("OPENROUTER_MODEL_DEADLINE", OPENROUTER_MODEL_DEADLINE),
+        max_completion_tokens=_get("OPENROUTER_MAX_COMPLETION_TOKENS", OPENROUTER_MAX_COMPLETION_TOKENS),
+        max_attempts=_get("OPENROUTER_MAX_ATTEMPTS", OPENROUTER_MAX_ATTEMPTS),
+        retry_base_delay=_get("OPENROUTER_RETRY_BASE_DELAY", OPENROUTER_RETRY_BASE_DELAY),
+        retry_max_delay=_get("OPENROUTER_RETRY_MAX_DELAY", OPENROUTER_RETRY_MAX_DELAY),
+        retry_429_max_delay=_get("OPENROUTER_RETRY_429_MAX_DELAY", OPENROUTER_RETRY_429_MAX_DELAY),
+        retry_jitter=_get("OPENROUTER_RETRY_JITTER", OPENROUTER_RETRY_JITTER),
+        provider_sort=_get("OPENROUTER_PROVIDER_SORT", OPENROUTER_PROVIDER_SORT),
+        provider_allow_fallbacks=_get("OPENROUTER_PROVIDER_ALLOW_FALLBACKS", OPENROUTER_PROVIDER_ALLOW_FALLBACKS),
+        provider_require_parameters=_get("OPENROUTER_PROVIDER_REQUIRE_PARAMETERS", OPENROUTER_PROVIDER_REQUIRE_PARAMETERS),
+        provider_only=_get("OPENROUTER_PROVIDER_ONLY", OPENROUTER_PROVIDER_ONLY),
+        provider_ignore=_get("OPENROUTER_PROVIDER_IGNORE", OPENROUTER_PROVIDER_IGNORE),
+        preferred_max_latency=_get("OPENROUTER_PREFERRED_MAX_LATENCY", OPENROUTER_PREFERRED_MAX_LATENCY),
+        preferred_min_throughput=_get("OPENROUTER_PREFERRED_MIN_THROUGHPUT", OPENROUTER_PREFERRED_MIN_THROUGHPUT),
+        service_tier=_get("OPENROUTER_SERVICE_TIER", OPENROUTER_SERVICE_TIER),
     )
 
 
@@ -223,7 +230,7 @@ def get_ai_movie_recommendation(
 
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
-        return "<p>Sorry, recommendation service is not configured.</p><p><strong>Error:</strong> OPENROUTER_API_KEY is not set.</p>"
+        return "<p>Sorry, recommendation service is not configured.</p><p><strong>Error:</strong> OPENROUTER_API_KEY is not configured.</p>"
 
     result = _get_ai_movie_recommendation(
         user_request,

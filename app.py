@@ -39,6 +39,22 @@ from routes.movies import movies_bp
 from routes.profile import profile_bp
 from routes.social import social_bp
 from routes.watchlist import watchlist_bp
+import requests
+from ai_helpers import (
+    OPENROUTER_API_URL,
+    OPENROUTER_MODEL_ID,
+    OPENROUTER_MODEL_FALLBACKS,
+    OPENROUTER_REQUEST_TIMEOUT,
+    OPENROUTER_TOTAL_TIMEOUT,
+    OPENROUTER_MODEL_DEADLINE,
+    OPENROUTER_MAX_ATTEMPTS,
+    get_ai_movie_recommendation,
+    format_ai_response_to_html,
+)
+from utils import (
+    get_user_watch_history_summary,
+    get_watched_title_year_lookup,
+)
 
 
 def create_app(config_class=Config) -> Flask:

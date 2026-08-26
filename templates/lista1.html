@@ -2,13 +2,6 @@
 {% extends 'base.html' %} {% block title %}Watched Movies{% endblock %} {% block
 body_class %} list_page{% endblock %} {% block body %}
 
-
-<!-- FontAwesome -->
-<script
-  src="https://kit.fontawesome.com/a735d6df86.js"
-  crossorigin="anonymous"
-></script>
-
 <style>
   .custom-toolbar-actions {
     display: flex;
@@ -692,6 +685,9 @@ body_class %} list_page{% endblock %} {% block body %}
       const gridContainer = document.getElementById("library-grid");
 
       if (data.movies && data.movies.length > 0) {
+        const tableFrag = tbody ? document.createDocumentFragment() : null;
+        const gridFrag = gridContainer ? document.createDocumentFragment() : null;
+
         data.movies.forEach(movie => {
           const vDate = new Date(movie.v_date);
           const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -702,7 +698,7 @@ body_class %} list_page{% endblock %} {% block body %}
           
           const csrfVal = document.querySelector('[name="csrf_token"]') ? document.querySelector('[name="csrf_token"]').value : '';
           
-          if (tbody) {
+          if (tableFrag) {
             const tr = document.createElement('tr');
             tr.style.color = "white";
             tr.innerHTML = `
@@ -728,10 +724,10 @@ body_class %} list_page{% endblock %} {% block body %}
                 </button>
               </td>
             `;
-            tbody.appendChild(tr);
+            tableFrag.appendChild(tr);
           }
 
-          if (gridContainer) {
+          if (gridFrag) {
             const card = document.createElement('div');
             card.className = "library-card";
             card.innerHTML = `
@@ -761,9 +757,12 @@ body_class %} list_page{% endblock %} {% block body %}
                 </div>
               </div>
             `;
-            gridContainer.appendChild(card);
+            gridFrag.appendChild(card);
           }
         });
+        
+        if (tbody && tableFrag) tbody.appendChild(tableFrag);
+        if (gridContainer && gridFrag) gridContainer.appendChild(gridFrag);
         
         filterState.page++;
       } else if (filterState.page === 1) {

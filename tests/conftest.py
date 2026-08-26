@@ -54,6 +54,7 @@ def app_module(monkeypatch):
     monkeypatch.setenv("EMAIL_PROVIDER", "gmail")
     monkeypatch.setenv("KINETO_MAIL_PASSWORD", "test-mail-password")
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-openrouter-key")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
 
     import supabase
 

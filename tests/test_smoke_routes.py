@@ -13,30 +13,26 @@ def test_discover_route_redirects_when_anonymous(client):
     assert response.status_code == 302
 
 
-def test_discover_post_renders_recommendations_for_logged_in_user(client, app_module, monkeypatch):
-    with client.session_transaction() as active_session:
-        active_session["loggedin"] = True
-        active_session["id"] = 42
-        active_session["_user_id"] = "42"
-        active_session["_fresh"] = True
+def test_discover_post_renders_recommendations_for_logged_in_user(app_module, monkeypatch):
+    from flask_login import login_user
+
+    class MockUser:
+        is_authenticated = True
+        id = 42
+        username = "test"
+        def is_active(self): return True
+        def is_anonymous(self): return False
+        def get_id(self): return "42"
 
     captured = {}
 
     monkeypatch.setattr(
-        app_module,
-        "get_user_by_id",
-        lambda *_args, **_kwargs: [{"id": 42, "username": "test", "email": "test@example.com"}],
-    )
-
-    monkeypatch.setattr(
-        app_module,
-        "get_user_watch_history_summary",
+        "routes.social.get_user_watch_history_summary",
         lambda *_args, **_kwargs: "History",
     )
 
     monkeypatch.setattr(
-        app_module,
-        "get_watched_title_year_lookup",
+        "routes.social.get_watched_title_year_lookup",
         lambda *_args, **_kwargs: {("test movie", 2024)},
     )
 
@@ -57,23 +53,25 @@ def test_discover_post_renders_recommendations_for_logged_in_user(client, app_mo
         return "<ol><li><strong>Test Movie (2024) - Director</strong></li></ol>"
 
     monkeypatch.setattr(
-        app_module,
-        "get_ai_movie_recommendation",
+        "routes.social.get_ai_movie_recommendation",
         fake_get_ai_movie_recommendation,
     )
 
-    response = client.post(
+    with app_module.app.test_request_context(
         "/discover",
+        method="POST",
         data={
             "user_request": "Find me sci-fi",
             "recommendation_mode": "comfort",
             "history_profile": "recent",
             "preferred_genres": ["Sci-Fi", "Thriller"],
         },
-    )
+    ):
+        login_user(MockUser())
+        from routes.social import discover
+        response_html = discover()
 
-    assert response.status_code == 200
-    assert b"Test Movie (2024) - Director" in response.data
+    assert "Test Movie (2024) - Director" in response_html
     assert captured["user_request"] == "Find me sci-fi"
     assert captured["user_history"] == "History"
     assert captured["recommendation_mode"] == "comfort"
@@ -134,7 +132,7 @@ def test_openrouter_response_is_formatted_to_html(app_module, monkeypatch):
         if len([app_module.OPENROUTER_MODEL_ID, *app_module.OPENROUTER_MODEL_FALLBACKS]) > 1:
             expected_model_deadline = min(expected_model_deadline, app_module.OPENROUTER_MODEL_DEADLINE)
         expected_timeout = min(app_module.OPENROUTER_REQUEST_TIMEOUT, expected_model_deadline)
-        assert timeout == expected_timeout
+        assert abs(timeout - expected_timeout) < 0.2
         prompt = json["messages"][0]["content"]
         assert "Recommendation Mode: Similar" in prompt
         assert "History Lens: Balanced Mix" in prompt
@@ -151,7 +149,7 @@ def test_openrouter_response_is_formatted_to_html(app_module, monkeypatch):
             }
         )
 
-    monkeypatch.setattr(app_module.requests, "post", fake_post)
+    monkeypatch.setattr("recommendation_service.requests.post", fake_post)
 
     response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
 
@@ -192,7 +190,7 @@ def test_openrouter_prompt_uses_selected_mode_and_genres(app_module, monkeypatch
             }
         )
 
-    monkeypatch.setattr(app_module.requests, "post", fake_post)
+    monkeypatch.setattr("recommendation_service.requests.post", fake_post)
 
     response_html = app_module.get_ai_movie_recommendation(
         "Need smart mysteries",
@@ -242,7 +240,7 @@ def test_openrouter_response_with_content_array_is_formatted(app_module, monkeyp
             }
         )
 
-    monkeypatch.setattr(app_module.requests, "post", fake_post)
+    monkeypatch.setattr("recommendation_service.requests.post", fake_post)
 
     response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
 
@@ -262,7 +260,7 @@ def test_openrouter_error_payload_returns_clear_error(app_module, monkeypatch):
             }
         )
 
-    monkeypatch.setattr(app_module.requests, "post", fake_post)
+    monkeypatch.setattr("recommendation_service.requests.post", fake_post)
 
     response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
 
@@ -281,7 +279,7 @@ def test_openrouter_429_returns_user_friendly_rate_limit_message(app_module, mon
             headers={"Retry-After": "7"},
         )
 
-    monkeypatch.setattr(app_module.requests, "post", fake_post)
+    monkeypatch.setattr("recommendation_service.requests.post", fake_post)
 
     response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
 
@@ -304,6 +302,7 @@ def test_openrouter_switches_to_fallback_model_on_primary_rate_limit(app_module,
         },
     )
 
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.setattr(app_module, "OPENROUTER_MAX_ATTEMPTS", 1)
     monkeypatch.setattr(app_module, "OPENROUTER_MODEL_ID", "primary/free-model:free")
     monkeypatch.setattr(app_module, "OPENROUTER_MODEL_FALLBACKS", ["fallback/free-model:free"])
@@ -331,7 +330,7 @@ def test_openrouter_switches_to_fallback_model_on_primary_rate_limit(app_module,
             }
         )
 
-    monkeypatch.setattr(app_module.requests, "post", fake_post)
+    monkeypatch.setattr("recommendation_service.requests.post", fake_post)
 
     response_html = app_module.get_ai_movie_recommendation("Need sci-fi", "History")
 

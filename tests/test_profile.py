@@ -19,13 +19,14 @@ class MockUser:
 
 
 def test_build_profile_stats_enriched_fields(monkeypatch):
+    import datetime
+    today = datetime.date.today()
     sample_movies = [
-        {"movie": "Dune: Part Two", "p_year": 2024, "director": "Denis Villeneuve", "genre": "Sci-Fi", "rating": 5, "cinema": 1, "rewatch": 0, "tv_show": 0, "v_date": None},
-        {"movie": "Arrival", "p_year": 2016, "director": "Denis Villeneuve", "genre": "Sci-Fi", "rating": 5, "cinema": 0, "rewatch": 1, "tv_show": 0, "v_date": None},
-        {"movie": "Oppenheimer", "p_year": 2023, "director": "Christopher Nolan", "genre": "Drama, History", "rating": 4, "cinema": 1, "rewatch": 0, "tv_show": 0, "v_date": None},
+        {"movie": "Dune: Part Two", "p_year": 2024, "director": "Denis Villeneuve", "genre": "Sci-Fi", "rating": 5, "cinema": 1, "rewatch": 0, "tv_show": 0, "v_date": today},
+        {"movie": "Arrival", "p_year": 2016, "director": "Denis Villeneuve", "genre": "Sci-Fi", "rating": 5, "cinema": 0, "rewatch": 1, "tv_show": 0, "v_date": datetime.date(2020, 1, 1)},
+        {"movie": "Oppenheimer", "p_year": 2023, "director": "Christopher Nolan", "genre": "Drama, History", "rating": 4, "cinema": 1, "rewatch": 0, "tv_show": 0, "v_date": datetime.date(2023, 8, 1)},
     ]
     monkeypatch.setattr("utils.get_movies", lambda uid: sample_movies)
-    monkeypatch.setattr("utils.get_monthly_movies", lambda uid, m: [sample_movies[0]])
 
     stats = build_profile_stats(1)
     assert stats["length"] == 3
@@ -42,11 +43,12 @@ def test_build_profile_stats_enriched_fields(monkeypatch):
 
 
 def test_profile_html_renders_minimal(monkeypatch):
+    import datetime
+    today = datetime.date.today()
     sample_movies = [
-        {"movie": "Blade Runner 2049", "p_year": 2017, "director": "Denis Villeneuve", "genre": "Sci-Fi", "rating": 5, "cinema": 1, "rewatch": 1, "tv_show": 0, "v_date": None},
+        {"movie": "Blade Runner 2049", "p_year": 2017, "director": "Denis Villeneuve", "genre": "Sci-Fi", "rating": 5, "cinema": 1, "rewatch": 1, "tv_show": 0, "v_date": today},
     ]
     monkeypatch.setattr("utils.get_movies", lambda uid: sample_movies)
-    monkeypatch.setattr("utils.get_monthly_movies", lambda uid, m: sample_movies)
 
     stats = build_profile_stats(1)
     user_dict = {"id": 1, "username": "gio_cinephile"}
