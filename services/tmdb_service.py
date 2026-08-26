@@ -484,7 +484,7 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
                 "key": v_key,
                 "name": best_v.get("name") or "Official Trailer",
                 "site": "YouTube",
-                "embed_url": f"https://www.youtube-nocookie.com/embed/{v_key}?autoplay=1&rel=0"
+                "embed_url": f"https://www.youtube-nocookie.com/embed/{v_key}?autoplay=0&rel=0"
             }
 
         # Watch Providers (JustWatch)
