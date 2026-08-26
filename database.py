@@ -61,6 +61,17 @@ def get_user_name(name):
     users = _fetch_users_by("username", name)
     return [{"id": u["id"], "username": u["username"]} for u in users]
 
+def search_users_by_query(query_str: str, limit=10):
+    try:
+        clean_q = (query_str or "").strip()
+        if not clean_q:
+            return []
+        data = client.table('users').select('id, username').ilike('username', f"%{clean_q}%").limit(limit).execute()
+        return [{"id": row["id"], "username": row["username"]} for row in data.data]
+    except Exception as e:
+        logger.error(f"Error searching users by query '{query_str}': {e}")
+        return []
+
 def get_user_id(name):
     users = _fetch_users_by("username", name)
     return [{"id": u["id"]} for u in users]
@@ -351,6 +362,78 @@ def remove_friend(parent_id, friend_id):
         client.table('friends').delete().eq('parent_id', parent_id).eq('user_id', friend_id).execute()
     except Exception as e:
         logger.error(f"Error removing friend {friend_id}: {e}")
+
+def get_enriched_friends(parent_id):
+    try:
+        friends = get_friends(parent_id)
+        if not friends:
+            return []
+        
+        enriched = []
+        for f in friends:
+            f_uid = f.get('user_id')
+            f_movies = get_movies(f_uid) if f_uid else []
+            film_count = len(f_movies)
+            cinephile_level = max(1, film_count // 20)
+            
+            # Top genre
+            genre_counts = {}
+            for m in f_movies:
+                g_str = m.get('genre') or ''
+                if g_str and g_str.lower() != 'unknown':
+                    for g in g_str.split(','):
+                        g_clean = g.strip()
+                        if g_clean:
+                            genre_counts[g_clean] = genre_counts.get(g_clean, 0) + 1
+            favorite_genre = max(genre_counts, key=genre_counts.get) if genre_counts else "Cinema"
+            
+            # Last log
+            last_log = None
+            if f_movies:
+                def _sort_vdate(m):
+                    v = m.get('v_date')
+                    if isinstance(v, datetime):
+                        return v.date()
+                    elif isinstance(v, str):
+                        try:
+                            return datetime.strptime(v, "%Y-%m-%d").date()
+                        except:
+                            pass
+                    return v or datetime.min.date()
+                
+                sorted_m = sorted(f_movies, key=_sort_vdate, reverse=True)
+                top_m = sorted_m[0]
+                last_log = {
+                    "movie": top_m.get("movie", "Untitled"),
+                    "rating": top_m.get("rating", 0),
+                    "p_year": top_m.get("p_year", ""),
+                    "poster": top_m.get("poster", "")
+                }
+            
+            # Sync score from taste match
+            sync_score = None
+            try:
+                match_res = get_taste_match(parent_id, f_uid)
+                if match_res and isinstance(match_res, dict) and "match_percent" in match_res:
+                    sync_score = match_res["match_percent"]
+            except Exception as ex:
+                logger.warning(f"Could not compute taste match for {parent_id} and {f_uid}: {ex}")
+                sync_score = None
+                
+            enriched.append({
+                "id": f.get('id'),
+                "user_id": f.get('user_id'),
+                "f_username": f.get('f_username'),
+                "film_count": film_count,
+                "cinephile_level": cinephile_level,
+                "favorite_genre": favorite_genre,
+                "last_log": last_log,
+                "sync_score": sync_score
+            })
+        return enriched
+    except Exception as e:
+        logger.error(f"Error fetching enriched friends for {parent_id}: {e}")
+        return get_friends(parent_id)
 
 def get_taste_match(user_id, friend_id):
     try:

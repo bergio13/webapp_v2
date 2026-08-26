@@ -20,10 +20,13 @@ from ai_helpers import (
 from database import (
     get_friend_activity,
     get_friends,
+    get_enriched_friends,
+    get_movies,
     get_taste_match,
     get_user_name,
     insert_friends,
     remove_friend,
+    search_users_by_query,
 )
 from flask_limiter.util import get_remote_address
 from extensions import cache, limiter
@@ -39,7 +42,7 @@ social_bp = Blueprint("social", __name__)
 @social_bp.route("/friends", methods=["GET", "POST"])
 @login_required
 def search_friends():
-    friends = get_friends(current_user.id)
+    friends = get_enriched_friends(current_user.id)
 
     if request.method == "POST":
         name = request.form["name"]
@@ -49,7 +52,7 @@ def search_friends():
         else:
             return render_template("friends.html", users=users, friends=friends, session=session)
 
-    recent_activity = get_friend_activity(current_user.id, limit=25)
+    recent_activity = get_friend_activity(current_user.id, limit=30)
     return render_template("friends.html", friends=friends, activity=recent_activity, session=session)
 
 
@@ -77,6 +80,60 @@ def unfollow():
         remove_friend(current_user.id, friend_id)
         flash(f"You unfollowed {friend_username}", "success")
     return redirect("/friends")
+
+
+@social_bp.route("/api/users/search", methods=["GET"])
+@login_required
+def search_users_ajax():
+    q = request.args.get("q", "").strip()
+    if len(q) < 1:
+        return jsonify([])
+    
+    matching_users = search_users_by_query(q, limit=8)
+    current_friends = get_friends(current_user.id)
+    following_ids = {f["user_id"] for f in current_friends}
+    
+    results = []
+    for u in matching_users:
+        if u["id"] == current_user.id:
+            continue
+        u_movies = get_movies(u["id"])
+        results.append({
+            "id": u["id"],
+            "username": u["username"],
+            "film_count": len(u_movies),
+            "cinephile_level": max(1, len(u_movies) // 20),
+            "is_following": u["id"] in following_ids
+        })
+    return jsonify(results)
+
+
+@social_bp.route("/api/follow_ajax", methods=["POST"])
+@login_required
+def follow_ajax():
+    data = request.get_json() or {}
+    friend_id = data.get("user_id")
+    friend_username = data.get("username")
+    if not friend_id or not friend_username:
+        return jsonify({"error": "Missing user_id or username"}), 400
+    insert_friends(friend_id, friend_username, current_user.id)
+    return jsonify({"success": True, "username": friend_username, "user_id": friend_id})
+
+
+@social_bp.route("/api/unfollow_ajax", methods=["POST"])
+@login_required
+def unfollow_ajax():
+    data = request.get_json() or {}
+    friend_id = data.get("user_id")
+    friend_username = data.get("username")
+    if not friend_id:
+        return jsonify({"error": "Missing user_id"}), 400
+    try:
+        friend_id = int(friend_id)
+    except ValueError:
+        pass
+    remove_friend(current_user.id, friend_id)
+    return jsonify({"success": True, "username": friend_username, "user_id": friend_id})
 
 
 @social_bp.route("/compare/<username>")
