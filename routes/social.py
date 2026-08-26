@@ -87,7 +87,14 @@ def compare_taste(username):
         flash("User not found.", "error")
         return redirect("/friends")
     match_data = get_taste_match(current_user.id, friend_data[0]["id"])
-    return render_template("compare.html", friend_username=username, match_data=match_data, session=session)
+    return render_template(
+        "compare.html",
+        friend_username=username,
+        friend_user=friend_data[0],
+        current_user=current_user,
+        match_data=match_data,
+        session=session
+    )
 
 
 def _get_limiter_user_key():

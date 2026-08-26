@@ -1,293 +1,285 @@
 {% from 'components/_sentiment_badge.html' import render_sentiment_badge %}
 {% extends 'base.html' %} 
-{% block title %}Compare Taste{% endblock %} 
-{% block body_class %} friends_page{% endblock %}
-{% block body%} 
+{% block title %}Compare Taste // {{ friend_username }}{% endblock %} 
+{% block body_class %} compare_page_body{% endblock %}
+
 {% block content %}
+<div class="compare-page-shell">
+  <!-- Top Navigation & ASCII Bar -->
+  <div class="compare-top-nav">
+    <a href="/friends" class="btn-minimal-action" title="Back to Friends">
+      [ <i class="fa-solid fa-arrow-left"></i> FRIENDS ]
+    </a>
+    <div class="compare-ascii-bar">
+      <span class="ascii-frame">╔═══</span>
+      <span class="ascii-db">TASTE_SYNC_PROTOCOL.db</span>
+      <span class="ascii-sep">::</span>
+      <span class="ascii-user">{{ current_user.username }} vs {{ friend_username }}</span>
+      <span class="ascii-frame">═══╝</span>
+    </div>
+    <div class="compare-friend-links">
+      <a href="/profile/{{ friend_username }}" class="btn-minimal-action" title="View Profile">
+        [ <i class="fa-solid fa-user"></i> PROFILE ]
+      </a>
+      <a href="/list/{{ friend_username }}" class="btn-minimal-action" title="View Library">
+        [ <i class="fa-solid fa-clapperboard"></i> LIST ]
+      </a>
+    </div>
+  </div>
 
-
-
-<style>
-  :root {
-    --friends-purple: #b39ddb;
-    --friends-purple-light: #d1c4e9;
-    --friends-green: #81c784;
-    --friends-grey: #b0bec5;
-    --friends-dark: #1a1a2e;
-    --friends-light: #e0e7ee;
-    --friends-coral: #e57373;
-  }
-
-  .friends {
-    background: transparent !important;
-    min-height: 100vh;
-    padding-bottom: 50px;
-  }
-
-  .friends_page::before {
-    background: transparent !important;
-  }
-
-  .section-title {
-    font-family: "VT323", "Courier New", monospace;
-    font-size: 1.8rem;
-    color: var(--friends-light);
-    letter-spacing: 2px;
-    margin-bottom: 1rem;
-    text-align: center;
-  }
-
-  .section-title span {
-    color: var(--friends-purple);
-  }
-
-  .match-card {
-    background: rgba(26, 26, 46, 0.85);
-    border: 1px solid rgba(179, 157, 219, 0.3);
-    border-radius: 8px;
-    padding: 30px;
-    max-width: 800px;
-    margin: 40px auto;
-    text-align: center;
-  }
-
-  .match-score {
-    font-family: "VT323", monospace;
-    font-size: 5rem;
-    font-weight: bold;
-    margin: 20px 0;
-    text-shadow: 0 0 15px rgba(129, 199, 132, 0.2);
-  }
-
-  .match-score.high { color: var(--friends-green); }
-  .match-score.med { color: #ffd54f; }
-  .match-score.low { color: var(--friends-coral); }
-
-  .shared-count {
-    font-family: "VT323", monospace;
-    font-size: 1.5rem;
-    color: var(--friends-grey);
-    margin-bottom: 30px;
-  }
-
-  .movie-comparison-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
-  }
-
-  .compare-item {
-    display: flex;
-    align-items: center;
-    background: rgba(26, 26, 46, 0.6);
-    border: 1px solid rgba(179, 157, 219, 0.15);
-    border-radius: 6px;
-    padding: 15px;
-    gap: 20px;
-  }
-
-  .compare-poster {
-    width: 60px;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  }
-
-  .compare-info {
-    flex: 1;
-    text-align: left;
-  }
-
-  .compare-title {
-    font-family: "VT323", monospace;
-    font-size: 1.3rem;
-    color: var(--friends-light);
-    margin: 0 0 5px 0;
-  }
-
-  .ratings-row {
-    display: flex;
-    gap: 30px;
-    font-family: "VT323", monospace;
-    font-size: 1.1rem;
-  }
-
-  .rating-you { color: var(--friends-purple-light); }
-  .rating-them { color: var(--ocean-grey); }
-
-  .diff-badge {
-    font-family: "VT323", monospace;
-    font-size: 1.2rem;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(179, 157, 219, 0.1);
-  }
-
-  .diff-badge.diff-0 { color: var(--friends-green); border: 1px solid rgba(129, 199, 132, 0.4); }
-  .diff-badge.diff-1 { color: #ffd54f; border: 1px solid rgba(255, 213, 79, 0.4); }
-  .diff-badge.diff-high { color: var(--friends-coral); border: 1px solid rgba(229, 115, 115, 0.4); }
-
-  .back-btn {
-    display: inline-block;
-    font-family: "VT323", monospace;
-    color: var(--friends-purple-light);
-    border: 1px solid var(--friends-purple);
-    padding: 8px 16px;
-    border-radius: 4px;
-    text-decoration: none;
-    margin-bottom: 20px;
-    transition: all 0.3s;
-  }
-
-  .back-btn:hover {
-    background: rgba(179, 157, 219, 0.2);
-    color: white;
-  }
-
-  @media (max-width: 600px) {
-    .match-card {
-      padding: 15px;
-      margin: 20px 10px;
-    }
-    .compare-item {
-      padding: 10px;
-      gap: 10px;
-    }
-    .ratings-row {
-      flex-direction: column;
-      gap: 5px;
-    }
-  }
-
-  .extra-stats {
-    display: flex;
-    justify-content: space-around;
-    gap: 15px;
-    margin-bottom: 30px;
-    font-family: "VT323", monospace;
-    font-size: 1.3rem;
-    background: rgba(179, 157, 219, 0.05);
-    border: 1px dashed rgba(179, 157, 219, 0.2);
-    padding: 15px;
-    border-radius: 6px;
-  }
-
-  .stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .stat-label {
-    color: var(--friends-grey);
-    font-size: 1.1rem;
-    letter-spacing: 1px;
-  }
-
-  .stat-value {
-    color: var(--friends-purple-light);
-    font-size: 1.8rem;
-    font-weight: bold;
-  }
-
-  @media (max-width: 600px) {
-    .extra-stats {
-      flex-direction: column;
-      gap: 10px;
-    }
-  }
-</style>
-
-<canvas class="canvas_friends" id="canvas"></canvas>
-<script src="/static/js/canvas_bg.js"></script>
-<div class="friends">
-  <main class="main-container main-friends" style="padding-top: 2rem;">
-    
-    <div style="max-width: 800px; margin: 0 auto;">
-      <a href="/friends" class="back-btn"><< BACK_TO_FRIENDS</a>
+  <!-- Matchup Duel Header Card -->
+  <section class="compare-duel-card">
+    <!-- Left: Current User -->
+    <div class="duel-fighter duel-fighter-left">
+      <div class="duel-avatar-wrap">
+        <div class="duel-avatar">
+          <span>{{ current_user.username[0].upper() if current_user.username else '?' }}</span>
+        </div>
+      </div>
+      <div class="duel-fighter-info">
+        <span class="duel-username">{{ current_user.username }}</span>
+        <span class="duel-subtext">{{ match_data.user_total }} FILMS · {{ match_data.u_avg }}★ AVG</span>
+      </div>
     </div>
 
-    <div class="match-card">
-      <h2 class="section-title" style="margin-top:0;"><span>//</span> TASTE_MATCH_ANALYSIS</h2>
-      <div style="font-family: 'VT323', monospace; font-size: 1.8rem; color: var(--friends-light);">
-        You vs. <span style="color: var(--friends-purple-light);">{{ friend_username }}</span>
+    <!-- Center: Compatibility Gauge (No compatibility tier badges) -->
+    <div class="duel-gauge-center">
+      {% set score = match_data.match_percent %}
+      {% set score_color = '#34d399' if score >= 75 else ('#7eb5c4' if score >= 50 else ('#fbbf24' if score >= 30 else '#f87171')) %}
+      
+      <div class="gauge-ring-wrap" style="--gauge-color: {{ score_color }};">
+        <div class="gauge-ring-inner">
+          <span class="gauge-number">{{ score }}<span class="gauge-pct">%</span></span>
+          <span class="gauge-label">SYNC INDEX</span>
+        </div>
+      </div>
+      <div class="gauge-shared-count">
+        <i class="fa-solid fa-film"></i> {{ match_data.shared_count }} SHARED TITLES
+      </div>
+    </div>
+
+    <!-- Right: Friend -->
+    <div class="duel-fighter duel-fighter-right">
+      <div class="duel-avatar-wrap">
+        <div class="duel-avatar duel-avatar-friend">
+          <span>{{ friend_username[0].upper() if friend_username else '?' }}</span>
+        </div>
+      </div>
+      <div class="duel-fighter-info">
+        <span class="duel-username">{{ friend_username }}</span>
+        <span class="duel-subtext">{{ match_data.friend_total }} FILMS · {{ match_data.f_avg }}★ AVG</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4-Metric Cyber Deck -->
+  <section class="compare-metrics-deck">
+    <div class="compare-metric-box">
+      <span class="metric-tag">> TASTE CORRELATION</span>
+      <span class="metric-val metric-val-cyan">{{ match_data.rating_similarity }}%</span>
+      <span class="metric-note">Rating sentiment alignment</span>
+    </div>
+    <div class="compare-metric-box">
+      <span class="metric-tag">> AGREEMENT RATE</span>
+      <span class="metric-val metric-val-green">{{ match_data.agreement_rate }}%</span>
+      <span class="metric-note">Exact identical ratings</span>
+    </div>
+    <div class="compare-metric-box">
+      <span class="metric-tag">> CATALOG OVERLAP</span>
+      <span class="metric-val metric-val-purple">{{ match_data.library_overlap }}%</span>
+      <span class="metric-note">Jaccard common library</span>
+    </div>
+    <div class="compare-metric-box">
+      <span class="metric-tag">> HARSHER CRITIC</span>
+      <div class="metric-val metric-val-gold metric-val-critic">
+        <span class="critic-name">{% if match_data.harsher_critic == 'You' %}YOU{% elif match_data.harsher_critic == 'Friend' %}{{ friend_username | upper }}{% else %}EQUAL{% endif %}</span>
+        {% if match_data.harsher_critic != 'Equal' %}
+          <span class="critic-delta-tag">-{{ match_data.critic_delta }}★</span>
+        {% endif %}
+      </div>
+      <span class="metric-note">
+        {% if match_data.shared_count > 0 %}
+          Shared: {{ match_data.u_shared_avg }}★ vs {{ match_data.f_shared_avg }}★
+        {% else %}
+          Catalog: {{ match_data.u_avg }}★ vs {{ match_data.f_avg }}★
+        {% endif %}
+      </span>
+    </div>
+  </section>
+
+  <!-- Tab Navigation -->
+  <nav class="compare-tabs-nav" role="tablist">
+    <button type="button" class="compare-tab-btn is-active" data-tab="tab-shared" role="tab">
+      [ <i class="fa-solid fa-list-check"></i> SHARED FILMS ({{ match_data.shared_count }}) ]
+    </button>
+    <button type="button" class="compare-tab-btn" data-tab="tab-genres" role="tab">
+      [ <i class="fa-solid fa-chart-simple"></i> GENRE SYNERGY ]
+    </button>
+  </nav>
+
+  <!-- Tab 1: Shared Films with Delta Filter Chips -->
+  <div class="compare-tab-panel is-active" id="tab-shared">
+    {% if match_data.shared_count == 0 %}
+      <div class="compare-empty-state">
+        <i class="fa-solid fa-clapperboard empty-icon"></i>
+        <p class="empty-title">NO SHARED MOVIES YET</p>
+        <p class="empty-sub">Log and rate movies that {{ friend_username }} has also watched to see direct side-by-side breakdowns!</p>
+        <div class="empty-actions">
+          <a href="/list/{{ friend_username }}" class="btn-minimal-action">[ BROWSE {{ friend_username | upper }}'S LIST ]</a>
+        </div>
+      </div>
+    {% else %}
+      <!-- Filter Chips -->
+      <div class="compare-filter-chips">
+        <span class="filter-chip-label">> FILTER:</span>
+        <button type="button" class="compare-chip is-active" data-filter="all">[ ALL ({{ match_data.shared_count }}) ]</button>
+        <button type="button" class="compare-chip" data-filter="exact">[ EXACT MATCH (Δ 0) ]</button>
+        <button type="button" class="compare-chip" data-filter="close">[ CLOSE (Δ 1) ]</button>
+        <button type="button" class="compare-chip" data-filter="debate">[ DEBATED (Δ ≥ 2) ]</button>
       </div>
 
-      {% if match_data.shared_count == 0 %}
-        <div class="match-score med">N/A</div>
-        <div class="shared-count">> 0 movies in common</div>
-        <div style="color: var(--friends-grey); font-family: 'VT323', monospace; font-size: 1.2rem; margin-top: 20px;">
-          You need to watch and rate the same movies to compare tastes!
-        </div>
-      {% else %}
-        {% set score = match_data.match_percent %}
-        {% set score_class = 'high' if score >= 80 else ('med' if score >= 50 else 'low') %}
-        
-        <div class="match-score {{ score_class }}">{{ score }}%</div>
-        <div class="shared-count">> Based on {{ match_data.shared_count }} shared movie(s)</div>
+      <!-- Movie List -->
+      <div class="compare-movie-list">
+        {% for movie in match_data.shared_movies %}
+          {% set diff = movie.diff %}
+          {% set filter_type = 'exact' if diff == 0 else ('close' if diff == 1 else 'debate') %}
+          
+          <div class="compare-movie-item movie-drawer-trigger"
+               data-diff="{{ diff }}"
+               data-filter-type="{{ filter_type }}"
+               data-movie-title="{{ movie.movie }}"
+               data-movie-year="{{ movie.year }}"
+               data-movie-director="{{ movie.director or '' }}"
+               data-movie-poster="{{ movie.poster or '' }}"
+               data-movie-tv="{{ 'true' if movie.tv_show else 'false' }}"
+               title="Click to view details">
+            
+            <div class="compare-movie-poster-wrap">
+              <img src="{{ movie.poster }}"
+                   class="compare-movie-poster"
+                   alt="{{ movie.movie }}"
+                   loading="lazy"
+                   onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';">
+            </div>
 
-        <div class="extra-stats">
-          <div class="stat-item">
-            <span class="stat-label">> OVERLAP</span>
-            <span class="stat-value">{{ match_data.library_overlap }}%</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">> SIMILARITY</span>
-            <span class="stat-value">{{ match_data.rating_similarity }}%</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">> HARSHER CRITIC</span>
-            <span class="stat-value">
-              {% if match_data.harsher_critic == 'You' %}
-                YOU
-              {% elif match_data.harsher_critic == 'Friend' %}
-                {{ friend_username | upper }}
-              {% else %}
-                EQUAL
+            <div class="compare-movie-details">
+              <h4 class="compare-movie-title">{{ movie.movie }} <span class="compare-movie-year">({{ movie.year }})</span></h4>
+              {% if movie.director and movie.director != 'unknown' %}
+                <span class="compare-movie-director"><i class="fa-solid fa-video"></i> {{ movie.director }}</span>
               {% endif %}
-            </span>
-          </div>
-        </div>
-
-        <div class="movie-comparison-list">
-          {% for movie in match_data.shared_movies %}
-            <div class="compare-item">
-              <img src="{{ movie.poster }}" class="compare-poster" alt="{{ movie.movie }}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';">
-              <div class="compare-info">
-                <h4 class="compare-title">{{ movie.movie }} ({{ movie.year }})</h4>
-                <div class="ratings-row" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                  <div class="rating-you" style="display: flex; align-items: center; gap: 4px;">You: {{ render_sentiment_badge(movie.u_rating, compact=True) }}</div>
-                  <div class="rating-them" style="display: flex; align-items: center; gap: 4px;">Them: {{ render_sentiment_badge(movie.f_rating, compact=True) }}</div>
+              
+              <div class="compare-ratings-matrix">
+                <div class="compare-rating-col compare-rating-user">
+                  <span class="rating-user-label">YOU:</span>
+                  {{ render_sentiment_badge(movie.u_rating, compact=True) }}
+                </div>
+                <div class="compare-rating-col compare-rating-friend">
+                  <span class="rating-user-label">{{ friend_username | upper }}:</span>
+                  {{ render_sentiment_badge(movie.f_rating, compact=True) }}
                 </div>
               </div>
-              
-              {% set diff = movie.diff %}
-              {% set diff_class = 'diff-0' if diff <= 1 else ('diff-1' if diff <= 3 else 'diff-high') %}
-              
-              <div class="diff-badge {{ diff_class }}">
-                {% if diff == 0 %}EXACT MATCH
-                {% else %}Δ {{ diff }}
-                {% endif %}
+            </div>
+
+            <div class="compare-delta-badge-col">
+              {% if diff == 0 %}
+                <span class="delta-badge delta-badge-exact"><i class="fa-solid fa-check"></i> EXACT MATCH</span>
+              {% elif movie.u_rating > movie.f_rating %}
+                <span class="delta-badge delta-badge-user-higher" title="You rated this {{ diff }}★ higher">
+                  Δ {{ diff }}★ (YOU +)
+                </span>
+              {% else %}
+                <span class="delta-badge delta-badge-friend-higher" title="{{ friend_username }} rated this {{ diff }}★ higher">
+                  Δ {{ diff }}★ ({{ friend_username | upper }} +)
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Tab 2: Genre Synergy -->
+  <div class="compare-tab-panel" id="tab-genres">
+    {% if match_data.genre_comparison|length == 0 %}
+      <div class="compare-empty-state">
+        <i class="fa-solid fa-chart-pie empty-icon"></i>
+        <p class="empty-title">NOT ENOUGH GENRE DATA</p>
+        <p class="empty-sub">Log films across multiple genres to compare taste affinities side-by-side!</p>
+      </div>
+    {% else %}
+      <div class="genre-synergy-matrix">
+        {% for g in match_data.genre_comparison %}
+          <div class="genre-synergy-row">
+            <div class="genre-synergy-title-wrap">
+              <span class="genre-synergy-name">{{ g.genre | upper }}</span>
+              <span class="genre-synergy-volume">{{ g.total_count }} total films</span>
+            </div>
+
+            <div class="genre-bars-container">
+              <!-- You -->
+              <div class="genre-bar-item">
+                <span class="genre-bar-user">YOU ({{ g.u_avg }}★ · {{ g.u_count }})</span>
+                <div class="genre-bar-track">
+                  <div class="genre-bar-fill genre-bar-fill-you" style="width: {{ (g.u_avg / 5.0) * 100 }}%;"></div>
+                </div>
+              </div>
+
+              <!-- Friend -->
+              <div class="genre-bar-item">
+                <span class="genre-bar-user">{{ friend_username | upper }} ({{ g.f_avg }}★ · {{ g.f_count }})</span>
+                <div class="genre-bar-track">
+                  <div class="genre-bar-fill genre-bar-fill-friend" style="width: {{ (g.f_avg / 5.0) * 100 }}%;"></div>
+                </div>
               </div>
             </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
 
-  </main>
 </div>
-{% endblock %}
+
+<!-- Client-side Tab & Filter Script -->
 <script>
-  initCanvasBg({
-    canvasId: "canvas",
-    mode: "dots",
-    particleCount: 400,
-    colors: ["#7a4dc2", "#9a6de8", "#6b3faa", "#b39ddb", "#5c35a0"],
-    driftSpeed: 0.2,
-    sizeRange: [0.5, 1.8],
-    alphaRange: [0.25, 0.7],
-    glowSize: 5
+document.addEventListener("DOMContentLoaded", () => {
+  // Tab Switching
+  const tabBtns = document.querySelectorAll(".compare-tab-btn");
+  const tabPanels = document.querySelectorAll(".compare-tab-panel");
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-tab");
+      tabBtns.forEach(b => b.classList.remove("is-active"));
+      tabPanels.forEach(p => p.classList.remove("is-active"));
+
+      btn.classList.add("is-active");
+      const targetPanel = document.getElementById(targetId);
+      if (targetPanel) targetPanel.classList.add("is-active");
+    });
   });
+
+  // Filter Chips on Shared Tab
+  const chips = document.querySelectorAll(".compare-chip");
+  const movieItems = document.querySelectorAll(".compare-movie-item");
+
+  chips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      chips.forEach(c => c.classList.remove("is-active"));
+      chip.classList.add("is-active");
+      const filter = chip.getAttribute("data-filter");
+
+      movieItems.forEach(item => {
+        const type = item.getAttribute("data-filter-type");
+        if (filter === "all" || type === filter) {
+          item.style.display = "flex";
+        } else {
+          item.style.display = "none";
+        }
+      });
+    });
+  });
+});
 </script>
 {% endblock %}
