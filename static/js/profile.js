@@ -179,43 +179,53 @@ function buildLastThreeYearsSeries(movies) {
 }
 
 function renderTopGenresBar(top6Keys, top6Values) {
+  const maxVal = Math.max(...top6Values, 1);
   renderChart("#bar-chart", {
     series: [
       {
-        name: "Genres",
+        name: "Watched Titles",
         data: top6Values,
       },
     ],
     chart: {
-      height: chartHeight(350, 280),
+      height: chartHeight(240, 220),
       type: "bar",
+      toolbar: {
+        show: false,
+      },
+      parentHeightOffset: 0,
     },
     plotOptions: {
       bar: {
-        borderRadius: 10,
+        horizontal: true,
+        borderRadius: 6,
+        barHeight: "58%",
         dataLabels: {
           position: "top",
         },
       },
     },
-    colors: ["#b78efd"],
+    colors: ["#a78bfa"],
     dataLabels: {
       enabled: true,
-      offsetY: -20,
+      textAnchor: "start",
+      offsetX: 14,
       style: {
-        fontSize: IS_COMPACT_VIEWPORT ? "10px" : "12px",
-        colors: ["#fff"],
+        fontSize: "11px",
+        fontFamily: "monospace",
+        fontWeight: 700,
+        colors: ["#cbd5e1"],
       },
+      formatter: (val) => `${val}`,
     },
     xaxis: {
       categories: top6Keys,
-      position: "top",
+      max: Math.ceil(maxVal * 1.15) + 2,
       labels: {
-        rotate: IS_COMPACT_VIEWPORT ? -38 : 0,
-        trim: true,
         style: {
-          fontSize: IS_COMPACT_VIEWPORT ? "10px" : "12px",
-          colors: "#fff",
+          colors: "#64748b",
+          fontFamily: "monospace",
+          fontSize: "10px",
         },
       },
       axisBorder: {
@@ -224,28 +234,35 @@ function renderTopGenresBar(top6Keys, top6Values) {
       axisTicks: {
         show: false,
       },
-      tooltip: {
-        enabled: true,
-      },
     },
     yaxis: {
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
       labels: {
-        show: false,
+        style: {
+          colors: "#94a3b8",
+          fontFamily: "monospace",
+          fontSize: "11px",
+          fontWeight: 600,
+        },
       },
     },
-    title: {
-      text: "Your 6 Most Watched Genres",
-      floating: true,
-      offsetY: IS_COMPACT_VIEWPORT ? 255 : 330,
-      align: "center",
-      style: {
-        color: "#fff",
+    grid: {
+      borderColor: "rgba(126, 181, 196, 0.08)",
+      strokeDashArray: 4,
+      yaxis: {
+        lines: {
+          show: false,
+        },
+      },
+      xaxis: {
+        lines: {
+          show: true,
+        },
+      },
+    },
+    tooltip: {
+      theme: "dark",
+      y: {
+        formatter: (val) => `${val} films`,
       },
     },
   });
@@ -255,73 +272,91 @@ function renderMonthlyMoviesLine(monthValues) {
   renderChart("#line-chart", {
     series: [
       {
-        name: "Monthly Watched Movies",
+        name: "Monthly Watched Titles",
         data: monthValues,
       },
     ],
     chart: {
-      height: chartHeight(350, 280),
-      type: "line",
-      dropShadow: {
-        enabled: true,
-        color: "#000",
-        top: 18,
-        left: 7,
-        blur: 10,
-        opacity: 0.2,
-      },
+      height: chartHeight(270, 220),
+      type: "area",
       toolbar: {
         show: false,
       },
+      parentHeightOffset: 0,
     },
     colors: ["#fcd34d"],
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.35,
+        opacityTo: 0.02,
+        stops: [0, 95, 100],
+      },
+    },
     dataLabels: {
-      enabled: true,
+      enabled: false,
     },
     stroke: {
       curve: "smooth",
+      width: 2.5,
+      colors: ["#fcd34d"],
     },
     markers: {
-      size: 1,
+      size: 3,
+      colors: ["#fcd34d"],
+      strokeColors: "#0f172a",
+      strokeWidth: 2,
+      hover: {
+        size: 6,
+      },
+    },
+    grid: {
+      borderColor: "rgba(126, 181, 196, 0.1)",
+      strokeDashArray: 4,
+      xaxis: {
+        lines: {
+          show: false,
+        },
+      },
+      yaxis: {
+        lines: {
+          show: true,
+        },
+      },
     },
     xaxis: {
       categories: MONTH_LABELS,
       labels: {
         rotate: IS_COMPACT_VIEWPORT ? -45 : 0,
         style: {
-          colors: "#9aa0ac",
+          colors: "#94a3b8",
+          fontFamily: "monospace",
+          fontSize: "11px",
         },
       },
-      title: {
-        text: "Month",
-        style: {
-          color: "#9aa0ac",
-        },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
       },
     },
     yaxis: {
-      title: {
-        text: "Number of Movies",
-        style: {
-          color: "#9aa0ac",
-        },
-      },
+      tickAmount: 4,
       labels: {
         style: {
-          colors: "#9aa0ac",
+          colors: "#64748b",
+          fontFamily: "monospace",
+          fontSize: "11px",
         },
       },
       min: 0,
-      max: Math.max(...monthValues, 0) + 5,
     },
-    legend: {
-      position: IS_COMPACT_VIEWPORT ? "bottom" : "top",
-      horizontalAlign: IS_COMPACT_VIEWPORT ? "center" : "right",
-      floating: !IS_COMPACT_VIEWPORT,
-      offsetY: IS_COMPACT_VIEWPORT ? 0 : -25,
-      offsetX: IS_COMPACT_VIEWPORT ? 0 : -5,
-      labels: {
-        useSeriesColors: true,
+    tooltip: {
+      theme: "dark",
+      y: {
+        formatter: (val) => `${val} titles`,
       },
     },
   });
@@ -331,20 +366,68 @@ function renderGenresRadar(top10Keys, top10Values) {
   renderChart("#radar-chart", {
     series: [
       {
-        name: "Genres",
+        name: "Watched Titles",
         data: top10Values,
       },
     ],
     chart: {
-      height: chartHeight(350, 280),
+      height: chartHeight(280, 205),
       type: "radar",
+      toolbar: {
+        show: false,
+      },
+      parentHeightOffset: 0,
     },
-    colors: ["#22d3ee"],
+    colors: ["#38bdf8"],
+    markers: {
+      size: 3,
+      colors: ["#38bdf8"],
+      strokeColors: "#0f172a",
+      strokeWidth: 2,
+    },
+    fill: {
+      opacity: 0.25,
+    },
+    stroke: {
+      width: 2,
+      colors: ["#38bdf8"],
+    },
     xaxis: {
       categories: top10Keys,
+      labels: {
+        show: true,
+        style: {
+          colors: Array(top10Keys.length).fill("#94a3b8"),
+          fontSize: IS_COMPACT_VIEWPORT ? "9px" : "11px",
+          fontFamily: "monospace",
+          fontWeight: 600,
+        },
+      },
     },
     yaxis: {
-      tickAmount: 5,
+      show: false,
+      labels: {
+        show: false,
+      },
+      tickAmount: 4,
+    },
+    plotOptions: {
+      radar: {
+        size: IS_COMPACT_VIEWPORT ? 65 : 100,
+        polygons: {
+          strokeColors: "rgba(126, 181, 196, 0.2)",
+          connectorColors: "rgba(126, 181, 196, 0.2)",
+          fill: {
+            colors: ["transparent", "rgba(126, 181, 196, 0.02)"],
+          },
+        },
+      },
+    },
+    tooltip: {
+      theme: "dark",
+      y: {
+        formatter: (val) => `${val} films`,
+      },
     },
   });
 }
@@ -363,7 +446,7 @@ function renderTvVsMoviesChart(stats) {
     ],
     chart: {
       type: "bar",
-      height: chartHeight(320, 260),
+      height: chartHeight(270, 220),
       stacked: true,
       toolbar: {
         show: false,
@@ -385,22 +468,46 @@ function renderTvVsMoviesChart(stats) {
     xaxis: {
       categories: MONTH_LABELS,
       labels: {
+        rotate: IS_COMPACT_VIEWPORT ? -45 : 0,
         style: {
-          colors: "#9aa0ac",
+          colors: "#94a3b8",
+          fontFamily: "monospace",
+          fontSize: "11px",
         },
       },
     },
     yaxis: {
       labels: {
         style: {
-          colors: "#9aa0ac",
+          colors: "#64748b",
+          fontFamily: "monospace",
+          fontSize: "11px",
+        },
+      },
+    },
+    grid: {
+      borderColor: "rgba(126, 181, 196, 0.08)",
+      strokeDashArray: 4,
+      yaxis: {
+        lines: {
+          show: true,
+        },
+      },
+      xaxis: {
+        lines: {
+          show: false,
         },
       },
     },
     legend: {
+      position: "top",
+      horizontalAlign: "right",
+      offsetY: -5,
       labels: {
-        colors: "#9aa0ac",
+        colors: "#cbd5e1",
       },
+      fontFamily: "monospace",
+      fontSize: "11px",
     },
     tooltip: {
       theme: "dark",
@@ -409,6 +516,7 @@ function renderTvVsMoviesChart(stats) {
 }
 
 function renderDiversityChart(stats) {
+  const maxVal = Math.max(stats.uniqueDirectors, stats.uniqueGenres, 1);
   renderChart("#diversity-chart", {
     series: [
       {
@@ -418,146 +526,240 @@ function renderDiversityChart(stats) {
     ],
     chart: {
       type: "bar",
-      height: chartHeight(320, 260),
+      height: 125,
       toolbar: {
         show: false,
       },
+      parentHeightOffset: 0,
     },
     plotOptions: {
       bar: {
         horizontal: true,
-        borderRadius: 6,
+        borderRadius: 5,
+        barHeight: "48%",
+        distributed: true,
+        dataLabels: {
+          position: "top",
+        },
       },
     },
+    colors: ["#38bdf8", "#4ade80"],
     dataLabels: {
       enabled: true,
+      textAnchor: "start",
+      offsetX: 14,
       style: {
-        colors: ["#ffffff"],
+        fontSize: "11px",
+        fontFamily: "monospace",
+        fontWeight: 700,
+        colors: ["#cbd5e1"],
       },
+      formatter: (val) => `${val}`,
     },
-    colors: ["#22d3ee"],
     xaxis: {
       categories: ["Unique Directors", "Unique Genres"],
+      max: Math.ceil(maxVal * 1.15) + 2,
       labels: {
-        style: {
-          colors: "#9aa0ac",
-        },
+        show: false,
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
       },
     },
     yaxis: {
       labels: {
         style: {
-          colors: "#9aa0ac",
+          colors: "#94a3b8",
+          fontFamily: "monospace",
+          fontSize: "11px",
+          fontWeight: 600,
         },
       },
     },
+    grid: {
+      show: false,
+    },
+    legend: {
+      show: false,
+    },
     tooltip: {
       theme: "dark",
+      y: {
+        formatter: (val) => `${val} total`,
+      },
     },
   });
 }
 
 function renderHabitCountsChart(stats) {
+  const maxVal = Math.max(stats.cinemaCount, stats.rewatchCount, 1);
   renderChart("#habit-counts-chart", {
     series: [
       {
         name: "Count",
-        data: [stats.rewatchCount, stats.cinemaCount],
+        data: [stats.cinemaCount, stats.rewatchCount],
       },
     ],
     chart: {
       type: "bar",
-      height: chartHeight(320, 260),
+      height: 125,
       toolbar: {
         show: false,
       },
+      parentHeightOffset: 0,
     },
     plotOptions: {
       bar: {
         horizontal: true,
-        borderRadius: 6,
+        borderRadius: 5,
+        barHeight: "48%",
+        distributed: true,
+        dataLabels: {
+          position: "top",
+        },
       },
     },
+    colors: ["#fcd34d", "#a78bfa"],
     dataLabels: {
       enabled: true,
+      textAnchor: "start",
+      offsetX: 14,
       style: {
-        colors: ["#ffffff"],
+        fontSize: "11px",
+        fontFamily: "monospace",
+        fontWeight: 700,
+        colors: ["#cbd5e1"],
       },
+      formatter: (val) => `${val}`,
     },
-    colors: ["#fcd34d"],
     xaxis: {
-      categories: ["Rewatch Count", "Cinema Visits"],
+      categories: ["Cinema Visits", "Rewatch Count"],
+      max: Math.ceil(maxVal * 1.15) + 2,
       labels: {
-        style: {
-          colors: "#9aa0ac",
-        },
+        show: false,
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
       },
     },
     yaxis: {
       labels: {
         style: {
-          colors: "#9aa0ac",
+          colors: "#94a3b8",
+          fontFamily: "monospace",
+          fontSize: "11px",
+          fontWeight: 600,
         },
       },
     },
+    grid: {
+      show: false,
+    },
+    legend: {
+      show: false,
+    },
     tooltip: {
       theme: "dark",
+      y: {
+        formatter: (val) => `${val} times`,
+      },
     },
   });
 }
 
 function renderLastThreeYearsMonthlyChart(yearlySeries) {
-  const maxValue = Math.max(
-    0,
-    ...yearlySeries.flatMap((series) => series.data),
-  );
   renderChart("#yearly-monthly-line-chart", {
     series: yearlySeries,
     chart: {
-      height: chartHeight(320, 260),
+      height: chartHeight(270, 220),
       type: "line",
       toolbar: {
         show: false,
       },
+      parentHeightOffset: 0,
     },
     stroke: {
       curve: "smooth",
-      width: 3,
+      width: [3, 2.5, 2],
     },
     markers: {
       size: 3,
+      strokeColors: "#0f172a",
+      strokeWidth: 2,
+      hover: {
+        size: 6,
+      },
     },
-    colors: ["#22d3ee", "#fcd34d", "#4ade80"],
+    colors: ["#38bdf8", "#fcd34d", "#a78bfa"],
+    grid: {
+      borderColor: "rgba(126, 181, 196, 0.1)",
+      strokeDashArray: 4,
+      xaxis: {
+        lines: {
+          show: false,
+        },
+      },
+      yaxis: {
+        lines: {
+          show: true,
+        },
+      },
+    },
     xaxis: {
       categories: MONTH_LABELS,
       labels: {
+        rotate: IS_COMPACT_VIEWPORT ? -45 : 0,
         style: {
-          colors: "#9aa0ac",
+          colors: "#94a3b8",
+          fontFamily: "monospace",
+          fontSize: "11px",
         },
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
       },
     },
     yaxis: {
       min: 0,
-      max: maxValue + 2,
+      tickAmount: 4,
       labels: {
         style: {
-          colors: "#9aa0ac",
-        },
-      },
-      title: {
-        text: "Watched titles",
-        style: {
-          color: "#9aa0ac",
+          colors: "#64748b",
+          fontFamily: "monospace",
+          fontSize: "11px",
         },
       },
     },
     legend: {
+      position: "top",
+      horizontalAlign: "right",
+      offsetY: -5,
       labels: {
-        colors: "#9aa0ac",
+        colors: "#cbd5e1",
+        useSeriesColors: false,
+      },
+      fontFamily: "monospace",
+      fontSize: "11px",
+      markers: {
+        radius: 12,
       },
     },
     tooltip: {
       theme: "dark",
+      shared: true,
+      intersect: false,
+      y: {
+        formatter: (val) => `${val ?? 0} titles`,
+      },
     },
   });
 }

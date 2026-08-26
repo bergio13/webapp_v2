@@ -2889,11 +2889,28 @@ body.movie-drawer-open {
    CYBER CINEPHILE DOSSIER & PROFILE (MINIMALIST & TRANSPARENT)
    ========================================================================== */
 
+.profile-main-shell {
+  margin-left: var(--layout-sidebar-offset);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
 .profile-page-shell {
   max-width: 900px;
   margin: 0 auto;
-  padding: 12px 14px 80px;
+  padding: 16px 24px 80px;
   box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .profile-main-shell {
+    margin-left: 0;
+  }
+
+  .profile-page-shell {
+    padding: 12px 16px 80px;
+    max-width: 100%;
+  }
 }
 
 /* Minimal Floating Dossier Header */
@@ -3428,37 +3445,140 @@ body.movie-drawer-open {
 /* Mobile Adjustments */
 @media (max-width: 600px) {
   .profile-page-shell {
-    padding: 8px 8px 80px;
+    padding: 12px 16px 80px;
+    margin-left: 0;
+    max-width: 100%;
+  }
+
+  .charts-card-min {
+    padding: 10px 6px;
+    overflow: hidden;
+  }
+
+  .profile-dossier-minimal {
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+
+  .dossier-ascii-bar {
+    font-size: 0.72rem;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  .dossier-header-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 8px 12px;
+  }
+
+  .dossier-avatar-wrap {
+    grid-row: 1;
+    grid-column: 1;
   }
 
   .dossier-avatar-ring {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
   }
 
   .dossier-avatar-initial {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
 
-  .dossier-archetype-text {
-    font-size: 0.78rem;
+  .dossier-summary-col {
+    grid-row: 1;
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .dossier-username-line {
+    margin-bottom: 2px;
+  }
+
+  .dossier-username-text {
+    font-size: 1.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
   }
 
   .dossier-meta-subtext {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    line-height: 1.3;
+  }
+
+  .dossier-quick-actions {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .dossier-quick-actions .btn-minimal-action {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    padding: 6px 10px;
+    font-size: 0.76rem;
+  }
+
+  .profile-nav-tabs-minimal {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .profile-nav-tabs-minimal::-webkit-scrollbar {
+    display: none;
   }
 
   .profile-tab-btn-min {
-    font-size: 0.74rem;
+    flex-shrink: 0;
+    font-size: 0.72rem;
     padding: 5px 8px;
+    white-space: nowrap;
   }
 
-  .stat-min-value {
-    font-size: 1.5rem;
+  .profile-stat-matrix-minimal {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 
   .stat-min-cell {
-    padding: 8px 10px;
+    padding: 10px 12px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .stat-min-label {
+    font-size: 0.62rem;
+  }
+
+  .stat-min-value {
+    font-size: 1.45rem;
+    line-height: 1.1;
+  }
+
+  .stat-min-sub {
+    font-size: 0.64rem;
   }
 
   .sentiment-min-star {
@@ -3484,12 +3604,29 @@ body.movie-drawer-open {
 /* ==========================================================================
    COMPARE TASTE SUITE (Minimal Cyberpunk Glassmorphism)
    ========================================================================== */
+.compare-main-shell {
+  margin-left: var(--layout-sidebar-offset);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
 .compare-page-shell {
   max-width: 940px;
   margin: 0 auto;
-  padding: 16px 16px 80px;
+  padding: 16px 24px 80px;
   box-sizing: border-box;
   color: #e2e8f0;
+}
+
+@media (max-width: 600px) {
+  .compare-main-shell {
+    margin-left: 0;
+  }
+
+  .compare-page-shell {
+    padding: 12px 16px 80px;
+    max-width: 100%;
+  }
 }
 
 .compare-top-nav {

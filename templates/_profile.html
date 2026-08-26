@@ -2,6 +2,7 @@
 {% block title %}{{ username }}'s Profile{% endblock %}
 
 {% block content %}
+<main class="profile-main-shell">
 <div class="profile-page-shell">
   <!-- Minimal Floating Header & Dossier -->
   <section class="profile-dossier-minimal">
@@ -87,10 +88,10 @@
       </div>
     </div>
 
-    <!-- Rating Sentiment Histogram -->
+    <!-- Rating Distribution Histogram -->
     <section class="profile-min-section">
       <div class="section-min-heading">
-        <span class="sect-symbol">//</span> RATING SENTIMENT MATRIX
+        <span class="sect-symbol">//</span> RATING DISTRIBUTION
       </div>
       <div class="sentiment-min-wrap">
         {% for bar in ratings_histogram %}
@@ -106,26 +107,6 @@
         {% endfor %}
       </div>
     </section>
-
-    <!-- Top Directors Roll -->
-    {% if top_directors_ranked %}
-    <section class="profile-min-section">
-      <div class="section-min-heading">
-        <span class="sect-symbol">//</span> TOP DIRECTORS ROLL
-      </div>
-      <div class="directors-min-list">
-        {% for d in top_directors_ranked %}
-        <div class="director-min-item">
-          <span class="director-min-rank">#{{ loop.index }}</span>
-          <span class="director-min-name">{{ d.director }}</span>
-          <span class="director-min-count">{{ d.count }} films</span>
-        </div>
-        {% endfor %}
-      </div>
-    </section>
-    {% endif %}
-
-
   </div>
 
   <!-- TAB 2: TASTE GENOME -->
@@ -197,6 +178,7 @@
     </div>
   </div>
 </div>
+</main>
 
 <!-- ApexCharts library -->
 <script
@@ -205,5 +187,5 @@
   crossorigin="anonymous"
   referrerpolicy="no-referrer"
 ></script>
-<script src="/static/js/profile.js"></script>
+<script src="/static/js/profile.js?v=5.7"></script>
 {% endblock %}

@@ -56,7 +56,7 @@ def test_profile_html_renders_minimal(monkeypatch):
         assert "USER_PROFILE.db" in html
         assert "gio_cinephile" in html
         assert "TOTAL_LOGGED" in html
-        assert "RATING SENTIMENT MATRIX" in html
+        assert "RATING DISTRIBUTION" in html
 
 
 def test_export_csv_endpoint(monkeypatch):
