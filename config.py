@@ -20,6 +20,8 @@ class Config:
     MAIL_MAX_EMAILS = None
     MAIL_ASCII_ATTACHMENTS = False
 
+    BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
     MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "kinetoweb@gmail.com")

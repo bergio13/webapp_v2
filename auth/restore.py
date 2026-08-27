@@ -168,15 +168,46 @@ def build_email_content(reset_url):
 
 
 def send_email_direct(app, recipient_email, reset_url):
-    """Send reset email via Gmail SMTP using Flask-Mail."""
+    """Send reset email via Brevo HTTPS REST API (Port 443) or fallback to Flask-Mail SMTP."""
     with app.app_context():
         plain_text, html_content = build_email_content(reset_url)
         subject = "Reset Your Password - Kineto"
         sender = app.config.get("MAIL_DEFAULT_SENDER", "kinetoweb@gmail.com")
+        brevo_key = app.config.get("BREVO_API_KEY")
 
         start_time = time.time()
-        logger.info("[Email Dispatch] Starting send to %s via Gmail SMTP...", recipient_email)
+        logger.info("[Email Dispatch] Starting send to %s...", recipient_email)
 
+        # 1. Brevo HTTPS REST API (Over standard port 443 — immune to Render SMTP socket blocks)
+        if brevo_key:
+            try:
+                logger.info("[Email Dispatch] Sending via Brevo HTTPS REST API (port 443)...")
+                resp = requests.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={
+                        "api-key": brevo_key,
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    },
+                    json={
+                        "sender": {"name": "Kineto", "email": sender},
+                        "to": [{"email": recipient_email}],
+                        "subject": subject,
+                        "htmlContent": html_content,
+                        "textContent": plain_text,
+                    },
+                    timeout=10,
+                )
+                if resp.status_code in (200, 201):
+                    elapsed = time.time() - start_time
+                    logger.info("[Email Dispatch] ✓ Sent via Brevo API in %.2fs: %s", elapsed, resp.text)
+                    return True
+                else:
+                    logger.error("[Email Dispatch] Brevo API error %s: %s", resp.status_code, resp.text)
+            except Exception as e:
+                logger.exception("[Email Dispatch] Brevo API exception: %s", e)
+
+        # 2. Fallback to Flask-Mail SMTP
         try:
             mail = app.extensions.get("mail")
             if not mail:

@@ -107,13 +107,11 @@ def create_app(config_class=Config) -> Flask:
     # ----------------------------------------------------------------
     # Start-up diagnostics (info-level, not print)
     # ----------------------------------------------------------------
-    app.logger.info("SMTP server    : %s:%s", app.config.get("MAIL_SERVER"), app.config.get("MAIL_PORT"))
-    app.logger.info("SMTP user      : %s", app.config.get("MAIL_USERNAME"))
+    if app.config.get("BREVO_API_KEY"):
+        app.logger.info("Email engine   : Brevo HTTPS REST API (Port 443)")
+    else:
+        app.logger.info("Email engine   : SMTP (%s:%s)", app.config.get("MAIL_SERVER"), app.config.get("MAIL_PORT"))
     app.logger.info("Sender         : %s", app.config.get("MAIL_DEFAULT_SENDER"))
-    app.logger.info("TLS / SSL      : %s / %s (timeout: %ss)", app.config.get("MAIL_USE_TLS"), app.config.get("MAIL_USE_SSL"), app.config.get("MAIL_TIMEOUT"))
-
-    if not app.config.get("MAIL_PASSWORD"):
-        app.logger.warning("KINETO_MAIL_PASSWORD is not set — email delivery will fail")
 
     return app
 
