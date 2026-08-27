@@ -706,6 +706,12 @@ def delete_token(token):
     except Exception as e:
         logger.error(f"Error deleting token: {e}")
 
+def delete_user_tokens(user_id):
+    try:
+        client.table('tokens').delete().eq('user_id', user_id).execute()
+    except Exception as e:
+        logger.error(f"Error deleting user tokens: {e}")
+
 #############################################
 ####### WATCHLISTS ##########################
 #############################################

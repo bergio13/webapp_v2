@@ -1,26 +1,174 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %} {%block body
-    %}{%block content %}
-    <main>
-      <form method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        <div class="field">
-          <input
-            type="password"
-            name="password"
-            class="input"
-            placeholder=""
-            required
-          />
-          <label for="password" class="label">Password</label>
-        </div>
-        <div class="buttons">
-            <button
-              type="submit"
-              class="button button-Login"
-              style="display: inline-block"
-            >
-              Set new password
-            </button>
-      </form>
-    </main>
-    {% endblock %}{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Set New Password{% endblock %}
+{% block content %}
+
+<style>
+  .login-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 2rem;
+  }
+
+  .login-main h1 {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 3rem;
+    letter-spacing: 3px;
+    margin-bottom: 0.5rem;
+  }
+
+  .login-subtitle {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.25rem;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+    text-align: center;
+    max-width: 450px;
+  }
+
+  .login-main form {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+  }
+
+  .login-main .field {
+    margin-bottom: 2rem;
+  }
+
+  .login-main .input {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.3rem;
+  }
+
+  .login-main .label {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.2rem;
+  }
+
+  .login-main .button {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    padding: 0.8rem 2rem;
+  }
+
+  .login-main .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .login-main .buttons p {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.1rem;
+    color: #b0bec5;
+    margin: 0;
+  }
+
+  .login-main .buttons a {
+    font-family: "VT323", "Courier New", monospace;
+    font-size: 1.1rem;
+  }
+
+  .login-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    align-items: center;
+    margin-top: 1rem;
+  }
+
+  @media (max-width: 600px) {
+    .login-main {
+      padding: 1rem;
+      min-height: 70vh;
+    }
+
+    .login-main h1 {
+      font-size: 2.2rem;
+    }
+
+    .login-subtitle {
+      font-size: 1.1rem;
+    }
+
+    .login-main form {
+      max-width: 100%;
+      padding: 0 1rem;
+    }
+
+    .login-main .input,
+    .login-main .label {
+      font-size: 1.1rem;
+    }
+
+    .login-main .button {
+      width: 100%;
+      text-align: center;
+    }
+
+    .login-links {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.8rem;
+    }
+
+    .login-links p {
+      margin: 0;
+    }
+  }
+</style>
+
+<main class="login-main">
+  <h1>Set New Password</h1>
+  <p class="login-subtitle">Choose a new secure password for your account.</p>
+  <form method="post" id="reset-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="field">
+      <input
+        type="password"
+        name="password"
+        id="password"
+        class="input"
+        placeholder=" "
+        minlength="3"
+        required
+      />
+      <label for="password" class="label">New Password</label>
+    </div>
+    <div class="field">
+      <input
+        type="password"
+        name="confirm_password"
+        id="confirm_password"
+        class="input"
+        placeholder=" "
+        minlength="3"
+        required
+      />
+      <label for="confirm_password" class="label">Confirm New Password</label>
+    </div>
+    <div class="buttons">
+      <button type="submit" class="button button-Login">Update Password</button>
+      <div class="login-links">
+        <p>Back to <a href="/login">Login</a></p>
+      </div>
+    </div>
+  </form>
+</main>
+
+<script>
+  document.getElementById('reset-form')?.addEventListener('submit', function(e) {
+    const pw = document.getElementById('password')?.value;
+    const cpw = document.getElementById('confirm_password')?.value;
+    if (pw && cpw && pw !== cpw) {
+      e.preventDefault();
+      alert('Passwords do not match. Please re-enter.');
+    }
+  });
+</script>
+{% endblock %}

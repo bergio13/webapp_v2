@@ -99,18 +99,27 @@ def create_app(config_class=Config) -> Flask:
     app.register_blueprint(watchlist_bp)
 
     # ----------------------------------------------------------------
+    # Reverse proxy support (Render, Cloudflare, Nginx)
+    # ----------------------------------------------------------------
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+    # ----------------------------------------------------------------
     # Start-up diagnostics (info-level, not print)
     # ----------------------------------------------------------------
-    provider = os.environ.get("EMAIL_PROVIDER", "gmail").upper()
+    provider = app.config.get("EMAIL_PROVIDER", "gmail").upper()
     app.logger.info("Email provider : %s", provider)
-    app.logger.info("SMTP server    : %s:%s", app.config["MAIL_SERVER"], app.config["MAIL_PORT"])
-    app.logger.info("SMTP user      : %s", app.config["MAIL_USERNAME"])
-    app.logger.info("TLS            : %s  timeout: %ss", app.config["MAIL_USE_TLS"], app.config["MAIL_TIMEOUT"])
+    app.logger.info("SMTP server    : %s:%s", app.config.get("MAIL_SERVER"), app.config.get("MAIL_PORT"))
+    app.logger.info("SMTP user      : %s", app.config.get("MAIL_USERNAME"))
+    app.logger.info("Sender         : %s", app.config.get("MAIL_DEFAULT_SENDER"))
+    app.logger.info("TLS / SSL      : %s / %s (timeout: %ss)", app.config.get("MAIL_USE_TLS"), app.config.get("MAIL_USE_SSL"), app.config.get("MAIL_TIMEOUT"))
 
-    if provider == "SENDGRID" and not os.environ.get("SENDGRID_API_KEY"):
-        app.logger.warning("SENDGRID_API_KEY is not set — email will not work")
-    if provider != "SENDGRID" and not os.environ.get("KINETO_MAIL_PASSWORD"):
-        app.logger.warning("KINETO_MAIL_PASSWORD is not set — email will not work")
+    if provider == "RESEND" and not app.config.get("RESEND_API_KEY"):
+        app.logger.warning("RESEND_API_KEY is not set — email delivery will fail")
+    elif provider == "SENDGRID" and not app.config.get("SENDGRID_API_KEY"):
+        app.logger.warning("SENDGRID_API_KEY is not set — email delivery will fail")
+    elif provider == "GMAIL" and not (app.config.get("MAIL_PASSWORD")):
+        app.logger.warning("KINETO_MAIL_PASSWORD is not set — email delivery will fail")
 
     return app
 
