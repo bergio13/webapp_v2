@@ -128,10 +128,7 @@ def test_password_reset_post_valid_email(client, monkeypatch):
     monkeypatch.setattr(restore_module, "get_user_by_email", lambda email: fake_user)
     monkeypatch.setattr(restore_module, "delete_user_tokens", lambda uid: None)
     monkeypatch.setattr(restore_module, "insert_token", lambda uid, tok, dt: None)
-
-    # Mock Thread so we don't start background work during unit test
-    mock_thread = MagicMock()
-    monkeypatch.setattr(restore_module, "Thread", mock_thread)
+    monkeypatch.setattr(restore_module, "send_email_direct", lambda app, email, url: True)
 
     res = client.post("/passwordreset", data={"email": "test@example.com"}, follow_redirects=True)
     assert res.status_code == 200
@@ -145,7 +142,7 @@ def test_password_reset_post_json(client, monkeypatch):
     monkeypatch.setattr(restore_module, "get_user_by_email", lambda email: fake_user)
     monkeypatch.setattr(restore_module, "delete_user_tokens", lambda uid: None)
     monkeypatch.setattr(restore_module, "insert_token", lambda uid, tok, dt: None)
-    monkeypatch.setattr(restore_module, "Thread", MagicMock())
+    monkeypatch.setattr(restore_module, "send_email_direct", lambda app, email, url: True)
 
     res = client.post("/passwordreset", json={"email": "test@example.com"})
     assert res.status_code == 200

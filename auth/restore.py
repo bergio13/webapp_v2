@@ -168,85 +168,21 @@ def build_email_content(reset_url):
 
 
 def send_email_direct(app, recipient_email, reset_url):
-    """Send reset email using available delivery channels (Resend API, SendGrid API, or Flask-Mail SMTP)."""
+    """Send reset email via Gmail SMTP using Flask-Mail."""
     with app.app_context():
         plain_text, html_content = build_email_content(reset_url)
         subject = "Reset Your Password - Kineto"
-        provider = app.config.get("EMAIL_PROVIDER", "gmail").lower()
-        resend_key = app.config.get("RESEND_API_KEY")
-        sendgrid_key = app.config.get("SENDGRID_API_KEY")
-        sender = app.config.get("MAIL_DEFAULT_SENDER", "kinetowebapp@gmail.com")
+        sender = app.config.get("MAIL_DEFAULT_SENDER", "kinetoweb@gmail.com")
 
         start_time = time.time()
-        logger.info("[Email Dispatch] Starting send to %s via provider: %s", recipient_email, provider)
+        logger.info("[Email Dispatch] Starting send to %s via Gmail SMTP...", recipient_email)
 
-        # 1. Direct Resend HTTP API (Fastest & most reliable on cloud hosts like Render)
-        if provider == "resend" or resend_key:
-            try:
-                logger.info("[Email Dispatch] Sending via Resend HTTP API...")
-                resend_sender = sender if "@" in sender and "gmail.com" not in sender else "Kineto <onboarding@resend.dev>"
-                resp = requests.post(
-                    "https://api.resend.com/emails",
-                    headers={
-                        "Authorization": f"Bearer {resend_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "from": resend_sender,
-                        "to": [recipient_email],
-                        "subject": subject,
-                        "text": plain_text,
-                        "html": html_content,
-                    },
-                    timeout=10,
-                )
-                if resp.status_code in (200, 201):
-                    elapsed = time.time() - start_time
-                    logger.info("[Email Dispatch] ✓ Sent via Resend API in %.2fs: %s", elapsed, resp.json())
-                    return True
-                else:
-                    logger.error("[Email Dispatch] Resend API error %s: %s", resp.status_code, resp.text)
-            except Exception as e:
-                logger.exception("[Email Dispatch] Resend HTTP API exception: %s", e)
-
-        # 2. Direct SendGrid HTTP API
-        if provider == "sendgrid" and sendgrid_key:
-            try:
-                logger.info("[Email Dispatch] Sending via SendGrid HTTP API...")
-                resp = requests.post(
-                    "https://api.sendgrid.com/v3/mail/send",
-                    headers={
-                        "Authorization": f"Bearer {sendgrid_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "personalizations": [{"to": [{"email": recipient_email}]}],
-                        "from": {"email": sender, "name": "Kineto"},
-                        "subject": subject,
-                        "content": [
-                            {"type": "text/plain", "value": plain_text},
-                            {"type": "text/html", "value": html_content},
-                        ],
-                    },
-                    timeout=10,
-                )
-                if resp.status_code in (200, 202):
-                    elapsed = time.time() - start_time
-                    logger.info("[Email Dispatch] ✓ Sent via SendGrid API in %.2fs", elapsed)
-                    return True
-                else:
-                    logger.error("[Email Dispatch] SendGrid API error %s: %s", resp.status_code, resp.text)
-            except Exception as e:
-                logger.exception("[Email Dispatch] SendGrid HTTP API exception: %s", e)
-
-        # 3. Fallback to Flask-Mail SMTP (Gmail, Brevo, custom SMTP)
         try:
             mail = app.extensions.get("mail")
             if not mail:
                 logger.error("[Email Dispatch] Flask-Mail extension not found")
                 return False
 
-            logger.info("[Email Dispatch] Sending via SMTP (%s:%s)...", app.config.get("MAIL_SERVER"), app.config.get("MAIL_PORT"))
             msg = Message(subject=subject, sender=sender, recipients=[recipient_email])
             msg.body = plain_text
             msg.html = html_content
@@ -290,11 +226,9 @@ def request_password_reset():
                 # Build dynamic reset URL
                 reset_url = build_reset_url(token)
 
-                # Dispatch email in background thread
+                # Dispatch email
                 app_obj = current_app._get_current_object()
-                thread = Thread(target=send_email_direct, args=(app_obj, user["email"], reset_url))
-                thread.daemon = True
-                thread.start()
+                send_email_direct(app_obj, user["email"], reset_url)
             except Exception as e:
                 logger.exception("Error processing password reset token: %s", e)
 

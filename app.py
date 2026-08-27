@@ -107,18 +107,12 @@ def create_app(config_class=Config) -> Flask:
     # ----------------------------------------------------------------
     # Start-up diagnostics (info-level, not print)
     # ----------------------------------------------------------------
-    provider = app.config.get("EMAIL_PROVIDER", "gmail").upper()
-    app.logger.info("Email provider : %s", provider)
     app.logger.info("SMTP server    : %s:%s", app.config.get("MAIL_SERVER"), app.config.get("MAIL_PORT"))
     app.logger.info("SMTP user      : %s", app.config.get("MAIL_USERNAME"))
     app.logger.info("Sender         : %s", app.config.get("MAIL_DEFAULT_SENDER"))
     app.logger.info("TLS / SSL      : %s / %s (timeout: %ss)", app.config.get("MAIL_USE_TLS"), app.config.get("MAIL_USE_SSL"), app.config.get("MAIL_TIMEOUT"))
 
-    if provider == "RESEND" and not app.config.get("RESEND_API_KEY"):
-        app.logger.warning("RESEND_API_KEY is not set — email delivery will fail")
-    elif provider == "SENDGRID" and not app.config.get("SENDGRID_API_KEY"):
-        app.logger.warning("SENDGRID_API_KEY is not set — email delivery will fail")
-    elif provider == "GMAIL" and not (app.config.get("MAIL_PASSWORD")):
+    if not app.config.get("MAIL_PASSWORD"):
         app.logger.warning("KINETO_MAIL_PASSWORD is not set — email delivery will fail")
 
     return app
