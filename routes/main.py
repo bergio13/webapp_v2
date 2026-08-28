@@ -4,7 +4,18 @@ import math
 import os
 
 import requests as http_requests
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, session
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+)
 from flask_login import current_user, login_required
 
 from database import get_monthly_movies, get_movies_paginated, get_user_id
@@ -350,8 +361,47 @@ def api_media_details():
             
         return jsonify(details)
     except Exception as e:
-        from flask import current_app
         current_app.logger.exception("Error in /api/media_details")
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# PWA Endpoints
+# ---------------------------------------------------------------------------
+
+@main_bp.route("/manifest.json")
+def manifest():
+    """Serve the Web App Manifest."""
+    response = make_response(
+        send_from_directory(
+            os.path.join(current_app.root_path, "static"),
+            "manifest.json",
+            mimetype="application/manifest+json",
+        )
+    )
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return response
+
+
+@main_bp.route("/sw.js")
+def service_worker():
+    """Serve the Service Worker with root scope permissions."""
+    response = make_response(
+        send_from_directory(
+            os.path.join(current_app.root_path, "static", "js"),
+            "sw.js",
+            mimetype="application/javascript",
+        )
+    )
+    response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
+
+
+@main_bp.route("/offline")
+def offline():
+    """Render the offline fallback view."""
+    return render_template("offline.html")
+
 
 

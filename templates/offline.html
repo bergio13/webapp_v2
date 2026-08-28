@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Offline // Signal Lost{% endblock %}
+{% block body_class %} offline_page theme-default{% endblock %}
+
+{% block content %}
+<main class="offline-container" style="
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 5rem);
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-primary, #f0f4f8);
+  font-family: var(--font-body, 'Inter', sans-serif);
+">
+  <div class="offline-card" style="
+    background: rgba(22, 33, 46, 0.75);
+    border: 1px solid rgba(126, 181, 196, 0.3);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  ">
+    <div class="offline-ascii" style="
+      font-family: var(--font-mono, 'VT323', monospace);
+      font-size: 1.4rem;
+      color: #7eb5c4;
+      margin-bottom: 1rem;
+      letter-spacing: 2px;
+    ">
+      [ // NEURAL LINK OFFLINE ]
+    </div>
+
+    <div class="offline-icon" style="font-size: 3.5rem; color: #b58a8a; margin-bottom: 1rem;">
+      <i class="fa-solid fa-satellite-dish"></i>
+    </div>
+
+    <h1 style="
+      font-family: var(--font-display, 'Rajdhani', sans-serif);
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin: 0 0 0.75rem 0;
+    ">Signal Interrupted</h1>
+
+    <p style="
+      font-size: 1rem;
+      color: #9eb0ba;
+      line-height: 1.6;
+      margin: 0 0 2rem 0;
+    ">
+      You are currently disconnected from the network. Previously visited views and cached assets remain available. Reconnect to sync logs and discover new titles.
+    </p>
+
+    <div class="offline-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button onclick="window.location.reload()" style="
+        font-family: var(--font-mono, 'VT323', monospace);
+        font-size: 1.25rem;
+        letter-spacing: 1px;
+        background: rgba(126, 181, 196, 0.15);
+        color: #7eb5c4;
+        border: 1px solid #7eb5c4;
+        border-radius: 6px;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      " onmouseover="this.style.background='rgba(126, 181, 196, 0.3)'" onmouseout="this.style.background='rgba(126, 181, 196, 0.15)'">
+        <i class="fa-solid fa-rotate-right"></i> [ RETRY LINK ]
+      </button>
+
+      <a href="/home" style="
+        font-family: var(--font-mono, 'VT323', monospace);
+        font-size: 1.25rem;
+        letter-spacing: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #f0f4f8;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        padding: 10px 20px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+      " onmouseover="this.style.background='rgba(255, 255, 255, 0.15)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.08)'">
+        <i class="fa-solid fa-house"></i> [ DASHBOARD ]
+      </a>
+    </div>
+  </div>
+</main>
+{% endblock %}

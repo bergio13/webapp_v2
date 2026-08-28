@@ -1,0 +1,65 @@
+{
+  "id": "/?source=pwa",
+  "name": "Kineto // Cinema & TV Tracker",
+  "short_name": "Kineto",
+  "description": "Retro-futuristic movie and TV tracking, taste genome, and AI recommendations.",
+  "start_url": "/home?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#141418",
+  "theme_color": "#23232e",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["entertainment", "movies", "lifestyle"],
+  "icons": [
+    {
+      "src": "/static/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Home",
+      "short_name": "Home",
+      "description": "Monthly watches and stats",
+      "url": "/home?source=pwa",
+      "icons": [{ "src": "/static/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Library",
+      "short_name": "Library",
+      "description": "Browse your logged movies and TV shows",
+      "url": "/lista?source=pwa",
+      "icons": [{ "src": "/static/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Watchlist",
+      "short_name": "Watchlist",
+      "description": "View movies to watch later",
+      "url": "/watchlist?source=pwa",
+      "icons": [{ "src": "/static/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Discover Studio",
+      "short_name": "Discover",
+      "description": "AI-powered recommendations",
+      "url": "/discover?source=pwa",
+      "icons": [{ "src": "/static/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

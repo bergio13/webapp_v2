@@ -16,7 +16,18 @@
       }
     </style>
 
-    <link rel="icon" href="/static/icona1.png?v=2">
+    <!-- PWA & Mobile Web App Meta -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#23232e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kineto" />
+    <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png" />
+    <link rel="icon" href="/static/icona1.png?v=2" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -328,6 +339,77 @@
     <!-- Global In-App Movie Detail Drawer -->
     {% include 'components/_movie_drawer.html' %}
     <script src="/static/js/movie_drawer.js"></script>
+
+    <!-- PWA Install Prompt HUD -->
+    <div id="pwa-install-banner" class="pwa-install-hud" style="display: none;">
+      <div class="pwa-hud-content">
+        <div class="pwa-hud-icon">
+          <img src="/static/icons/icon-192x192.png" alt="Kineto" width="40" height="40">
+        </div>
+        <div class="pwa-hud-text">
+          <div class="pwa-hud-title">// INSTALL KINETO APP</div>
+          <div class="pwa-hud-sub">Add to home screen for fullscreen offline experience</div>
+        </div>
+      </div>
+      <div class="pwa-hud-actions">
+        <button type="button" id="pwa-install-btn" class="pwa-btn-install">[ INSTALL ]</button>
+        <button type="button" id="pwa-dismiss-btn" class="pwa-btn-dismiss" aria-label="Dismiss">&times;</button>
+      </div>
+    </div>
+
+    <!-- Service Worker Registration & PWA Install Logic -->
+    <script>
+      // Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(reg) {
+              console.log('[Kineto] ServiceWorker active with scope:', reg.scope);
+            })
+            .catch(function(err) {
+              console.warn('[Kineto] ServiceWorker registration error:', err);
+            });
+        });
+      }
+
+      // In-App Install Prompt Handling
+      let deferredInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        const dismissed = localStorage.getItem('kineto_pwa_dismissed');
+        if (!dismissed) {
+          const banner = document.getElementById('pwa-install-banner');
+          if (banner) {
+            banner.style.display = 'flex';
+          }
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const installBtn = document.getElementById('pwa-install-btn');
+        const dismissBtn = document.getElementById('pwa-dismiss-btn');
+        const banner = document.getElementById('pwa-install-banner');
+
+        if (installBtn) {
+          installBtn.addEventListener('click', async function() {
+            if (deferredInstallPrompt) {
+              deferredInstallPrompt.prompt();
+              const choice = await deferredInstallPrompt.userChoice;
+              deferredInstallPrompt = null;
+              if (banner) banner.style.display = 'none';
+            }
+          });
+        }
+
+        if (dismissBtn) {
+          dismissBtn.addEventListener('click', function() {
+            if (banner) banner.style.display = 'none';
+            localStorage.setItem('kineto_pwa_dismissed', '1');
+          });
+        }
+      });
+    </script>
   
   </body>
 </html>
