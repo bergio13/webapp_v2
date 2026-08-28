@@ -4649,4 +4649,232 @@ body.movie-drawer-open {
     right: 12px;
     max-width: none;
   }
-}
+}
+
+/* ==========================================================================
+   What's New Announcement Modal
+   ========================================================================== */
+.whats-new-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(10, 14, 20, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: pwaFadeIn 0.25s ease-out forwards;
+}
+
+@keyframes pwaFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.whats-new-modal {
+  background: rgba(22, 33, 46, 0.96);
+  border: 1px solid rgba(126, 181, 196, 0.35);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(126, 181, 196, 0.18);
+  overflow: hidden;
+  animation: pwaScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pwaScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.whats-new-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px dashed rgba(126, 181, 196, 0.25);
+  background: rgba(19, 28, 39, 0.6);
+}
+
+.whats-new-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.95rem;
+  color: #7eb5c4;
+  letter-spacing: 1.5px;
+}
+
+.whats-new-badge .badge-tag {
+  color: #ffffff;
+}
+
+.whats-new-badge .badge-ver {
+  color: #81c784;
+}
+
+.whats-new-close {
+  background: none;
+  border: none;
+  color: #8394a1;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s ease;
+}
+
+.whats-new-close:hover {
+  color: #ffffff;
+}
+
+.whats-new-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.whats-new-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-icon-ring img {
+  border-radius: 12px;
+  border: 1px solid rgba(126, 181, 196, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.whats-new-hero h2 {
+  font-family: var(--font-display, sans-serif);
+  font-size: 1.45rem;
+  color: #ffffff;
+  margin: 0 0 4px;
+  letter-spacing: 1px;
+}
+
+.whats-new-hero p {
+  font-size: 0.88rem;
+  color: #9eb0ba;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.whats-new-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(10, 17, 26, 0.45);
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.feature-icon {
+  color: #7eb5c4;
+  font-size: 1.15rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.feature-desc strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #f0f4f8;
+  letter-spacing: 0.3px;
+}
+
+.feature-desc span {
+  font-size: 0.8rem;
+  color: #8394a1;
+}
+
+.install-guide-box {
+  background: rgba(126, 181, 196, 0.12);
+  border: 1px solid rgba(126, 181, 196, 0.3);
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #d0dde5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.install-guide-box .guide-icon {
+  font-size: 1.6rem;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.install-guide-box .guide-text {
+  line-height: 1.4;
+}
+
+.btn-whats-new-install {
+  width: 100%;
+  font-family: var(--font-mono, monospace);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #131c27;
+  background: #7eb5c4;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-whats-new-install:hover {
+  background: #9ed2e0;
+  box-shadow: 0 0 16px rgba(126, 181, 196, 0.5);
+  transform: translateY(-1px);
+}
+
+.whats-new-footer {
+  padding: 12px 20px 16px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-whats-new-dismiss {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.95rem;
+  background: transparent;
+  color: #9eb0ba;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-whats-new-dismiss:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+

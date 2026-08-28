@@ -67,3 +67,15 @@ def test_pwa_icons_exist_on_disk():
         path = os.path.join("static", "icons", icon)
         assert os.path.exists(path), f"Missing icon: {path}"
         assert os.path.getsize(path) > 0, f"Icon is empty: {path}"
+
+
+def test_whats_new_modal_rendered():
+    """Verify that What's New modal and scripts are included in pages using base.html."""
+    client = app.test_client()
+    response = client.get("/home")
+    assert response.status_code == 200
+    html = response.data.decode("utf-8")
+    assert "whats-new-overlay" in html
+    assert "whats_new.js" in html
+    assert "manifest.json" in html
+

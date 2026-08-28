@@ -1,0 +1,54 @@
+<!-- What's New // Kineto Mobile Release Modal -->
+<div id="whats-new-overlay" class="whats-new-overlay" style="display: none;" aria-modal="true" role="dialog" aria-labelledby="whats-new-title">
+  <div class="whats-new-modal glass-panel">
+    <!-- Header -->
+    <div class="whats-new-header">
+      <div class="whats-new-badge">
+        <span class="badge-bracket">[</span>
+        <span class="badge-tag">// SYSTEM UPDATE</span>
+        <span class="badge-sep">::</span>
+        <span class="badge-ver">v2.4_MOBILE</span>
+        <span class="badge-bracket">]</span>
+      </div>
+      <button type="button" class="whats-new-close" onclick="closeWhatsNew()" aria-label="Close Announcement">&times;</button>
+    </div>
+
+    <!-- Body Content -->
+    <div class="whats-new-body">
+      <div class="whats-new-hero">
+        <div class="hero-icon-ring">
+          <img src="/static/icons/icon-192x192.png" alt="Kineto App Icon" width="56" height="56" />
+        </div>
+        <div class="hero-text">
+          <h2 id="whats-new-title">Kineto App!</h2>
+          <p>Ora potete installare Kineto direttamente sui vostri dispositivi.</p>
+        </div>
+      </div>
+
+      <!-- Platform-Specific Instruction Box -->
+      <div class="platform-install-guide">
+        <!-- iOS Safari guide -->
+        <div id="ios-guide" class="install-guide-box" style="display: none;">
+          <div class="guide-icon"><i class="fa-brands fa-apple"></i></div>
+          <div class="guide-text">
+            On <strong>iOS Safari</strong>: Tap <i class="fa-solid fa-arrow-up-from-bracket"></i> <strong>Share</strong>, scroll down and tap <strong>"Add to Home Screen"</strong>.
+          </div>
+        </div>
+
+        <!-- Android/Chrome direct button -->
+        <div id="pwa-action-box" class="install-guide-box">
+          <button type="button" id="whats-new-install-btn" class="btn-whats-new-install">
+            <i class="fa-solid fa-download"></i> [ INSTALL KINETO APP ]
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="whats-new-footer">
+      <button type="button" class="btn-whats-new-dismiss" onclick="closeWhatsNew()">
+        [ GOT IT, THANKS ]
+      </button>
+    </div>
+  </div>
+</div>

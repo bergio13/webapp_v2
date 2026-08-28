@@ -340,6 +340,10 @@
     {% include 'components/_movie_drawer.html' %}
     <script src="/static/js/movie_drawer.js"></script>
 
+    <!-- What's New Release Announcement Modal -->
+    {% include 'components/_whats_new_modal.html' %}
+    <script src="/static/js/whats_new.js"></script>
+
     <!-- PWA Install Prompt HUD -->
     <div id="pwa-install-banner" class="pwa-install-hud" style="display: none;">
       <div class="pwa-hud-content">
@@ -373,10 +377,10 @@
       }
 
       // In-App Install Prompt Handling
-      let deferredInstallPrompt = null;
+      window.deferredInstallPrompt = null;
       window.addEventListener('beforeinstallprompt', function(e) {
         e.preventDefault();
-        deferredInstallPrompt = e;
+        window.deferredInstallPrompt = e;
         const dismissed = localStorage.getItem('kineto_pwa_dismissed');
         if (!dismissed) {
           const banner = document.getElementById('pwa-install-banner');
@@ -393,10 +397,10 @@
 
         if (installBtn) {
           installBtn.addEventListener('click', async function() {
-            if (deferredInstallPrompt) {
-              deferredInstallPrompt.prompt();
-              const choice = await deferredInstallPrompt.userChoice;
-              deferredInstallPrompt = null;
+            if (window.deferredInstallPrompt) {
+              window.deferredInstallPrompt.prompt();
+              const choice = await window.deferredInstallPrompt.userChoice;
+              window.deferredInstallPrompt = null;
               if (banner) banner.style.display = 'none';
             }
           });
