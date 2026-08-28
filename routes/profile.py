@@ -85,9 +85,9 @@ def export_csv():
             m.get("genre", ""),
             m.get("rating", ""),
             str(m.get("v_date", "")),
-            1 if m.get("cinema") else 0,
-            1 if m.get("rewatch") else 0,
-            1 if m.get("tv_show") else 0,
+            1 if str(m.get("cinema") or "").strip() in ("1", "true", "True") or m.get("cinema") in (1, True) else 0,
+            1 if str(m.get("rewatch") or "").strip() in ("1", "true", "True") or m.get("rewatch") in (1, True) else 0,
+            1 if str(m.get("tv_show") or "").strip() in ("1", "true", "True") or m.get("tv_show") in (1, True) else 0,
         ])
 
     username = getattr(current_user, "username", "my")

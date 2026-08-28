@@ -62,3 +62,26 @@ def test_api_unfollow_ajax():
         assert resp.status_code == 200
         data = resp.get_json()
         assert data.get("success") is True
+
+
+def test_friends_activity_cinema_and_rewatch_tags(monkeypatch):
+    from flask import render_template
+    test_activity = [
+        {'id': 1, 'movie': 'Dune', 'director': 'Denis', 'p_year': 2024, 'rating': 5, 'cinema': 0, 'rewatch': 0, 'tv_show': 0, 'poster': '', 'f_username': 'alice'},
+        {'id': 2, 'movie': 'Tenet', 'director': 'Nolan', 'p_year': 2020, 'rating': 4, 'cinema': '0', 'rewatch': '0', 'tv_show': '0', 'poster': '', 'f_username': 'bob'},
+        {'id': 3, 'movie': 'Oppenheimer', 'director': 'Nolan', 'p_year': 2023, 'rating': 5, 'cinema': 1, 'rewatch': 1, 'tv_show': 0, 'poster': '', 'f_username': 'charlie'},
+        {'id': 4, 'movie': 'Barbie', 'director': 'Gerwig', 'p_year': 2023, 'rating': 4, 'cinema': '1', 'rewatch': '1', 'tv_show': 0, 'poster': '', 'f_username': 'dana'}
+    ]
+    monkeypatch.setattr("routes.social.get_friend_activity", lambda uid, limit=30: test_activity)
+    monkeypatch.setattr("routes.social.get_enriched_friends", lambda uid: [])
+
+    with app.test_request_context('/friends'):
+        login_user(MockUser())
+        from routes.social import search_friends
+        html = search_friends()
+        assert 'data-cinema="0"' in html
+        assert 'data-cinema="1"' in html
+        assert 'data-rewatch="0"' in html
+        assert 'data-rewatch="1"' in html
+        assert html.count('CINEMA</span>') == 2
+        assert html.count('REWATCH</span>') == 2

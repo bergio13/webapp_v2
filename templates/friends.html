@@ -1260,8 +1260,8 @@
           <div
             class="activity-card-item"
             data-rating="{{ act.rating }}"
-            data-cinema="{{ '1' if act.cinema else '0' }}"
-            data-rewatch="{{ '1' if act.rewatch else '0' }}"
+            data-cinema="{{ '1' if act.cinema|int == 1 else '0' }}"
+            data-rewatch="{{ '1' if act.rewatch|int == 1 else '0' }}"
             data-username="{{ act.f_username }}"
             tabindex="0"
           >
@@ -1307,10 +1307,10 @@
                 </div>
 
                 <div class="activity-tags-row">
-                  {% if act.cinema %}
+                  {% if act.cinema | int == 1 %}
                   <span class="activity-tag"><i class="fa-solid fa-film"></i> CINEMA</span>
                   {% endif %}
-                  {% if act.rewatch %}
+                  {% if act.rewatch | int == 1 %}
                   <span class="activity-tag"><i class="fa-solid fa-repeat"></i> REWATCH</span>
                   {% endif %}
                 </div>

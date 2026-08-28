@@ -241,9 +241,9 @@ def build_user_taste_genome(movies):
         else:
             movie_count += 1
 
-        if m.get("rewatch"):
+        if str(m.get("rewatch") or "").strip() in ("1", "true", "True") or m.get("rewatch") in (1, True):
             rewatch_count += 1
-        if m.get("cinema"):
+        if str(m.get("cinema") or "").strip() in ("1", "true", "True") or m.get("cinema") in (1, True):
             cinema_count += 1
 
         if year:

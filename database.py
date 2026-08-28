@@ -97,6 +97,11 @@ def update_user_password(user_id, password):
     except Exception as e:
         logger.error(f"Failed to update password for user {user_id}: {e}")
 
+def _normalize_flag(val):
+    if val in (1, '1', True, 'true', 'True'):
+        return 1
+    return 0
+
 #############################################
 ######## MOVIES #############################
 #############################################
@@ -106,8 +111,8 @@ def insert_movies(title, director, genre, p_year, v_date, rating, rewatch, tv_sh
         payload = {
             "movie": title, "director": director, "genre": genre, 
             "p_year": p_year, "v_date": v_date, "rating": rating, 
-            "rewatch": rewatch, "tv_show": tv_show, "poster": poster, 
-            "parent_id": parent_id, "cinema": cinema
+            "rewatch": _normalize_flag(rewatch), "tv_show": _normalize_flag(tv_show), "poster": poster, 
+            "parent_id": parent_id, "cinema": _normalize_flag(cinema)
         }
         client.table('lista').insert(payload).execute()
     except Exception as e:
@@ -127,10 +132,10 @@ def get_movies(parent_id):
                 "p_year": row['p_year'],
                 "v_date": datetime.strptime(row['v_date'], "%Y-%m-%d").date() if isinstance(row['v_date'], str) else row['v_date'],
                 "rating": row['rating'],
-                "rewatch": row['rewatch'],
-                "tv_show": row['tv_show'],
+                "rewatch": _normalize_flag(row.get('rewatch')),
+                "tv_show": _normalize_flag(row.get('tv_show')),
                 "poster": row['poster'],
-                "cinema": row['cinema']
+                "cinema": _normalize_flag(row.get('cinema'))
             }
             lista_dicts.append(movie_dict)
         return lista_dicts
@@ -185,10 +190,10 @@ def get_movies_paginated(parent_id, order_column='v_date', desc=True, page=1, li
                 "p_year": row['p_year'],
                 "v_date": datetime.strptime(row['v_date'], "%Y-%m-%d").date() if isinstance(row['v_date'], str) else row['v_date'],
                 "rating": row['rating'],
-                "rewatch": row['rewatch'],
-                "tv_show": row['tv_show'],
+                "rewatch": _normalize_flag(row.get('rewatch')),
+                "tv_show": _normalize_flag(row.get('tv_show')),
                 "poster": row['poster'],
-                "cinema": row['cinema']
+                "cinema": _normalize_flag(row.get('cinema'))
             }
             lista_dicts.append(movie_dict)
             
@@ -221,8 +226,8 @@ def get_monthly_movies(parent_id, month):
             {
                 "id": row['lista_id'], "movie": row['movie'], "director": row['director'],
                 "genre": row['genre'], "p_year": row['p_year'], "v_date": row['v_date'],
-                "rating": row['rating'], "rewatch": row['rewatch'], "tv_show": row['tv_show'],
-                "poster": row['poster'], "cinema": row['cinema']
+                "rating": row['rating'], "rewatch": _normalize_flag(row.get('rewatch')), "tv_show": _normalize_flag(row.get('tv_show')),
+                "poster": row['poster'], "cinema": _normalize_flag(row.get('cinema'))
             }
             for row in response.data
         ]
@@ -350,8 +355,8 @@ def get_friend_activity(parent_id, limit=20):
             lista_dicts.append({
                 "id": row['lista_id'], "movie": format_display_title(row['movie']), "director": row['director'],
                 "genre": row['genre'], "p_year": row['p_year'], "v_date": v_date_obj,
-                "rating": row['rating'], "rewatch": row['rewatch'], "tv_show": row['tv_show'],
-                "poster": row['poster'], "cinema": row['cinema'],
+                "rating": row['rating'], "rewatch": _normalize_flag(row.get('rewatch')), "tv_show": _normalize_flag(row.get('tv_show')),
+                "poster": row['poster'], "cinema": _normalize_flag(row.get('cinema')),
                 "f_username": friend_map.get(row['parent_id'], "Unknown"),
                 "f_user_id": row['parent_id']
             })
@@ -395,10 +400,10 @@ def get_enriched_friends(parent_id):
                             "p_year": row.get('p_year'),
                             "v_date": v_date_obj,
                             "rating": row.get('rating'),
-                            "rewatch": row.get('rewatch'),
-                            "tv_show": row.get('tv_show'),
+                            "rewatch": _normalize_flag(row.get('rewatch')),
+                            "tv_show": _normalize_flag(row.get('tv_show')),
                             "poster": row.get('poster'),
-                            "cinema": row.get('cinema')
+                            "cinema": _normalize_flag(row.get('cinema'))
                         })
             except Exception as e:
                 logger.error(f"Error batch fetching friend movies: {e}")

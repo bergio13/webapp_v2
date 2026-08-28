@@ -212,9 +212,9 @@ def build_profile_stats(user_id) -> dict:
             except (ValueError, TypeError):
                 pass
             
-        if movie.get("rewatch"):
+        if str(movie.get("rewatch") or "").strip() in ("1", "true", "True") or movie.get("rewatch") in (1, True):
             rewatch_count += 1
-        if movie.get("cinema"):
+        if str(movie.get("cinema") or "").strip() in ("1", "true", "True") or movie.get("cinema") in (1, True):
             cinema_count += 1
 
         director = str(movie.get("director") or "").strip()
