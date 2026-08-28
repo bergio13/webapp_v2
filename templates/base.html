@@ -381,19 +381,21 @@
       window.addEventListener('beforeinstallprompt', function(e) {
         e.preventDefault();
         window.deferredInstallPrompt = e;
-        const dismissed = localStorage.getItem('kineto_pwa_dismissed');
-        if (!dismissed) {
-          const banner = document.getElementById('pwa-install-banner');
-          if (banner) {
-            banner.style.display = 'flex';
-          }
-        }
       });
 
       document.addEventListener('DOMContentLoaded', function() {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+        const dismissed = localStorage.getItem('kineto_pwa_dismissed');
+        const banner = document.getElementById('pwa-install-banner');
         const installBtn = document.getElementById('pwa-install-btn');
         const dismissBtn = document.getElementById('pwa-dismiss-btn');
-        const banner = document.getElementById('pwa-install-banner');
+
+        // Show banner for non-installed users across all browsers if not dismissed
+        if (!isStandalone && !dismissed && banner) {
+          setTimeout(function() {
+            banner.style.display = 'flex';
+          }, 1500);
+        }
 
         if (installBtn) {
           installBtn.addEventListener('click', async function() {
@@ -401,6 +403,10 @@
               window.deferredInstallPrompt.prompt();
               const choice = await window.deferredInstallPrompt.userChoice;
               window.deferredInstallPrompt = null;
+              if (banner) banner.style.display = 'none';
+            } else if (typeof window.openWhatsNew === 'function') {
+              // On iOS/Safari/Firefox or if native prompt is not ready, open the platform guide
+              window.openWhatsNew();
               if (banner) banner.style.display = 'none';
             }
           });

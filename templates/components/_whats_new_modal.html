@@ -21,7 +21,7 @@
         </div>
         <div class="hero-text">
           <h2 id="whats-new-title">Kineto App!</h2>
-          <p>Ora potete installare Kineto direttamente sui vostri dispositivi.</p>
+          <p>Ora potete installare Kineto direttamente sui vostri dispositivi per usarlo a schermo intero e offline.</p>
         </div>
       </div>
 
@@ -31,15 +31,39 @@
         <div id="ios-guide" class="install-guide-box" style="display: none;">
           <div class="guide-icon"><i class="fa-brands fa-apple"></i></div>
           <div class="guide-text">
-            On <strong>iOS Safari</strong>: Tap <i class="fa-solid fa-arrow-up-from-bracket"></i> <strong>Share</strong>, scroll down and tap <strong>"Add to Home Screen"</strong>.
+            Su <strong>iOS / Safari</strong>: tocca il tasto <i class="fa-solid fa-arrow-up-from-bracket"></i> <strong>Condividi</strong> in basso e seleziona <strong>"Aggiungi a schermata Home"</strong>.
           </div>
         </div>
 
-        <!-- Android/Chrome direct button -->
+        <!-- Mac Safari guide -->
+        <div id="mac-safari-guide" class="install-guide-box" style="display: none;">
+          <div class="guide-icon"><i class="fa-brands fa-apple"></i></div>
+          <div class="guide-text">
+            Su <strong>Safari per Mac</strong>: apri il menu <strong>File</strong> in alto e clicca su <strong>"Aggiungi al Dock"</strong>.
+          </div>
+        </div>
+
+        <!-- Firefox guide -->
+        <div id="firefox-guide" class="install-guide-box" style="display: none;">
+          <div class="guide-icon"><i class="fa-brands fa-firefox"></i></div>
+          <div class="guide-text">
+            Su <strong>Firefox</strong>: tocca i tre puntini <i class="fa-solid fa-ellipsis-vertical"></i> nel menu e seleziona <strong>"Installa"</strong>.
+          </div>
+        </div>
+
+        <!-- Chromium (Chrome / Edge / Samsung) direct button -->
         <div id="pwa-action-box" class="install-guide-box">
           <button type="button" id="whats-new-install-btn" class="btn-whats-new-install">
-            <i class="fa-solid fa-download"></i> [ INSTALL KINETO APP ]
+            <i class="fa-solid fa-download"></i> [ INSTALLA KINETO APP ]
           </button>
+        </div>
+
+        <!-- Fallback note if install prompt is not supported directly -->
+        <div id="generic-guide" class="install-guide-box" style="display: none;">
+          <div class="guide-icon"><i class="fa-solid fa-circle-info"></i></div>
+          <div class="guide-text">
+            Apri il menu del browser <i class="fa-solid fa-ellipsis-vertical"></i> e seleziona <strong>"Installa Kineto"</strong> o <strong>"Aggiungi a schermata Home"</strong>.
+          </div>
         </div>
       </div>
     </div>
@@ -47,7 +71,7 @@
     <!-- Footer Actions -->
     <div class="whats-new-footer">
       <button type="button" class="btn-whats-new-dismiss" onclick="closeWhatsNew()">
-        [ GOT IT, THANKS ]
+        [ HO CAPITO, GRAZIE ]
       </button>
     </div>
   </div>
