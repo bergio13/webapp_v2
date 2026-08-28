@@ -283,6 +283,8 @@ content %}
       <label for="title" class="label">Title</label>
       <div id="autocomplete-list" class="autocomplete-items"></div>
     </div>
+    <input type="hidden" id="tmdb_id" name="tmdb_id" />
+    <input type="hidden" id="poster_url" name="poster_url" />
     <input type="hidden" id="year" name="year" />
     {% include 'components/_sentiment_selector.html' %}
     <div class="field field-director">
@@ -436,13 +438,16 @@ content %}
         clearTimeout(timeout);
         const query = this.value;
         
+        // Reset previously selected IDs when title is manually modified
+        document.getElementById('tmdb_id').value = '';
+        document.getElementById('poster_url').value = '';
+        
         if (!query || query.length < 2) {
           autocompleteList.innerHTML = '';
           return;
         }
 
         timeout = setTimeout(() => {
-          // Send tv parameter just in case backend expects it, but backend will ignore it and return both
           const isTv = document.getElementById('tv_yes').checked ? "1" : "0";
           fetch(`/search_tmdb?q=${encodeURIComponent(query)}&tv=${isTv}`)
             .then(response => response.json())
@@ -461,7 +466,9 @@ content %}
                 `;
                 div.addEventListener('click', function() {
                   titleInput.value = item.title;
-                  document.getElementById('year').value = item.year;
+                  document.getElementById('year').value = item.year || '';
+                  document.getElementById('tmdb_id').value = item.id || '';
+                  document.getElementById('poster_url').value = item.poster_w500 || item.poster || '';
                   
                   if (item.type === 'tv') {
                     setMediaType('tv');

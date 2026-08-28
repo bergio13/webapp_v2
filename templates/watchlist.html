@@ -271,6 +271,8 @@
       {% endif %}
       <input type="hidden" id="year" name="year" />
       <input type="hidden" id="tv" name="tv" value="0" />
+      <input type="hidden" id="tmdb_id" name="tmdb_id" />
+      <input type="hidden" id="poster_url" name="poster_url" />
 
       <div class="filter-search-box" style="position: relative; width: 100%; max-width: 100%;">
         <span class="filter-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
@@ -327,6 +329,9 @@
       clearTimeout(timeout);
       const query = this.value;
       
+      document.getElementById('tmdb_id').value = '';
+      document.getElementById('poster_url').value = '';
+      
       if (!query || query.length < 2) {
         autocompleteList.innerHTML = '';
         return;
@@ -351,6 +356,8 @@
                 titleInput.value = item.title;
                 document.getElementById('year').value = item.year || '';
                 document.getElementById('tv').value = item.type === 'tv' ? '1' : '0';
+                document.getElementById('tmdb_id').value = item.id || '';
+                document.getElementById('poster_url').value = item.poster_w500 || item.poster || '';
                 autocompleteList.innerHTML = '';
               });
               autocompleteList.appendChild(div);

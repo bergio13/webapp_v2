@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from functools import wraps
 import requests
@@ -53,66 +54,93 @@ tv_genres = {
 }
 
 @_cached(ttl=3600)
-def get_movie_details(title, year, manual_director=None):
+def get_movie_details(title, year=None, manual_director=None, tmdb_id=None):
     """
-    Search TMDB for a movie or TV show, extracting poster, genres, and director.
-    Handles season title stripping (e.g. 'Reacher, Season 1' -> 'Reacher') and falls back to TV API.
+    Search TMDB for a movie, extracting poster, genres, and director.
+    If tmdb_id is provided, fetches exact movie directly without search guessing.
+    Strictly prioritizes Movies over TV shows.
     """
-    import re
     clean_title = re.sub(r',?\s*season\s*\d+.*$', '', title, flags=re.IGNORECASE).strip()
     if not clean_title:
         clean_title = title
 
     try:
-        # 1. Check TV search if title matches known show patterns or media hints
-        movie_res = movie_api.search(clean_title) or []
-        tv_res = tv_api.search(clean_title) or []
-
-        # Find exact title match in TV vs Movie
-        norm_input = re.sub(r'[^a-z0-9]', '', clean_title.lower())
-        
         best_match = None
         is_tv_result = False
 
-        # Check for exact title match in TV first if title is short/known TV title
-        for t_item in tv_res:
-            t_name = re.sub(r'[^a-z0-9]', '', (t_item.get('name') or '').lower())
-            if t_name == norm_input:
-                best_match = t_item
-                is_tv_result = True
-                break
+        # 1. Direct ID lookup if available
+        if tmdb_id:
+            try:
+                m_details = movie_api.details(int(tmdb_id))
+                if m_details:
+                    poster_path = getattr(m_details, 'poster_path', None)
+                    poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else f"https://placehold.co/500x750/0f172a/7eb5c4?text={requests.utils.quote(clean_title[:20])}"
+                    
+                    genres = getattr(m_details, 'genres', []) or []
+                    genre_names = [g.get('name', '') if isinstance(g, dict) else getattr(g, 'name', '') for g in genres]
+                    genre = ", ".join(filter(None, genre_names)) or "Feature Film"
+                    
+                    director = "Unknown"
+                    if manual_director:
+                        director = manual_director
+                    else:
+                        credits = getattr(m_details, 'credits', None)
+                        if credits and isinstance(credits, dict) and 'crew' in credits:
+                            for crew_member in credits['crew']:
+                                if crew_member.get('job') == 'Director':
+                                    director = crew_member.get('name', 'Unknown')
+                                    break
+                    
+                    matched_title = getattr(m_details, 'title', None) or clean_title
+                    vote_avg = getattr(m_details, 'vote_average', None)
+                    return {
+                        "poster": poster,
+                        "genre": genre,
+                        "director": director if director != "Unknown" else (manual_director or "Unknown"),
+                        "title": matched_title,
+                        "rating": round(float(vote_avg), 1) if vote_avg is not None else None,
+                    }
+            except Exception as ex:
+                print(f"Error fetching movie by tmdb_id {tmdb_id}: {ex}")
 
-        # Check exact title match in Movies if not found in TV
+        # 2. Search movie database first
+        movie_res = movie_api.search(clean_title) or []
+        norm_input = re.sub(r'[^a-z0-9]', '', clean_title.lower())
+        str_year = str(year).strip() if year else ''
+
+        # Match exact title + exact year in movies
+        if str_year:
+            for m_item in movie_res:
+                m_title = re.sub(r'[^a-z0-9]', '', (m_item.get('title') or '').lower())
+                date_str = m_item.get('release_date') or ''
+                if m_title == norm_input and date_str[:4] == str_year:
+                    best_match = m_item
+                    break
+
+        # Match exact title in movies
         if not best_match:
             for m_item in movie_res:
                 m_title = re.sub(r'[^a-z0-9]', '', (m_item.get('title') or '').lower())
                 if m_title == norm_input:
                     best_match = m_item
-                    is_tv_result = False
                     break
 
-        # Fallback to year matching
-        if not best_match:
+        # Match year in movies
+        if not best_match and str_year:
             for m_item in movie_res:
                 date_str = m_item.get('release_date') or ''
-                if date_str and str(year) and date_str[:4] == str(year):
+                if date_str[:4] == str_year:
                     best_match = m_item
-                    is_tv_result = False
                     break
 
-        if not best_match:
-            for t_item in tv_res:
-                date_str = t_item.get('first_air_date') or ''
-                if date_str and str(year) and date_str[:4] == str(year):
-                    best_match = t_item
-                    is_tv_result = True
-                    break
+        # Fallback to first movie result
+        if not best_match and movie_res:
+            best_match = movie_res[0]
 
+        # Only fallback to TV search if NO movies exist at all
         if not best_match:
-            if movie_res:
-                best_match = movie_res[0]
-                is_tv_result = False
-            elif tv_res:
+            tv_res = tv_api.search(clean_title) or []
+            if tv_res:
                 best_match = tv_res[0]
                 is_tv_result = True
 
@@ -177,53 +205,121 @@ def get_movie_details(title, year, manual_director=None):
         }
 
 @_cached(ttl=3600)
-def get_tv_details(title, year, season_num, manual_director=None):
+def get_tv_details(title, year=None, season_num=1, manual_director=None, tmdb_id=None):
     """
     Search TMDB for a TV show and extract poster, genres, and creator/director.
+    If tmdb_id is provided, fetches exact TV series and season directly.
     """
     from utils import format_display_title
     try:
         clean_title = re.sub(r',?\s*season\s*\d+.*$', '', title, flags=re.IGNORECASE).strip()
-        res = tv_api.search(clean_title or title)
-        if not res:
-            return {
-                "poster": "https://via.placeholder.com/200x300?text=No+Poster",
-                "genre": "Unknown",
-                "director": manual_director or "Unknown",
-                "title": format_display_title(title)
-            }
-        
-        # Try to find exact year match
+        if not clean_title:
+            clean_title = title
+
         best_match = None
-        for result in res:
-            first_air_date = result.get('first_air_date')
-            if first_air_date and first_air_date[:4] == str(year):
-                best_match = result
-                break
-        
-        # Fallback to first result if no year match
-        if not best_match:
-            best_match = res[0]
+        ids = None
+        show_name = None
+
+        if tmdb_id:
+            ids = int(tmdb_id)
+            try:
+                tv_data = tv_api.details(ids)
+                show_name = getattr(tv_data, 'name', None) or clean_title
+            except Exception:
+                pass
+
+        if not ids:
+            res = tv_api.search(clean_title) or []
+            if not res:
+                return {
+                    "poster": "https://via.placeholder.com/200x300?text=No+Poster",
+                    "genre": "Unknown",
+                    "director": manual_director or "Unknown",
+                    "title": format_display_title(title)
+                }
             
-        ids = best_match['id']
-        show_name = best_match.get('name') or best_match.get('original_name') or title
-        show_name = format_display_title(show_name)
+            str_year = str(year).strip() if year else ''
+            norm_input = re.sub(r'[^a-z0-9]', '', clean_title.lower())
+
+            # Match exact title + year
+            if str_year:
+                for result in res:
+                    t_title = re.sub(r'[^a-z0-9]', '', (result.get('name') or '').lower())
+                    first_air_date = result.get('first_air_date') or ''
+                    if t_title == norm_input and first_air_date[:4] == str_year:
+                        best_match = result
+                        break
+
+            # Match exact title
+            if not best_match:
+                for result in res:
+                    t_title = re.sub(r'[^a-z0-9]', '', (result.get('name') or '').lower())
+                    if t_title == norm_input:
+                        best_match = result
+                        break
+
+            # Match year
+            if not best_match and str_year:
+                for result in res:
+                    first_air_date = result.get('first_air_date') or ''
+                    if first_air_date[:4] == str_year:
+                        best_match = result
+                        break
+
+            if not best_match:
+                best_match = res[0]
+                
+            ids = best_match['id']
+            show_name = best_match.get('name') or best_match.get('original_name') or clean_title
+
+        show_name = format_display_title(show_name or clean_title)
         
-        # Get season details for poster
+        # Get season details for season-specific poster
+        poster = None
+        full_title = f"{show_name}, Season {season_num or 1}" if season_num else show_name
         try:
-            show_season = season_api.details(ids, season_num or 1)
-            poster_path = show_season.poster_path
-            poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else f"https://image.tmdb.org/t/p/w500{best_match.get('poster_path') or ''}"
-            season_name = show_season.name if (hasattr(show_season, 'name') and show_season.name) else f"Season {season_num or 1}"
-            full_title = f"{show_name}, {season_name}"
+            show_season = season_api.details(ids, int(season_num) if season_num else 1)
+            poster_path = getattr(show_season, 'poster_path', None)
+            if poster_path:
+                poster = f"https://image.tmdb.org/t/p/w500{poster_path}"
+            s_name = getattr(show_season, 'name', None)
+            if s_name:
+                full_title = f"{show_name}, {s_name}"
         except Exception:
+            pass
+
+        # Fallback to series main poster
+        if not poster:
+            try:
+                tv_data = tv_api.details(ids)
+                poster_path = getattr(tv_data, 'poster_path', None)
+                if poster_path:
+                    poster = f"https://image.tmdb.org/t/p/w500{poster_path}"
+            except Exception:
+                pass
+
+        if not poster and best_match:
             poster_path = best_match.get('poster_path')
-            poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/200x300?text=No+Poster"
-            full_title = f"{show_name}, Season {season_num or 1}" if season_num else show_name
-            
-        genre_ids = best_match.get('genre_ids', [])
-        genre_list = [tv_genres.get(gid, "") for gid in genre_ids if tv_genres.get(gid)]
-        genre = ", ".join(genre_list) if genre_list else "Unknown"
+            if poster_path:
+                poster = f"https://image.tmdb.org/t/p/w500{poster_path}"
+
+        if not poster:
+            poster = f"https://placehold.co/500x750/0f172a/7eb5c4?text={requests.utils.quote(clean_title[:20])}"
+
+        # Genres
+        genre = "TV Series"
+        try:
+            tv_details = tv_api.details(ids)
+            genres = getattr(tv_details, 'genres', []) or []
+            genre_names = [g.get('name', '') if isinstance(g, dict) else getattr(g, 'name', '') for g in genres]
+            if genre_names:
+                genre = ", ".join(filter(None, genre_names))
+        except Exception:
+            if best_match:
+                genre_ids = best_match.get('genre_ids', [])
+                genre_list = [tv_genres.get(gid, "") for gid in genre_ids if tv_genres.get(gid)]
+                if genre_list:
+                    genre = ", ".join(genre_list)
         
         director = "Unknown"
         if manual_director:
@@ -234,29 +330,22 @@ def get_tv_details(title, year, season_num, manual_director=None):
                 if hasattr(tv_details, 'created_by') and tv_details.created_by:
                     director = tv_details.created_by[0]['name']
                 else:
-                    # Try to get credits for TV show
-                    try:
-                        api_key = tmdb.api_key
-                        credits_url = f"https://api.themoviedb.org/3/tv/{ids}/credits?api_key={api_key}"
-                        credits_response = requests.get(credits_url)
-                        if credits_response.status_code == 200:
-                            credits_data = credits_response.json()
-                            for crew_member in credits_data.get('crew', []):
-                                if crew_member['job'] in ['Director', 'Creator', 'Executive Producer']:
-                                    director = crew_member['name']
-                                    break
-                    except Exception:
-                        pass
-                    
-                    if not director or director == "Unknown":
-                        director = "Various Directors"
+                    api_key = tmdb.api_key or os.environ.get('TMDB_API_KEY')
+                    credits_url = f"https://api.themoviedb.org/3/tv/{ids}/credits?api_key={api_key}"
+                    credits_response = requests.get(credits_url, timeout=5)
+                    if credits_response.status_code == 200:
+                        credits_data = credits_response.json()
+                        for crew_member in credits_data.get('crew', []):
+                            if crew_member.get('job') in ['Director', 'Creator', 'Executive Producer']:
+                                director = crew_member['name']
+                                break
             except Exception:
-                director = "Unknown"
+                pass
                 
         return {
             "poster": poster,
             "genre": genre,
-            "director": director,
+            "director": director if director != "Unknown" else (manual_director or "Unknown"),
             "title": full_title
         }
     except Exception as e:
@@ -297,12 +386,14 @@ def search_titles(query, is_tv=False, limit=12):
                 
             poster_path = item.get('poster_path')
             poster = f"https://image.tmdb.org/t/p/w92{poster_path}" if poster_path else "https://via.placeholder.com/92x138?text=No+Poster"
+            poster_w500 = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else ""
             
             results.append({
                 "id": item.get('id'),
                 "title": title, 
                 "year": year, 
                 "poster": poster,
+                "poster_w500": poster_w500,
                 "type": media_type
             })
             

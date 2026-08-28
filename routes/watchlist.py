@@ -60,21 +60,25 @@ def add_item():
         year = request.form.get("year", "")
         tv_show = request.form.get("tv", "0")
         friend_id = request.form.get("friend_id") # If provided, it's a shared watchlist
+        tmdb_id = request.form.get("tmdb_id", "").strip() or None
+        form_poster = request.form.get("poster_url", "").strip() or None
         
         if manual_director:
             manual_director = clean_and_capitalize_name(manual_director)
 
         if tv_show == "1":
-            details = tmdb_service.get_tv_details(title, year, 1, manual_director)
+            details = tmdb_service.get_tv_details(title, year, 1, manual_director, tmdb_id=tmdb_id)
         else:
-            details = tmdb_service.get_movie_details(title, year, manual_director)
+            details = tmdb_service.get_movie_details(title, year, manual_director, tmdb_id=tmdb_id)
 
         if details:
-            poster = details["poster"]
-            director = details["director"]
-            title = details["title"]
+            poster = details.get("poster") or form_poster or _NO_POSTER
+            if form_poster and ("placeholder" in poster or "placehold.co" in poster):
+                poster = form_poster
+            director = details.get("director") or manual_director or "Unknown"
+            title = details.get("title") or title
         else:
-            poster = _NO_POSTER
+            poster = form_poster or _NO_POSTER
             director = manual_director or "Unknown"
 
         # Determine which watchlist to add to
