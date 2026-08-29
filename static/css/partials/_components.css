@@ -2901,10 +2901,17 @@ body.movie-drawer-open {
 }
 
 .profile-page-shell {
-  max-width: 900px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 16px 24px 80px;
+  padding: 20px 32px 80px;
   box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .profile-page-shell {
+    padding: 16px 20px 80px;
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 600px) {
@@ -2914,7 +2921,6 @@ body.movie-drawer-open {
 
   .profile-page-shell {
     padding: 12px 16px 80px;
-    max-width: 100%;
   }
 }
 
@@ -3206,6 +3212,31 @@ body.movie-drawer-open {
 
 .sect-symbol {
   color: #c4a96d;
+}
+
+/* Charts Multi-Column Grid */
+.profile-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.profile-charts-grid .profile-min-section {
+  margin-bottom: 0;
+}
+
+.profile-charts-grid .span-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 860px) {
+  .profile-charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-charts-grid .span-full {
+    grid-column: auto;
+  }
 }
 
 /* Minimal Sentiment Histogram */
