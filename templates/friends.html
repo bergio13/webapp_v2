@@ -81,6 +81,22 @@
     letter-spacing: 0.5px;
   }
 
+  /* Connections Search Wrap */
+  .connections-search-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.25rem;
+  }
+
+  @media (max-width: 600px) {
+    .connections-search-wrap {
+      justify-content: stretch;
+    }
+    .connections-search-wrap .search-box-wrap {
+      width: 100%;
+    }
+  }
+
   /* Live Search Box */
   .search-box-wrap {
     position: relative;
@@ -1135,77 +1151,18 @@
 <main class="friends-main-shell">
   <div class="friends-container">
     
-    <!-- Top Header with Title and Live Search -->
-    <header class="friends-header-bar">
-      <div class="friends-title-wrap">
-        <h1 class="friends-title">
-          <span class="slash-accent">//</span> Friends
-        </h1>
-      </div>
-
-      <!-- Live Search Box -->
-      <div class="search-box-wrap">
-        <form method="post" action="/friends" class="search-form-interactive" id="searchForm">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <span class="search-tag-prefix">find_user:</span>
-          <input
-            type="text"
-            placeholder="username..."
-            name="name"
-            id="liveSearchInput"
-            class="search-input-live"
-            autocomplete="off"
-          />
-          <button type="submit" class="search-btn-submit" title="Search User">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
-        </form>
-
-        <!-- Dropdown for live results -->
-        <div class="search-live-dropdown" id="searchLiveDropdown">
-          <div id="searchDropdownContent"></div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Traditional Fallback Search Results (if form submitted) -->
-    {% if users and users|length > 0 %}
-    <div style="background: rgba(22, 20, 36, 0.8); border: 1px solid var(--friends-border); border-radius: 12px; padding: 16px; margin-bottom: 2rem;">
-      <div style="font-family: var(--font-mono, monospace); font-size: 0.9rem; color: var(--friends-purple); margin-bottom: 10px;">
-        ═══ SEARCH_RESULTS ═══
-      </div>
-      {% for user in users %}
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-        <span style="font-family: var(--font-mono, monospace); color: #f1f5f9;">> {{ user.username }}</span>
-        {% if user.id not in friends|map(attribute="user_id")|list and user.id != current_user.id %}
-        <form method="post" action="/follow" style="margin: 0">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <input type="hidden" name="username" value="{{ user.username }}" />
-          <input type="hidden" name="user_id" value="{{ user.id }}" />
-          <button type="submit" class="btn-live-action btn-live-follow">[ + FOLLOW ]</button>
-        </form>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-    {% elif users == [] %}
-    <div class="cyber-empty-state" style="margin-bottom: 2rem; padding: 20px;">
-      <div style="font-family: var(--font-mono, monospace); color: var(--friends-coral);">> No users found matching your search</div>
-    </div>
-    {% endif %}
-
     <!-- Cyber Navigation Tabs: Switch between Activity Feed & Connections -->
     <nav class="friends-nav-tabs" role="tablist" aria-label="Friends Sections">
-      <button type="button" class="friends-tab-btn is-active" data-tab="tab-activity" role="tab" aria-selected="true">
-        <span class="tab-bracket tab-open">&gt;</span> <span class="tab-name">RECENT ACTIVITY</span> <span class="tab-bracket tab-close">&lt;</span>
+      <button type="button" class="friends-tab-btn {{ 'is-active' if not users else '' }}" data-tab="tab-activity" role="tab" aria-selected="{{ 'true' if not users else 'false' }}">
+        <span class="tab-bracket tab-open">{{ '>' if not users else '[' }}</span> <span class="tab-name">RECENT ACTIVITY</span> <span class="tab-bracket tab-close">{{ '<' if not users else ']' }}</span>
       </button>
-      <button type="button" class="friends-tab-btn" data-tab="tab-connections" role="tab" aria-selected="false">
-        <span class="tab-bracket tab-open">[</span> <span class="tab-name">CONNECTIONS ({{ friends|length }})</span> <span class="tab-bracket tab-close">]</span>
+      <button type="button" class="friends-tab-btn {{ 'is-active' if users else '' }}" data-tab="tab-connections" role="tab" aria-selected="{{ 'true' if users else 'false' }}">
+        <span class="tab-bracket tab-open">{{ '>' if users else '[' }}</span> <span class="tab-name">CONNECTIONS ({{ friends|length }})</span> <span class="tab-bracket tab-close">{{ '<' if users else ']' }}</span>
       </button>
     </nav>
 
     <!-- TAB 1: RECENT ACTIVITY (Primary Feed) -->
-    <div id="tab-activity" class="friends-tab-pane is-active" role="tabpanel">
+    <div id="tab-activity" class="friends-tab-pane {{ 'is-active' if not users else '' }}" role="tabpanel">
       
       <!-- Quick Friend Stories Avatar Strip (Click avatar to filter activity) -->
       {% if friends and friends|length > 0 %}
@@ -1242,7 +1199,7 @@
           <div class="activity-controls-row">
             <div class="activity-filter-group" role="tablist" aria-label="Activity Filters">
               <button type="button" class="filter-pill is-active" data-filter="all">[ ALL ]</button>
-              <button type="button" class="filter-pill" data-filter="top">[ 5★ ONLY ]</button>
+              <button type="button" class="filter-pill" data-filter="top">[ <i class="fa-solid fa-crown"></i> ONLY ]</button>
               <button type="button" class="filter-pill" data-filter="cinema">[ <i class="fa-solid fa-film"></i> CINEMA ]</button>
               <button type="button" class="filter-pill" data-filter="rewatch">[ <i class="fa-solid fa-repeat"></i> REWATCH ]</button>
             </div>
@@ -1341,7 +1298,58 @@
     </div>
 
     <!-- TAB 2: CONNECTIONS DIRECTORY -->
-    <div id="tab-connections" class="friends-tab-pane" role="tabpanel">
+    <div id="tab-connections" class="friends-tab-pane {{ 'is-active' if users else '' }}" role="tabpanel">
+      <!-- Search Box inside Connections -->
+      <div class="connections-search-wrap">
+        <div class="search-box-wrap">
+          <form method="post" action="/friends" class="search-form-interactive" id="searchForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <span class="search-tag-prefix">find_user:</span>
+            <input
+              type="text"
+              placeholder="username..."
+              name="name"
+              id="liveSearchInput"
+              class="search-input-live"
+              autocomplete="off"
+            />
+            <button type="submit" class="search-btn-submit" title="Search User">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </form>
+
+          <!-- Dropdown for live results -->
+          <div class="search-live-dropdown" id="searchLiveDropdown">
+            <div id="searchDropdownContent"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Traditional Fallback Search Results (if form submitted) -->
+      {% if users and users|length > 0 %}
+      <div style="background: rgba(22, 20, 36, 0.8); border: 1px solid var(--friends-border); border-radius: 12px; padding: 16px; margin-bottom: 1.5rem;">
+        <div style="font-family: var(--font-mono, monospace); font-size: 0.9rem; color: var(--friends-purple); margin-bottom: 10px;">
+          ═══ SEARCH_RESULTS ═══
+        </div>
+        {% for user in users %}
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <span style="font-family: var(--font-mono, monospace); color: #f1f5f9;">> {{ user.username }}</span>
+          {% if user.id not in friends|map(attribute="user_id")|list and user.id != current_user.id %}
+          <form method="post" action="/follow" style="margin: 0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" name="username" value="{{ user.username }}" />
+            <input type="hidden" name="user_id" value="{{ user.id }}" />
+            <button type="submit" class="btn-live-action btn-live-follow">[ + FOLLOW ]</button>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% elif users == [] %}
+      <div class="cyber-empty-state" style="margin-bottom: 1.5rem; padding: 20px;">
+        <div style="font-family: var(--font-mono, monospace); color: var(--friends-coral);">> No users found matching your search</div>
+      </div>
+      {% endif %}
       {% if friends and friends|length > 0 %}
       <div class="friends-dossier-grid" id="friendsGrid">
         {% for friend in friends %}

@@ -4655,16 +4655,23 @@ body.movie-drawer-open {
    What's New Announcement Modal
    ========================================================================== */
 .whats-new-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: rgba(10, 14, 20, 0.82);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 99999 !important;
+  background: rgba(8, 12, 18, 0.85) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  margin: 0 !important;
+  box-sizing: border-box !important;
   animation: pwaFadeIn 0.25s ease-out forwards;
 }
 
@@ -4678,14 +4685,18 @@ body.movie-drawer-open {
 }
 
 .whats-new-modal {
-  background: rgba(22, 33, 46, 0.96);
-  border: 1px solid rgba(126, 181, 196, 0.35);
+  position: relative;
+  background: #101923 !important;
+  border: 1px solid rgba(126, 181, 196, 0.4) !important;
   border-radius: 14px;
   width: 100%;
   max-width: 520px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(126, 181, 196, 0.18);
+  margin: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(126, 181, 196, 0.2) !important;
   overflow: hidden;
+  box-sizing: border-box;
   animation: pwaScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 100000 !important;
 }
 
 @keyframes pwaScaleUp {
