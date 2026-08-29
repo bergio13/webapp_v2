@@ -1967,6 +1967,7 @@ select option {
   grid-template-columns: 1fr 340px;
   gap: 20px;
   align-items: start;
+  margin-top: 1.25rem;
 }
 
 @media (max-width: 900px) {
@@ -1977,10 +1978,48 @@ select option {
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 20px;
   width: 100%;
+}
+
+.stat-box-action {
+  border: 1px dashed rgba(122, 168, 152, 0.45);
+  background: rgba(122, 168, 152, 0.08);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.stat-box-action:hover {
+  transform: translateY(-3px);
+  border-color: var(--ocean-green) !important;
+  background: rgba(122, 168, 152, 0.22) !important;
+  box-shadow: 0 0 16px rgba(122, 168, 152, 0.35), inset 0 0 8px rgba(122, 168, 152, 0.2);
+}
+
+.stat-box-action .stat-action-value {
+  color: var(--ocean-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.stat-box-action:hover .stat-action-value {
+  transform: scale(1.15);
+  color: #ffffff;
+  text-shadow: 0 0 10px var(--ocean-green);
+}
+
+.stat-box-action .stat-action-label {
+  color: var(--ocean-light);
+  transition: color 0.2s ease;
+}
+
+.stat-box-action:hover .stat-action-label {
+  color: #ffffff;
 }
 
 .stat-value {

@@ -450,7 +450,7 @@
 
   // ───────── Global Event Interceptor ─────────
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function setupDrawerEvents() {
     initElements();
 
     // Delegate clicks on any movie title or poster link
@@ -487,9 +487,9 @@
         title = card.getAttribute("data-title") || (card.querySelector(".card-title, .movie-title") ? card.querySelector(".card-title, .movie-title").textContent.trim() : "");
       }
 
-      if (title) {
+      if (title || tmdb_id) {
         window.openMovieDrawer({
-          title: title.trim(),
+          title: title ? title.trim() : "",
           year: year ? year.trim() : null,
           is_tv: is_tv === "1" || is_tv === "true" || is_tv === true,
           tmdb_id: tmdb_id || null,
@@ -498,5 +498,11 @@
         });
       }
     });
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupDrawerEvents);
+  } else {
+    setupDrawerEvents();
+  }
 })();

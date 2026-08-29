@@ -44,132 +44,541 @@
     ) !important;
   }
 
-  .home-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: white;
-    letter-spacing: 3px;
-    margin: 0;
-    text-shadow: 0 0 15px rgba(100, 181, 246, 0.4);
+  .home-layout {
+    margin-top: 1.25rem;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SMART CONTEXTUAL HERO (HYBRID DASHBOARD HUB)
+     ═══════════════════════════════════════════════════════════════════════ */
+  .home-smart-hero {
+    position: relative;
+    border-radius: 14px;
+    border: 1px solid rgba(126, 181, 196, 0.3) !important;
+    background: rgba(14, 22, 32, 0.65) !important;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(126, 181, 196, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex;
-    align-items: center;
-    line-height: 1;
-  }
-  
-  .home-title span {
-    color: var(--ocean-blue);
-    margin-right: 10px;
-    font-size: 2.2rem;
+    flex-direction: column;
   }
 
-  .home-ascii {
-    margin-left: 1%;
-  }
-
-  .header-row {
+  .smart-hero-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 1.25rem;
-    width: 100%;
+    padding: 8px 16px;
+    border-bottom: 1px dashed rgba(126, 181, 196, 0.25);
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 4;
   }
 
-  /* Sleek Cyber Highlight Card */
-  .home-highlight-card {
-    position: relative;
+  .smart-hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: var(--ocean-green);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    min-width: 0;
+  }
+
+  .smart-hero-tag .tag-short {
+    display: none;
+  }
+
+  .smart-hero-tag .tag-full {
+    display: inline;
+  }
+
+  .hero-card-main-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .stat-sub {
+    font-size: 0.85rem;
+    color: var(--ocean-grey);
+    opacity: 0.75;
+    margin-left: 2px;
+  }
+
+  .hero-icon-gold {
+    color: #ffd700;
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
+  }
+
+  .hero-icon-cyan {
+    color: var(--ocean-green);
+    filter: drop-shadow(0 0 6px rgba(126, 181, 196, 0.6));
+  }
+
+  .smart-hero-mode-pills {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(8, 14, 22, 0.7);
+    padding: 3px;
+    border-radius: 20px;
+    border: 1px solid rgba(126, 181, 196, 0.2);
+  }
+
+  .hero-pill-btn {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--ocean-grey);
+    font-family: 'VT323', monospace;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
     border-radius: 14px;
-    border: 1px solid rgba(126, 181, 196, 0.25) !important;
-    background: rgba(19, 28, 39, 0.5) !important;
-    margin-bottom: 1.25rem;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .highlight-backdrop {
+  .hero-pill-btn:hover {
+    color: #ffffff;
+    background: rgba(126, 181, 196, 0.15);
+  }
+
+  .hero-pill-btn.active {
+    background: rgba(126, 181, 196, 0.3);
+    color: #ffffff;
+    border: 1px solid rgba(126, 181, 196, 0.4);
+    box-shadow: 0 0 10px rgba(126, 181, 196, 0.25);
+    font-weight: bold;
+  }
+
+  .smart-hero-body {
+    position: relative;
+    width: 100%;
+    z-index: 2;
+  }
+
+  .hero-view-panel {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hero-view-panel.is-active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── VIEW 1: WATCHLIST ROULETTE CARD ── */
+  .watchlist-pick-card {
+    position: relative;
+    padding: 14px 18px;
+    overflow: hidden;
+    border-radius: 0 0 14px 14px;
+  }
+
+  .strip-card-backdrop {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-size: cover;
     background-position: center;
-    filter: blur(20px) brightness(0.4);
-    transform: scale(1.15);
+    filter: blur(16px) saturate(2.4) brightness(0.45);
+    transform: scale(1.3);
     z-index: 0;
+    opacity: 0.7;
+    transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease;
   }
 
-  .highlight-content {
+  .strip-card-tint {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(10, 16, 26, 0.4) 0%,
+      rgba(10, 16, 26, 0.7) 100%
+    );
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .watchlist-pick-content {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    padding: 14px 18px;
     gap: 16px;
-    width: 100%;
-    box-sizing: border-box;
+    transition: opacity 0.25s ease, transform 0.25s ease;
   }
 
-  .highlight-poster {
-    width: 54px;
+  .watchlist-pick-poster-wrap {
+    position: relative;
+    flex-shrink: 0;
+    display: block;
+    cursor: pointer;
+  }
+
+  .poster-ambient-glow {
+    position: absolute;
+    inset: -3px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    filter: blur(8px) saturate(2.5);
+    opacity: 0.85;
+    z-index: -1;
+    transform: scale(1.1);
+    transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+  }
+
+  .watchlist-pick-poster {
+    width: 58px;
     aspect-ratio: 2 / 3;
     height: auto;
-    border-radius: 6px;
+    border-radius: 8px;
     object-fit: cover;
-    border: 1px solid rgba(126, 181, 196, 0.35);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-    flex-shrink: 0;
-    background: #131c27;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
+    display: block;
+    transition: transform 0.25s ease;
   }
 
-  .highlight-info {
+  .watchlist-pick-poster-wrap:hover .watchlist-pick-poster {
+    transform: scale(1.06);
+    border-color: rgba(126, 181, 196, 0.8);
+  }
+
+  .watchlist-pick-info {
     flex-grow: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
   }
 
-  .highlight-tag {
-    font-family: 'VT323', monospace;
-    font-size: 1.05rem;
-    color: var(--ocean-green);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    opacity: 0.9;
-    line-height: 1;
+  .watchlist-pick-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  .highlight-title {
+  .eyebrow-badge {
     font-family: 'VT323', monospace;
-    font-size: 1.8rem;
+    font-size: 0.85rem;
+    color: #ffd700;
+    letter-spacing: 0.5px;
+    background: rgba(255, 215, 0, 0.15);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+  }
+
+  .eyebrow-count {
+    font-family: 'VT323', monospace;
+    font-size: 0.85rem;
+    color: var(--ocean-grey);
+    opacity: 0.8;
+  }
+
+  .watchlist-pick-title {
+    font-family: 'VT323', monospace;
+    font-size: 1.65rem;
     color: #ffffff;
     margin: 0;
     line-height: 1.1;
-    white-space: normal;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+
+  .watchlist-pick-meta {
+    font-family: 'VT323', monospace;
+    font-size: 1.05rem;
+    color: #d0dde5;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .watchlist-pick-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-hero-action {
+    font-family: 'VT323', monospace;
+    font-size: 1.05rem;
+    padding: 6px 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    white-space: nowrap;
+  }
+
+  .btn-shuffle {
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    color: #ffd700;
+  }
+
+  .btn-shuffle:hover {
+    background: rgba(255, 215, 0, 0.28);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  }
+
+  .btn-details {
+    background: rgba(126, 181, 196, 0.18);
+    border: 1px solid rgba(126, 181, 196, 0.4);
+    color: #ffffff;
+  }
+
+  .btn-details:hover {
+    background: rgba(126, 181, 196, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(126, 181, 196, 0.3);
+  }
+
+  /* ── VIEW 2: CINEMA RADAR (IN THEATERS NOW) ── */
+  .badge-radar {
+    background: rgba(126, 181, 196, 0.2);
+    border: 1px solid rgba(126, 181, 196, 0.4);
+    color: var(--ocean-green);
+  }
+
+  .radar-hero-card {
+    position: relative;
+    padding: 14px 18px;
+    overflow: hidden;
+    border-radius: 0 0 14px 14px;
+  }
+
+  .radar-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .radar-overview-text {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.86rem;
+    line-height: 1.4;
+    color: #edf2f7;
+    margin: 3px 0 0 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+    max-width: 620px;
+    letter-spacing: 0.15px;
+    white-space: normal;
   }
 
-  .highlight-badge-wrap {
-    flex-shrink: 0;
+  /* ── VIEW 3: DUAL 2026 GOALS (52 FILMS + 12 CINEMA TRIPS) ── */
+  .goal-challenge-wrap {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .goal-dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .goal-card-item {
+    background: rgba(8, 14, 22, 0.55);
+    border: 1px solid rgba(126, 181, 196, 0.22);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .goal-card-item.goal-cinema-item {
+    border-color: rgba(181, 138, 138, 0.3);
+    background: rgba(22, 14, 18, 0.45);
+  }
+
+  .goal-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .goal-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .goal-eyebrow {
+    font-family: 'VT323', monospace;
+    font-size: 0.92rem;
+    color: var(--ocean-green);
+    letter-spacing: 1px;
+  }
+
+  .goal-eyebrow.eyebrow-cinema {
+    color: var(--ocean-coral);
+  }
+
+  .goal-challenge-count {
+    font-family: 'VT323', monospace;
+    font-size: 1.55rem;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .goal-slash {
+    color: var(--ocean-grey);
+    opacity: 0.7;
+    margin: 0 2px;
+  }
+
+  .goal-unit {
+    font-size: 0.85rem;
+    color: var(--ocean-grey);
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    margin-left: 4px;
+  }
+
+  .badge-status-glow {
+    font-family: 'VT323', monospace;
+    font-size: 0.88rem;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .badge-status-glow.on-track {
+    background: rgba(126, 181, 196, 0.2);
+    border: 1px solid rgba(126, 181, 196, 0.4);
+    color: var(--ocean-green);
+    box-shadow: 0 0 10px rgba(126, 181, 196, 0.2);
+  }
+
+  .badge-status-glow.on-track-cinema {
+    background: rgba(181, 138, 138, 0.22);
+    border: 1px solid rgba(181, 138, 138, 0.45);
+    color: var(--ocean-coral);
+    box-shadow: 0 0 10px rgba(181, 138, 138, 0.2);
+  }
+
+  .badge-status-glow.success {
+    background: rgba(255, 215, 0, 0.2);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.25);
+  }
+
+  .badge-status-glow.pace-behind {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--ocean-light);
+  }
+
+  .goal-progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(8, 14, 22, 0.85);
+    border: 1px solid rgba(126, 181, 196, 0.25);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .goal-progress-track.track-cinema {
+    border-color: rgba(181, 138, 138, 0.3);
+  }
+
+  .goal-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3d7a8a 0%, #7eb5c4 50%, #ffd700 100%);
+    border-radius: 4px;
+    position: relative;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .goal-progress-fill.fill-cinema {
+    background: linear-gradient(90deg, #8a3d4f 0%, #b58a8a 50%, #ff8a70 100%);
+  }
+
+  .stat-icon {
+    font-size: 1.15rem;
+    margin-right: 6px;
+    vertical-align: -1px;
+    opacity: 0.9;
+  }
+
+  /* ── EMPTY STATE ── */
+  .hero-empty-state {
+    padding: 16px 20px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 14px;
   }
 
-  /* Compact 3-Column Stats Grid */
+  .hero-empty-icon {
+    font-size: 1.8rem;
+    color: var(--ocean-grey);
+    opacity: 0.7;
+  }
+
+  .hero-empty-text h4 {
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: #ffffff;
+    margin: 0 0 2px 0;
+  }
+
+  .hero-empty-text p {
+    font-family: 'VT323', monospace;
+    font-size: 0.95rem;
+    color: var(--ocean-grey);
+    margin: 0;
+  }
+
+  /* Compact 4-Column Stats & Action Grid */
   .stats-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     margin-bottom: 1.25rem;
     width: 100%;
@@ -185,12 +594,51 @@
     border: 1px solid rgba(126, 181, 196, 0.15);
     background: rgba(19, 28, 39, 0.55);
     text-align: center;
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    text-decoration: none;
+    user-select: none;
   }
 
   .stat-box:hover {
     transform: translateY(-2px);
     border-color: rgba(126, 181, 196, 0.35);
+  }
+
+  .stat-box-action {
+    border: 1px dashed rgba(122, 168, 152, 0.45);
+    background: rgba(122, 168, 152, 0.08);
+    cursor: pointer;
+  }
+
+  .stat-box-action:hover {
+    transform: translateY(-3px);
+    border-color: var(--ocean-green) !important;
+    background: rgba(122, 168, 152, 0.22) !important;
+    box-shadow: 0 0 16px rgba(122, 168, 152, 0.35), inset 0 0 8px rgba(122, 168, 152, 0.2);
+  }
+
+  .stat-box-action .stat-action-value {
+    color: var(--ocean-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .stat-box-action:hover .stat-action-value {
+    transform: scale(1.15);
+    color: #ffffff;
+    text-shadow: 0 0 10px var(--ocean-green);
+  }
+
+  .stat-box-action .stat-action-label {
+    color: var(--ocean-light);
+    transition: color 0.2s ease;
+  }
+
+  .stat-box-action:hover .stat-action-label {
+    color: #ffffff;
   }
 
   .stat-value {
@@ -241,30 +689,6 @@
     background-color: rgba(59, 154, 138, 0.35) !important;
     box-shadow: inset 0 0 15px rgba(100, 181, 246, 0.2);
     transform: scale(1.005);
-  }
-
-  .btn-add-movie-terminal {
-    font-family: "VT323", "Courier New", monospace !important;
-    font-size: 1.2rem;
-    background: rgba(129, 199, 132, 0.12) !important;
-    border: 1.5px solid var(--ocean-green) !important;
-    color: var(--ocean-green) !important;
-    border-radius: 6px !important;
-    padding: 8px 16px;
-    text-decoration: none;
-    transition: all 0.25s ease;
-    letter-spacing: 1px;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .btn-add-movie-terminal:hover {
-    background: rgba(129, 199, 132, 0.22) !important;
-    box-shadow: 0 0 12px rgba(129, 199, 132, 0.5), inset 0 0 8px rgba(129, 199, 132, 0.3);
-    text-shadow: 0 0 8px var(--ocean-green);
   }
 
   /* Mobile Internal Segmented Toggle (Inside the card) */
@@ -353,16 +777,150 @@
   .table-home tbody td a {
     font-family: "VT323", "Courier New", monospace;
     color: white !important;
+    text-decoration: none;
     transition: all 0.2s ease;
   }
 
   .table-home tbody td a:hover {
     color: var(--ocean-blue) !important;
+    text-decoration: none;
   }
 
   @media (max-width: 768px) {
     .ascii-header {
       display: none;
+    }
+
+    .home-layout {
+      margin-top: 0.75rem;
+    }
+
+    .home-smart-hero {
+      margin-bottom: 0.85rem;
+      border-radius: 12px;
+    }
+
+    .smart-hero-header {
+      padding: 8px 10px !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 6px !important;
+    }
+
+    .smart-hero-tag {
+      font-size: 1rem;
+      gap: 6px;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+    }
+
+    .smart-hero-tag .tag-full {
+      display: inline;
+    }
+
+    .smart-hero-tag .tag-short {
+      display: none;
+    }
+
+    .smart-hero-mode-pills {
+      display: flex !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      justify-content: space-between !important;
+      gap: 4px !important;
+      padding: 3px !important;
+    }
+
+    .hero-pill-btn {
+      flex: 1 1 0 !important;
+      justify-content: center !important;
+      padding: 4px 6px !important;
+      font-size: 0.86rem !important;
+      gap: 5px !important;
+      text-align: center !important;
+    }
+
+    .watchlist-pick-card,
+    .radar-hero-card {
+      padding: 10px 12px;
+    }
+
+    .watchlist-pick-content,
+    .radar-hero-content {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 10px !important;
+    }
+
+    .hero-card-main-row {
+      width: 100%;
+      gap: 10px;
+    }
+
+    .watchlist-pick-poster {
+      width: 46px !important;
+      border-radius: 6px;
+    }
+
+    .watchlist-pick-title {
+      font-size: 1.25rem !important;
+      line-height: 1.1;
+      white-space: normal !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 1 !important;
+      -webkit-box-orient: vertical !important;
+    }
+
+    .watchlist-pick-meta {
+      font-size: 0.9rem !important;
+    }
+
+    .radar-overview-text {
+      font-size: 0.78rem !important;
+      line-height: 1.25 !important;
+      -webkit-line-clamp: 2 !important;
+      max-width: 100% !important;
+    }
+
+    .watchlist-pick-actions {
+      display: flex !important;
+      width: 100% !important;
+      gap: 8px !important;
+    }
+
+    .btn-hero-action {
+      flex: 1 1 0 !important;
+      justify-content: center !important;
+      font-size: 0.92rem !important;
+      padding: 5px 8px !important;
+    }
+
+    .goal-challenge-wrap {
+      padding: 10px 12px;
+    }
+
+    .goal-dual-grid {
+      grid-template-columns: 1fr !important;
+      gap: 8px !important;
+    }
+
+    .goal-card-item {
+      padding: 8px 10px !important;
+      gap: 6px !important;
+    }
+
+    .goal-eyebrow {
+      font-size: 0.82rem !important;
+    }
+
+    .goal-challenge-count {
+      font-size: 1.35rem !important;
+    }
+
+    .badge-status-glow {
+      font-size: 0.78rem !important;
+      padding: 2px 6px !important;
     }
 
     .table-container {
@@ -378,73 +936,41 @@
   }
 
   @media (max-width: 600px) {
-    .header-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    .home-title {
-      font-size: 1.65rem;
-      letter-spacing: 1px;
-    }
-
-    .home-title span {
-      font-size: 1.4rem;
-      margin-right: 6px;
-    }
-
-    .btn-add-movie-terminal {
-      font-size: 1rem;
-      padding: 6px 10px;
-      letter-spacing: 0.5px;
-    }
-
-    .highlight-content {
-      padding: 10px 12px;
-      gap: 12px;
-    }
-
-    .highlight-poster {
-      width: 44px;
-      height: 66px;
-    }
-
-    .highlight-tag {
-      font-size: 0.85rem;
-      letter-spacing: 0.5px;
-    }
-
-    .highlight-title {
-      font-size: 1.4rem;
-      line-height: 1.05;
-      white-space: normal;
-      word-break: break-word;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
     .stats-row {
-      gap: 6px;
-      margin-bottom: 1rem;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 5px !important;
+      margin-bottom: 0.85rem !important;
     }
 
     .stat-box {
-      padding: 8px 4px;
+      padding: 6px 2px !important;
+      border-radius: 8px !important;
     }
 
     .stat-value {
-      font-size: 1.55rem;
+      font-size: 1.22rem !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      white-space: nowrap !important;
+    }
+
+    .stat-icon {
+      font-size: 0.85rem !important;
+      margin-right: 3px !important;
+    }
+
+    .stat-sub {
+      font-size: 0.72rem !important;
     }
 
     .stat-label {
-      font-size: 0.72rem;
-      letter-spacing: 0.2px;
+      font-size: 0.62rem !important;
+      letter-spacing: 0.2px !important;
+    }
+
+    .stat-box-action .stat-action-value {
+      font-size: 1.15rem !important;
     }
 
     .table-home {
@@ -651,48 +1177,224 @@
     <!-- MAIN COLUMN -->
     <div class="main-column">
 
-      <div class="header-row app-toolbar">
-        <h1 class="app-title-terminal home-title glitch-text">
-          <span>//</span> Monthly Log
-        </h1>
-
-        <a href="/add_movie" class="btn-add-movie btn-add-movie-terminal">
-          [ + ADD ENTRY ]
-        </a>
-      </div>
-
-      <!-- HIGHLIGHT OF THE MONTH -->
-      {% if highest_rated %}
-      <div class="home-highlight-card cyber-card glass-panel panel-smoke-heavy">
-        <div class="scanline-overlay"></div>
-        <div class="highlight-backdrop" style="background-image: url('{{highest_rated['poster']}}');"></div>
-        <div class="highlight-content">
-          <img src="{{highest_rated['poster']}}" class="highlight-poster" alt="{{highest_rated['movie']}}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
-          <div class="highlight-info">
-            <span class="highlight-tag">Highlight of the month</span>
-            <h2 class="highlight-title">{{ highest_rated['movie'].upper() }}</h2>
+      <!-- SMART CONTEXTUAL HERO DECK -->
+      <div class="home-smart-hero cyber-card glass-panel" id="smart-hero-deck" data-active-mode="{{ hero_data['default_mode'] if hero_data else 'watchlist' }}">
+        <div class="scanline-overlay" style="opacity: 0.08;"></div>
+        
+        <!-- HERO HEADER & MODE TABS -->
+        <div class="smart-hero-header">
+          <div class="smart-hero-tag" id="smart-hero-title-tag">
+            {% if hero_data and hero_data['default_mode'] == 'watchlist' %}
+              <i class="fa-solid fa-dice hero-icon-gold"></i>
+              <span class="tag-full">WEEKEND WATCH PICK</span>
+              <span class="tag-short">WATCH PICK</span>
+            {% elif hero_data and hero_data['default_mode'] == 'radar' %}
+              <i class="fa-solid fa-satellite-dish hero-icon-cyan"></i>
+              <span class="tag-full">CINEMA RADAR</span>
+              <span class="tag-short">CINEMA RADAR</span>
+            {% else %}
+              <i class="fa-solid fa-bolt hero-icon-gold"></i>
+              <span class="tag-full">VIEWING PACE</span>
+              <span class="tag-short">2026 GOALS</span>
+            {% endif %}
           </div>
-          <div class="highlight-badge-wrap">
-            {{ render_sentiment_badge(highest_rated['rating']) }}
+
+          <!-- Interactive Mode Switcher Pills -->
+          <div class="smart-hero-mode-pills" role="tablist" aria-label="Hero modes">
+            <button type="button" class="hero-pill-btn {% if hero_data and hero_data['default_mode'] == 'watchlist' %}active{% endif %}" onclick="switchHeroMode('watchlist')" title="Watchlist Roulette Pick">
+              <i class="fa-solid fa-dice"></i> <span>Pick</span>
+            </button>
+            <button type="button" class="hero-pill-btn {% if hero_data and hero_data['default_mode'] == 'radar' %}active{% endif %}" onclick="switchHeroMode('radar')" title="Cinema Radar (Now in Theaters)">
+              <i class="fa-solid fa-satellite-dish"></i> <span>Radar</span>
+            </button>
+            <button type="button" class="hero-pill-btn {% if hero_data and hero_data['default_mode'] == 'goal' %}active{% endif %}" onclick="switchHeroMode('goal')" title="2026 Log Challenge & Pace">
+              <i class="fa-solid fa-bolt"></i> <span>Goal</span>
+            </button>
           </div>
         </div>
-      </div>
-      {% endif %}
 
-      <!-- STATS ROW -->
+        <!-- HERO BODY: 3 CONTEXTUAL VIEWS -->
+        <div class="smart-hero-body">
+          
+          <!-- VIEW 1: WATCHLIST ROULETTE (WEEKEND / PICK) -->
+          <div class="hero-view-panel {% if hero_data and hero_data['default_mode'] == 'watchlist' %}is-active{% endif %}" id="hero-view-watchlist">
+            {% if hero_data and hero_data['watchlist_items'] and hero_data['watchlist_items']|length > 0 %}
+              {% set pick = hero_data['watchlist_items'][0] %}
+              <div class="watchlist-pick-card">
+                <div class="strip-card-backdrop" id="pick-backdrop" style="background-image: url('{{ pick['poster'] }}');"></div>
+                <div class="strip-card-tint"></div>
+                
+                <div class="watchlist-pick-content">
+                  <div class="hero-card-main-row">
+                    <a href="#" class="watchlist-pick-poster-wrap trigger-movie-drawer" id="pick-drawer-poster-link" data-movie-drawer="true" data-title="{{ pick['title'] }}" data-year="{{ pick['p_year'] }}" data-poster="{{ pick['poster'] }}" data-director="{{ pick['director'] }}" title="Open {{ pick['title'] }} details">
+                      <div class="poster-ambient-glow" id="pick-poster-glow" style="background-image: url('{{ pick['poster'] }}');"></div>
+                      <img id="pick-poster-img" src="{{ pick['poster'] }}" class="watchlist-pick-poster" alt="{{ pick['title'] }}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
+                    </a>
+
+                    <div class="watchlist-pick-info">
+                      <div class="watchlist-pick-eyebrow">
+                        <span class="eyebrow-badge">RECOMMENDED FOR TONIGHT</span>
+                        <span class="eyebrow-count">{{ hero_data['watchlist_items']|length }} on list</span>
+                      </div>
+                      <h3 class="watchlist-pick-title" id="pick-title-text">{{ pick['title'].upper() }}</h3>
+                      <p class="watchlist-pick-meta" id="pick-meta-text">
+                        <span id="pick-year-val">{{ pick['p_year'] if pick['p_year'] else '—' }}</span>
+                        {% if pick['director'] %}
+                        <span class="meta-dot">·</span>
+                        <span id="pick-director-val">{{ pick['director'] }}</span>
+                        {% endif %}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="watchlist-pick-actions">
+                    <button type="button" class="btn-hero-action btn-shuffle" onclick="shuffleWatchlistPick()" title="Roll another random movie from your watchlist">
+                      <i class="fa-solid fa-shuffle"></i> <span>Shuffle</span>
+                    </button>
+                    <a href="#" class="btn-hero-action btn-details trigger-movie-drawer" id="pick-drawer-action-link" data-movie-drawer="true" data-title="{{ pick['title'] }}" data-year="{{ pick['p_year'] }}" data-poster="{{ pick['poster'] }}" data-director="{{ pick['director'] }}" title="Open details">
+                      <i class="fa-solid fa-circle-info"></i> <span>Details</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <!-- Empty Watchlist Fallback -->
+              <div class="hero-empty-state">
+                <div class="hero-empty-icon"><i class="fa-solid fa-bookmark"></i></div>
+                <div class="hero-empty-text">
+                  <h4>YOUR WATCHLIST IS EMPTY</h4>
+                  <p>Add titles you want to watch soon, and we'll serve personalized recommendations for movie night!</p>
+                </div>
+                <a href="/watchlist" class="btn-hero-action btn-details">
+                  <i class="fa-solid fa-plus"></i> <span>Open Watchlist</span>
+                </a>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- VIEW 2: CINEMA RADAR (IN THEATERS NOW) -->
+          <div class="hero-view-panel {% if hero_data and hero_data['default_mode'] == 'radar' %}is-active{% endif %}" id="hero-view-radar">
+            {% if hero_data and hero_data['radar_movies'] and hero_data['radar_movies']|length > 0 %}
+              {% set first_radar = hero_data['radar_movies'][0] %}
+              <div class="radar-hero-card">
+                <div class="strip-card-backdrop" id="radar-backdrop" style="background-image: url('{{ first_radar['backdrop'] if first_radar['backdrop'] else first_radar['poster'] }}');"></div>
+                <div class="strip-card-tint"></div>
+
+                <div class="radar-hero-content">
+                  <div class="hero-card-main-row">
+                    <a href="#" class="watchlist-pick-poster-wrap trigger-movie-drawer" id="radar-drawer-poster-link" data-movie-drawer="true" data-title="{{ first_radar['title'] }}" data-year="{{ first_radar['year'] }}" data-poster="{{ first_radar['poster'] }}" data-tmdb-id="{{ first_radar['id'] }}" title="Open {{ first_radar['title'] }} details">
+                      <div class="poster-ambient-glow" id="radar-poster-glow" style="background-image: url('{{ first_radar['poster'] }}');"></div>
+                      <img id="radar-poster-img" src="{{ first_radar['poster'] }}" class="watchlist-pick-poster" alt="{{ first_radar['title'] }}" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';" />
+                    </a>
+
+                    <div class="watchlist-pick-info">
+                      <div class="watchlist-pick-eyebrow">
+                        <span class="eyebrow-badge badge-radar">NOW IN THEATERS</span>
+                        <span class="eyebrow-count" id="radar-rating-val">★ {{ first_radar['rating'] }} TMDB · {{ first_radar['year'] }}</span>
+                      </div>
+                      <h3 class="watchlist-pick-title" id="radar-title-text">{{ first_radar['title'].upper() }}</h3>
+                      <p class="radar-overview-text" id="radar-overview-val">
+                        {{ first_radar['overview'] if first_radar['overview'] else 'Playing now in cinemas nationwide.' }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="watchlist-pick-actions">
+                    <button type="button" class="btn-hero-action btn-shuffle" onclick="nextRadarMovie()" title="Cycle to next movie in theaters">
+                      <i class="fa-solid fa-forward-step"></i> <span>Next</span>
+                    </button>
+                    <a href="#" class="btn-hero-action btn-details trigger-movie-drawer" id="radar-drawer-action-link" data-movie-drawer="true" data-title="{{ first_radar['title'] }}" data-year="{{ first_radar['year'] }}" data-poster="{{ first_radar['poster'] }}" data-tmdb-id="{{ first_radar['id'] }}" title="Watch trailer and view details">
+                      <i class="fa-solid fa-play"></i> <span>Trailer & Info</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="hero-empty-state">
+                <div class="hero-empty-icon"><i class="fa-solid fa-satellite-dish"></i></div>
+                <div class="hero-empty-text">
+                  <h4>CINEMA RADAR STANDBY</h4>
+                  <p>Connecting to TMDB theatrical frequency to pull active releases...</p>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- VIEW 3: 2026 DUAL GOALS (52 FILMS + 12 THEATER TRIPS) -->
+          <div class="hero-view-panel {% if hero_data and hero_data['default_mode'] == 'goal' %}is-active{% endif %}" id="hero-view-goal">
+            <div class="goal-challenge-wrap">
+              
+              <div class="goal-dual-grid">
+                <!-- Goal 1: 52 Films (1 Movie / Week) -->
+                <div class="goal-card-item">
+                  <div class="goal-card-header">
+                    <div class="goal-title-group">
+                      <span class="goal-eyebrow">🎬 1 MOVIE / WEEK</span>
+                      <h3 class="goal-challenge-count">
+                        {{ hero_data['yearly_count'] if hero_data else 0 }} <span class="goal-slash">/</span> 52 <span class="goal-unit">FILMS</span>
+                      </h3>
+                    </div>
+                    <div class="goal-badge-status">
+                      {% if hero_data and hero_data['yearly_pct'] >= 100 %}
+                        <span class="badge-status-glow success">🏆 100%</span>
+                      {% elif hero_data and hero_data['pace_diff'] >= 0 %}
+                        <span class="badge-status-glow on-track">🚀 ON TRACK (WK {{ hero_data['current_week'] }})</span>
+                      {% else %}
+                        <span class="badge-status-glow pace-behind">⏳ {{ hero_data['yearly_pct'] }}% (WK {{ hero_data['current_week'] }})</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="goal-progress-track">
+                    <div class="goal-progress-fill" style="width: {{ hero_data['yearly_pct'] if hero_data else 0 }}%;"></div>
+                  </div>
+                </div>
+
+                <!-- Goal 2: Support Local Theaters (12 Trips / Year) -->
+                <div class="goal-card-item goal-cinema-item">
+                  <div class="goal-card-header">
+                    <div class="goal-title-group">
+                      <span class="goal-eyebrow eyebrow-cinema">🍿 LOCAL CINEMAS</span>
+                      <h3 class="goal-challenge-count">
+                        {{ hero_data['yearly_cinema_count'] if hero_data else 0 }} <span class="goal-slash">/</span> 12 <span class="goal-unit">TRIPS</span>
+                      </h3>
+                    </div>
+                    <div class="goal-badge-status">
+                      {% if hero_data and hero_data['cinema_pct'] >= 100 %}
+                        <span class="badge-status-glow success">⭐ HERO</span>
+                      {% else %}
+                        <span class="badge-status-glow on-track-cinema">🎟️ {{ hero_data['yearly_cinema_count'] if hero_data else 0 }}/12</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="goal-progress-track track-cinema">
+                    <div class="goal-progress-fill fill-cinema" style="width: {{ hero_data['cinema_pct'] if hero_data else 0 }}%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- STATS & ACTION ROW -->
       <div class="stats-row">
         <div class="stat-box glass-panel">
-          <p class="stat-value">{{ total }}</p>
+          <p class="stat-value"><i class="fa-solid fa-calendar-check stat-icon" style="color: var(--ocean-green);"></i>{{ total }}</p>
           <p class="stat-label">Total Logs</p>
         </div>
         <div class="stat-box glass-panel">
-          <p class="stat-value">{{ avg_rating }}<span style="font-size: 1.1rem; color: var(--ocean-grey); opacity: 0.7;"> / 5</span></p>
+          <p class="stat-value"><i class="fa-solid fa-star stat-icon" style="color: #ffd700;"></i>{{ avg_rating }}<span class="stat-sub">/5</span></p>
           <p class="stat-label">Avg Rating</p>
         </div>
         <div class="stat-box glass-panel">
-          <p class="stat-value">{{ cinema }}</p>
+          <p class="stat-value"><i class="fa-solid fa-ticket stat-icon" style="color: var(--ocean-coral);"></i>{{ cinema }}</p>
           <p class="stat-label">Cinema Trips</p>
         </div>
+        <a href="/add_movie" class="stat-box stat-box-action glass-panel" title="Add new movie or show" id="home-add-movie-btn">
+          <p class="stat-value stat-action-value"><i class="fa-solid fa-plus stat-icon"></i></p>
+          <p class="stat-label stat-action-label">Add Entry</p>
+        </a>
       </div>
 
       <div class="table-container app-table-shell glass-panel panel-smoke-heavy">
@@ -719,20 +1421,30 @@
         {% endif %} {% for movie in movies%}
         <tr style="color: white">
           <td style="padding: 10px">
-            <img
-              class="table-poster1"
-              src="{{movie['poster']}}"
-              alt="{{movie['movie']}}"
-              loading="lazy"
-              onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';"
-            />
+            <a href="#" class="trigger-movie-drawer" data-movie-drawer="true" data-title="{{ movie['movie'] }}" data-year="{{ movie['p_year'] }}" data-poster="{{ movie['poster'] }}" data-director="{{ movie['director'] }}" data-tv="{{ movie['tv_show'] }}" title="Open {{ movie['movie'] }} details" style="display: block; line-height: 0;">
+              <img
+                class="table-poster1"
+                src="{{movie['poster']}}"
+                alt="{{movie['movie']}}"
+                loading="lazy"
+                onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=No+Poster';"
+                style="cursor: pointer; transition: transform 0.2s ease;"
+              />
+            </a>
           </td>
 
           <td style="padding: 10px">
             <a
-              href="/tmdb_redirect?title={{movie['movie'] | urlencode}}&tv={{movie['tv_show']}}"
-              target="_blank"
-              style="color: white"
+              href="#"
+              class="trigger-movie-drawer"
+              data-movie-drawer="true"
+              data-title="{{ movie['movie'] }}"
+              data-year="{{ movie['p_year'] }}"
+              data-poster="{{ movie['poster'] }}"
+              data-director="{{ movie['director'] }}"
+              data-tv="{{ movie['tv_show'] }}"
+              style="color: white; text-decoration: none;"
+              title="Open {{ movie['movie'] }} details"
             >
               {{movie['movie'].upper()}}
             </a>
@@ -814,14 +1526,14 @@
           <button id="kin-next" class="carousel-nav-btn" style="right:8px;">&gt;</button>
 
           <div id="kin-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);pointer-events:none;">
-            <a id="kin-link-a" href="#" target="_blank" class="carousel-item-link">
+            <a id="kin-link-a" href="#" class="carousel-item-link" data-movie-drawer="true">
               <img id="kin-img-a" src="" alt="" />
               <p id="kin-title-a"></p>
             </a>
           </div>
 
           <div id="kin-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);pointer-events:none;">
-            <a id="kin-link-b" href="#" target="_blank" class="carousel-item-link">
+            <a id="kin-link-b" href="#" class="carousel-item-link" data-movie-drawer="true">
               <img id="kin-img-b" src="" alt="" />
               <p id="kin-title-b"></p>
             </a>
@@ -858,14 +1570,14 @@
           <button id="upc-next" class="carousel-nav-btn upc-btn" style="right:8px;">&gt;</button>
 
           <div id="upc-slide-a" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);pointer-events:none;">
-            <a id="upc-link-a" href="#" target="_blank" class="carousel-item-link upc-link">
+            <a id="upc-link-a" href="#" class="carousel-item-link upc-link" data-movie-drawer="true">
               <img id="upc-img-a" src="" alt="" />
               <p id="upc-title-a"></p>
             </a>
           </div>
 
           <div id="upc-slide-b" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;gap:6px;transition:opacity 0.8s cubic-bezier(0.4,0,0.2,1),transform 0.8s cubic-bezier(0.4,0,0.2,1);opacity:0;transform:translateY(14px);pointer-events:none;">
-            <a id="upc-link-b" href="#" target="_blank" class="carousel-item-link upc-link">
+            <a id="upc-link-b" href="#" class="carousel-item-link upc-link" data-movie-drawer="true">
               <img id="upc-img-b" src="" alt="" />
               <p id="upc-title-b"></p>
             </a>
@@ -879,7 +1591,163 @@
   </div><!-- end home-layout -->
 </div>
 
+<script id="watchlist-data-json" type="application/json">
+  {{ hero_data['watchlist_items']|tojson|safe if hero_data and hero_data['watchlist_items'] else '[]' }}
+</script>
+
+<script id="radar-data-json" type="application/json">
+  {{ hero_data['radar_movies']|tojson|safe if hero_data and hero_data['radar_movies'] else '[]' }}
+</script>
+
 <script>
+  let watchlistPool = [];
+  try {
+    const jsonEl = document.getElementById('watchlist-data-json');
+    if (jsonEl) {
+      watchlistPool = JSON.parse(jsonEl.textContent || '[]');
+    }
+  } catch (e) {
+    console.error('Error parsing watchlist data', e);
+  }
+
+  let currentPickIdx = 0;
+
+  function shuffleWatchlistPick() {
+    if (!watchlistPool || watchlistPool.length <= 1) return;
+    
+    let nextIdx;
+    do {
+      nextIdx = Math.floor(Math.random() * watchlistPool.length);
+    } while (nextIdx === currentPickIdx && watchlistPool.length > 1);
+    
+    currentPickIdx = nextIdx;
+    const item = watchlistPool[currentPickIdx];
+    
+    const titleEl = document.getElementById('pick-title-text');
+    const yearEl = document.getElementById('pick-year-val');
+    const directorEl = document.getElementById('pick-director-val');
+    const imgEl = document.getElementById('pick-poster-img');
+    const backdropEl = document.getElementById('pick-backdrop');
+    const glowEl = document.getElementById('pick-poster-glow');
+    const drawerPosterLink = document.getElementById('pick-drawer-poster-link');
+    const drawerActionLink = document.getElementById('pick-drawer-action-link');
+    
+    const card = document.querySelector('.watchlist-pick-content');
+    if (card) {
+      card.style.opacity = '0.35';
+      card.style.transform = 'scale(0.98)';
+    }
+    
+    setTimeout(() => {
+      if (titleEl) titleEl.textContent = (item.title || '').toUpperCase();
+      if (yearEl) yearEl.textContent = item.p_year || '—';
+      if (directorEl) directorEl.textContent = item.director || '';
+      if (imgEl && item.poster) imgEl.src = item.poster;
+      if (backdropEl && item.poster) backdropEl.style.backgroundImage = `url('${item.poster}')`;
+      if (glowEl && item.poster) glowEl.style.backgroundImage = `url('${item.poster}')`;
+      
+      [drawerPosterLink, drawerActionLink].forEach(link => {
+        if (link) {
+          link.setAttribute('data-title', item.title || '');
+          link.setAttribute('data-year', item.p_year || '');
+          link.setAttribute('data-poster', item.poster || '');
+          link.setAttribute('data-director', item.director || '');
+        }
+      });
+      
+      if (card) {
+        card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'scale(1)';
+      }
+    }, 120);
+  }
+
+  let radarPool = [];
+  try {
+    const rEl = document.getElementById('radar-data-json');
+    if (rEl) {
+      radarPool = JSON.parse(rEl.textContent || '[]');
+    }
+  } catch (e) {
+    console.error('Error parsing radar data', e);
+  }
+
+  let currentRadarIdx = 0;
+
+  function nextRadarMovie() {
+    if (!radarPool || radarPool.length <= 1) return;
+    
+    currentRadarIdx = (currentRadarIdx + 1) % radarPool.length;
+    const item = radarPool[currentRadarIdx];
+    
+    const titleEl = document.getElementById('radar-title-text');
+    const ratingEl = document.getElementById('radar-rating-val');
+    const overviewEl = document.getElementById('radar-overview-val');
+    const imgEl = document.getElementById('radar-poster-img');
+    const backdropEl = document.getElementById('radar-backdrop');
+    const glowEl = document.getElementById('radar-poster-glow');
+    const drawerPosterLink = document.getElementById('radar-drawer-poster-link');
+    const drawerActionLink = document.getElementById('radar-drawer-action-link');
+    
+    const card = document.querySelector('.radar-hero-content');
+    if (card) {
+      card.style.opacity = '0.35';
+      card.style.transform = 'scale(0.98)';
+    }
+    
+    setTimeout(() => {
+      if (titleEl) titleEl.textContent = (item.title || '').toUpperCase();
+      if (ratingEl) ratingEl.textContent = `★ ${item.rating || 0} TMDB SCORE · ${item.year || ''}`;
+      if (overviewEl) overviewEl.textContent = item.overview || 'Playing now in cinemas nationwide.';
+      if (imgEl && item.poster) imgEl.src = item.poster;
+      if (backdropEl && (item.backdrop || item.poster)) backdropEl.style.backgroundImage = `url('${item.backdrop || item.poster}')`;
+      if (glowEl && item.poster) glowEl.style.backgroundImage = `url('${item.poster}')`;
+      
+      [drawerPosterLink, drawerActionLink].forEach(link => {
+        if (link) {
+          link.setAttribute('data-title', item.title || '');
+          link.setAttribute('data-year', item.year || '');
+          link.setAttribute('data-poster', item.poster || '');
+          link.setAttribute('data-tmdb-id', item.id || '');
+        }
+      });
+      
+      if (card) {
+        card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'scale(1)';
+      }
+    }, 120);
+  }
+
+  function switchHeroMode(mode) {
+    const deck = document.getElementById('smart-hero-deck');
+    if (!deck) return;
+    
+    // Update active pill button
+    document.querySelectorAll('.hero-pill-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = Array.from(document.querySelectorAll('.hero-pill-btn')).find(b => b.getAttribute('onclick')?.includes(mode));
+    if (clickedBtn) clickedBtn.classList.add('active');
+    
+    // Update title tag text & icon
+    const tagEl = document.getElementById('smart-hero-title-tag');
+    if (tagEl) {
+      if (mode === 'watchlist') {
+        tagEl.innerHTML = '<i class="fa-solid fa-dice hero-icon-gold"></i><span class="tag-full">WEEKEND WATCH PICK</span><span class="tag-short">WATCH PICK</span>';
+      } else if (mode === 'radar') {
+        tagEl.innerHTML = '<i class="fa-solid fa-satellite-dish hero-icon-cyan"></i><span class="tag-full">CINEMA RADAR</span><span class="tag-short">CINEMA RADAR</span>';
+      } else if (mode === 'goal') {
+        tagEl.innerHTML = '<i class="fa-solid fa-bolt hero-icon-gold"></i><span class="tag-full">VIEWING PACE</span><span class="tag-short">2026 GOALS</span>';
+      }
+    }
+    
+    // Switch panels with smooth transition
+    document.querySelectorAll('.hero-view-panel').forEach(p => p.classList.remove('is-active'));
+    const targetPanel = document.getElementById(`hero-view-${mode}`);
+    if (targetPanel) targetPanel.classList.add('is-active');
+  }
+
   function switchMobileTab(target) {
     const cardCinemas = document.getElementById('card-cinemas');
     const cardUpcoming = document.getElementById('card-upcoming');
@@ -895,6 +1763,6 @@
     }
   }
 </script>
-<script src="/static/js/kin_mascot.js?v=5"></script>
-<script src="/static/js/upcoming_carousel.js?v=5"></script>
+<script src="/static/js/kin_mascot.js?v=9"></script>
+<script src="/static/js/upcoming_carousel.js?v=9"></script>
 {% endblock %} {% endblock %}

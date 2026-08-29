@@ -235,6 +235,41 @@ def get_monthly_movies(parent_id, month):
         logger.error(f"Error fetching monthly movies: {e}")
         return []
 
+def get_yearly_movie_count(parent_id, year=None):
+    try:
+        if year is None:
+            year = datetime.now().year
+        start_date = f"{year}-01-01"
+        end_date = f"{year + 1}-01-01"
+        response = client.table('lista') \
+            .select('lista_id', count='exact') \
+            .eq('parent_id', parent_id) \
+            .gte('v_date', start_date) \
+            .lt('v_date', end_date) \
+            .execute()
+        return getattr(response, 'count', len(response.data or []))
+    except Exception as e:
+        logger.error(f"Error fetching yearly movie count for {parent_id}: {e}")
+        return 0
+
+def get_yearly_cinema_count(parent_id, year=None):
+    try:
+        if year is None:
+            year = datetime.now().year
+        start_date = f"{year}-01-01"
+        end_date = f"{year + 1}-01-01"
+        response = client.table('lista') \
+            .select('lista_id', count='exact') \
+            .eq('parent_id', parent_id) \
+            .gte('v_date', start_date) \
+            .lt('v_date', end_date) \
+            .eq('cinema', 1) \
+            .execute()
+        return getattr(response, 'count', len(response.data or []))
+    except Exception as e:
+        logger.error(f"Error fetching yearly cinema count for {parent_id}: {e}")
+        return 0
+
 def remove_movie_by_id(movie_id):
     try:
         client.table('lista').delete().eq('lista_id', movie_id).execute()

@@ -416,8 +416,27 @@
   var carouselTimer = null;
 
   function showSlideIn(sl, img, ttl, link, m) {
-    img.src = m.poster; ttl.textContent = m.title;
-    link.href = "https://www.google.com/search?q=" + encodeURIComponent(m.title + " movie");
+    img.src = m.poster; 
+    ttl.textContent = m.title;
+    link.href = "#";
+    link.removeAttribute("target");
+    link.setAttribute("data-movie-drawer", "true");
+    link.setAttribute("data-title", m.title || "");
+    link.setAttribute("data-poster", m.poster || "");
+    if (m.id) link.setAttribute("data-tmdb-id", m.id);
+    if (m.year) link.setAttribute("data-year", m.year);
+    link.onclick = function(e) {
+      e.preventDefault();
+      if (typeof window.openMovieDrawer === "function") {
+        window.openMovieDrawer({
+          title: m.title,
+          tmdb_id: m.id || null,
+          poster: m.poster || null,
+          year: m.year || null,
+          is_tv: false
+        });
+      }
+    };
     sl.style.transition = 'none'; sl.style.opacity = '0'; sl.style.transform = 'translateY(20px)';
     sl.style.pointerEvents = 'auto';
     void sl.offsetWidth;

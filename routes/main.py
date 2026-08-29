@@ -18,7 +18,15 @@ from flask import (
 )
 from flask_login import current_user, login_required
 
-from database import get_monthly_movies, get_movies_paginated, get_user_id
+from database import (
+    get_monthly_movies,
+    get_movies_paginated,
+    get_or_create_personal_watchlist,
+    get_user_id,
+    get_watchlist_items,
+    get_yearly_cinema_count,
+    get_yearly_movie_count,
+)
 from extensions import cache, limiter
 from services import tmdb_service
 from utils import (
@@ -43,9 +51,12 @@ def animation():
 @main_bp.route("/home")
 def hello():
     if not current_user.is_authenticated:
-        return render_template("home.html", movies=[], total=0, avg_rating=0, cinema=0, highest_rated=None)
+        return render_template("home.html", movies=[], total=0, avg_rating=0, cinema=0, highest_rated=None, top_movies=[], hero_data={})
     try:
-        _, month_now = get_current_year_month()
+        now = datetime.datetime.now()
+        current_year, month_now = now.year, now.month
+        month_name = dict_months.get(month_now, now.strftime("%B")).upper()
+        
         movies = get_monthly_movies(current_user.id, month_now)
         def _get_sentiment_val(r):
             try:
@@ -59,12 +70,103 @@ def hello():
             round(sum(_get_sentiment_val(m["rating"]) for m in movies) / total_this_month, 1)
             if total_this_month > 0 else 0
         )
-        cinema_trips = sum(1 for m in movies if int(m["cinema"]) == 1)
-        highest_rated = max(movies, key=lambda m: _get_sentiment_val(m["rating"])) if movies else None
+        cinema_trips = sum(1 for m in movies if int(m.get("cinema", 0)) == 1)
+        
+        # 1. Fetch Watchlist items for Watchlist Pick
+        watchlist_items = []
+        try:
+            wl = get_or_create_personal_watchlist(current_user.id)
+            if wl:
+                watchlist_items = get_watchlist_items(wl['id'])
+        except Exception:
+            watchlist_items = []
+            
+        # 2. Fetch Yearly Movie & Cinema Counts (52 Movies / 12 Cinema Trips)
+        try:
+            yearly_count = get_yearly_movie_count(current_user.id, current_year)
+        except Exception:
+            yearly_count = total_this_month
+
+        try:
+            yearly_cinema_count = get_yearly_cinema_count(current_user.id, current_year)
+        except Exception:
+            yearly_cinema_count = cinema_trips
+
+        current_week = now.isocalendar()[1]
+        yearly_target = 52
+        cinema_target = 12
+        pace_diff = yearly_count - current_week
+            
+        # 3. Fetch Now In Theaters for Cinema Radar
+        radar_movies = []
+        try:
+            api_key = os.environ.get("TMDB_API_KEY")
+            if api_key:
+                url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={api_key}&language=en-US&page=1"
+                resp = http_requests.get(url, timeout=3.5)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    for m in (data.get("results") or [])[:8]:
+                        p = m.get("poster_path")
+                        b = m.get("backdrop_path")
+                        if p:
+                            radar_movies.append({
+                                "id": m.get("id"),
+                                "title": m.get("title", ""),
+                                "poster": f"https://image.tmdb.org/t/p/w342{p}",
+                                "backdrop": f"https://image.tmdb.org/t/p/w780{b}" if b else f"https://image.tmdb.org/t/p/w342{p}",
+                                "rating": round(m.get("vote_average", 0), 1),
+                                "overview": m.get("overview", ""),
+                                "year": (m.get("release_date") or "")[:4],
+                            })
+        except Exception:
+            radar_movies = []
+
+        # 4. Determine Contextual Default Mode
+        # Friday (4) / Saturday (5) -> Watchlist Pick (Weekend Movie Night)
+        # Wednesday (2) / Thursday (3) / Weekdays -> Cinema Radar (Theatrical premieres)
+        # Monday (0) / Tuesday (1) / Sunday (6) -> Goal & Pace / Watchlist
+        weekday = now.weekday()
+        if weekday in (4, 5) and watchlist_items:
+            default_mode = "watchlist"
+        elif weekday in (2, 3) and radar_movies:
+            default_mode = "radar"
+        elif watchlist_items:
+            default_mode = "watchlist"
+        elif radar_movies:
+            default_mode = "radar"
+        else:
+            default_mode = "goal"
+
+        # Top-rated titles
+        top_movies = []
+        if movies:
+            max_rating = max(_get_sentiment_val(m["rating"]) for m in movies)
+            if max_rating >= 4.0:
+                top_movies = [m for m in movies if _get_sentiment_val(m["rating"]) == max_rating]
+        highest_rated = top_movies[0] if top_movies else None
+
+        hero_data = {
+            "default_mode": default_mode,
+            "weekday": weekday,
+            "month_name": month_name,
+            "watchlist_items": watchlist_items,
+            "radar_movies": radar_movies,
+            "yearly_count": yearly_count,
+            "yearly_target": yearly_target,
+            "yearly_pct": min(100, int((yearly_count / float(yearly_target)) * 100)) if yearly_count > 0 else 0,
+            "current_week": current_week,
+            "pace_diff": pace_diff,
+            "yearly_cinema_count": yearly_cinema_count,
+            "cinema_target": cinema_target,
+            "cinema_pct": min(100, int((yearly_cinema_count / float(cinema_target)) * 100)) if yearly_cinema_count > 0 else 0,
+        }
     except Exception:
         from flask import current_app
         current_app.logger.exception("Failed to load home monthly movies")
-        movies, total_this_month, avg_rating, cinema_trips, highest_rated = [], 0, 0, 0, None
+        movies, total_this_month, avg_rating, cinema_trips, highest_rated, top_movies, hero_data = [], 0, 0, 0, None, [], {
+            "default_mode": "watchlist", "watchlist_items": [], "radar_movies": [], "yearly_count": 0, "yearly_target": 52, "yearly_pct": 0, "yearly_cinema_count": 0, "cinema_target": 12, "cinema_pct": 0, "current_week": 1, "pace_diff": 0, "month_name": "MONTH"
+        }
         flash("Something went wrong, please refresh the page", category="error")
 
     return render_template(
@@ -75,6 +177,8 @@ def hello():
         avg_rating=avg_rating,
         cinema=cinema_trips,
         highest_rated=highest_rated,
+        top_movies=top_movies,
+        hero_data=hero_data,
     )
 
 
@@ -243,6 +347,7 @@ def api_now_playing():
                     "title": m.get("title", ""),
                     "poster": f"https://image.tmdb.org/t/p/w185{poster}",
                     "rating": round(m.get("vote_average", 0), 1),
+                    "year": (m.get("release_date") or "")[:4],
                 })
         return jsonify({"movies": movies})
     except Exception:
@@ -279,6 +384,7 @@ def api_upcoming():
                     "title": m.get("title", ""),
                     "poster": f"https://image.tmdb.org/t/p/w185{poster}",
                     "rating": round(m.get("vote_average", 0), 1),
+                    "year": (m.get("release_date") or "")[:4],
                 })
             if len(movies) >= 8:
                 break
