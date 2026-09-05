@@ -38,10 +38,12 @@ dict_months = {
 # String helpers
 # ---------------------------------------------------------------------------
 
-def format_display_title(title: str) -> str:
+def format_display_title(title: str, season=None) -> str:
     """
     Format a media title cleanly for display, capitalizing lowercased titles or TV show names
     (e.g., 'superstore, Season 4' -> 'Superstore, Season 4', 'marty supreme' -> 'Marty Supreme').
+    If `season` is provided and the title does not already have a season component,
+    appends the season (e.g. 'The Mentalist', season=1 -> 'The Mentalist, Season 1').
     """
     if not title or not isinstance(title, str):
         return title or ""
@@ -62,16 +64,31 @@ def format_display_title(title: str) -> str:
             )
             if show_name:
                 show_name = show_name[0].upper() + show_name[1:]
-        return f"{show_name}, {season_part}"
+        formatted = f"{show_name}, {season_part}"
     elif t[0].islower():
         words = t.split()
         res = " ".join(
             w.capitalize() if not (w.lower() in {'a', 'an', 'the', 'of', 'in', 'on', 'at', 'to', 'for', 'and'} and i > 0) else w
             for i, w in enumerate(words)
         )
-        return (res[0].upper() + res[1:]) if res else t
-    
-    return t
+        formatted = (res[0].upper() + res[1:]) if res else t
+    else:
+        formatted = t
+
+    # Append season if explicitly provided and not already present in the formatted title
+    if season is not None:
+        s_val = str(season).strip()
+        if s_val and s_val.lower() not in {"none", "null", "0", ""}:
+            has_season = bool(re.search(r'(?i)(?:,\s*season\s*\d+|\s+season\s*\d+|\bseason\s*\d+\b)', formatted))
+            if not has_season:
+                if s_val.isdigit():
+                    formatted = f"{formatted}, Season {s_val}"
+                elif s_val.lower().startswith("season"):
+                    formatted = f"{formatted}, {s_val.capitalize()}"
+                else:
+                    formatted = f"{formatted}, Season {s_val}"
+
+    return formatted
 
 
 def clean_and_format(word: str) -> str:

@@ -1,4 +1,5 @@
 import os
+import re
 import math
 import logging
 from datetime import datetime
@@ -106,7 +107,7 @@ def _normalize_flag(val):
 ######## MOVIES #############################
 #############################################
 
-def insert_movies(title, director, genre, p_year, v_date, rating, rewatch, tv_show, poster, parent_id, cinema):
+def insert_movies(title, director, genre, p_year, v_date, rating, rewatch, tv_show, poster, parent_id, cinema, season=None, tmdb_id=None):
     try:
         payload = {
             "movie": title, "director": director, "genre": genre, 
@@ -114,6 +115,16 @@ def insert_movies(title, director, genre, p_year, v_date, rating, rewatch, tv_sh
             "rewatch": _normalize_flag(rewatch), "tv_show": _normalize_flag(tv_show), "poster": poster, 
             "parent_id": parent_id, "cinema": _normalize_flag(cinema)
         }
+        if season is not None:
+            try:
+                payload["season"] = int(season)
+            except (ValueError, TypeError):
+                pass
+        if tmdb_id is not None:
+            try:
+                payload["tmdb_id"] = int(tmdb_id)
+            except (ValueError, TypeError):
+                pass
         client.table('lista').insert(payload).execute()
     except Exception as e:
         logger.error(f"Error inserting movie {title}: {e}")
@@ -126,7 +137,8 @@ def get_movies(parent_id):
         for row in data.data:
             movie_dict = {
                 "id": row['lista_id'],
-                "movie": format_display_title(row['movie']),
+                "movie": format_display_title(row['movie'], season=row.get('season')),
+                "series_title": row['movie'],
                 "director": row['director'],
                 "genre": row['genre'],
                 "p_year": row['p_year'],
@@ -135,7 +147,9 @@ def get_movies(parent_id):
                 "rewatch": _normalize_flag(row.get('rewatch')),
                 "tv_show": _normalize_flag(row.get('tv_show')),
                 "poster": row['poster'],
-                "cinema": _normalize_flag(row.get('cinema'))
+                "cinema": _normalize_flag(row.get('cinema')),
+                "season": row.get('season'),
+                "tmdb_id": row.get('tmdb_id')
             }
             lista_dicts.append(movie_dict)
         return lista_dicts
@@ -155,7 +169,16 @@ def get_movies_paginated(parent_id, order_column='v_date', desc=True, page=1, li
             if clean_search.isdigit() and len(clean_search) == 4:
                 query = query.or_(f"movie.ilike.%{clean_search}%,director.ilike.%{clean_search}%,p_year.eq.{int(clean_search)}")
             else:
-                query = query.or_(f"movie.ilike.%{clean_search}%,director.ilike.%{clean_search}%")
+                s_match = re.search(r'(?i)\bseason\s*(\d+)\b', clean_search)
+                if s_match:
+                    season_num = int(s_match.group(1))
+                    clean_title_search = re.sub(r'(?i)\bseason\s*\d+\b', '', clean_search).strip(' ,-')
+                    if clean_title_search:
+                        query = query.ilike('movie', f'%{clean_title_search}%').eq('season', season_num)
+                    else:
+                        query = query.eq('season', season_num)
+                else:
+                    query = query.or_(f"movie.ilike.%{clean_search}%,director.ilike.%{clean_search}%")
 
         if year is not None and str(year).isdigit():
             query = query.eq('p_year', int(year))
@@ -184,7 +207,8 @@ def get_movies_paginated(parent_id, order_column='v_date', desc=True, page=1, li
         for row in data.data:
             movie_dict = {
                 "id": row['lista_id'],
-                "movie": format_display_title(row['movie']),
+                "movie": format_display_title(row['movie'], season=row.get('season')),
+                "series_title": row['movie'],
                 "director": row['director'],
                 "genre": row['genre'],
                 "p_year": row['p_year'],
@@ -193,7 +217,9 @@ def get_movies_paginated(parent_id, order_column='v_date', desc=True, page=1, li
                 "rewatch": _normalize_flag(row.get('rewatch')),
                 "tv_show": _normalize_flag(row.get('tv_show')),
                 "poster": row['poster'],
-                "cinema": _normalize_flag(row.get('cinema'))
+                "cinema": _normalize_flag(row.get('cinema')),
+                "season": row.get('season'),
+                "tmdb_id": row.get('tmdb_id')
             }
             lista_dicts.append(movie_dict)
             
@@ -208,6 +234,7 @@ def get_movies_paginated(parent_id, order_column='v_date', desc=True, page=1, li
 
 def get_monthly_movies(parent_id, month):
     try:
+        from utils import format_display_title
         current_year = datetime.now().year
         start_date = datetime(year=current_year, month=month, day=1)
         if month == 12:
@@ -224,10 +251,20 @@ def get_monthly_movies(parent_id, month):
         
         return [
             {
-                "id": row['lista_id'], "movie": row['movie'], "director": row['director'],
-                "genre": row['genre'], "p_year": row['p_year'], "v_date": row['v_date'],
-                "rating": row['rating'], "rewatch": _normalize_flag(row.get('rewatch')), "tv_show": _normalize_flag(row.get('tv_show')),
-                "poster": row['poster'], "cinema": _normalize_flag(row.get('cinema'))
+                "id": row['lista_id'], 
+                "movie": format_display_title(row['movie'], season=row.get('season')),
+                "series_title": row['movie'],
+                "director": row['director'],
+                "genre": row['genre'], 
+                "p_year": row['p_year'], 
+                "v_date": row['v_date'],
+                "rating": row['rating'], 
+                "rewatch": _normalize_flag(row.get('rewatch')), 
+                "tv_show": _normalize_flag(row.get('tv_show')),
+                "poster": row['poster'], 
+                "cinema": _normalize_flag(row.get('cinema')),
+                "season": row.get('season'),
+                "tmdb_id": row.get('tmdb_id')
             }
             for row in response.data
         ]
@@ -276,25 +313,46 @@ def remove_movie_by_id(movie_id):
     except Exception as e:
         logger.error(f"Error removing movie {movie_id}: {e}")
 
-def update_movie(lista_id, movie, director, p_year, rating, poster):
+def update_movie(lista_id, movie, director, p_year, rating, poster, season=None, tmdb_id=None):
     try:
-        client.table('lista').update({
+        payload = {
             "movie": movie, "director": director, 
             "p_year": p_year, "rating": rating, "poster": poster
-        }).eq('lista_id', lista_id).execute()
+        }
+        if season is not None:
+            try:
+                payload["season"] = int(season)
+            except (ValueError, TypeError):
+                pass
+        if tmdb_id is not None:
+            try:
+                payload["tmdb_id"] = int(tmdb_id)
+            except (ValueError, TypeError):
+                pass
+        client.table('lista').update(payload).eq('lista_id', lista_id).execute()
     except Exception as e:
         logger.error(f"Error updating movie {lista_id}: {e}")
 
 # --- DRY Fetching for Ordered Lists ---
 def _get_movies_ordered_by(parent_id, order_column):
     try:
+        from utils import format_display_title
         data = client.table('lista').select('*').eq('parent_id', parent_id).order(order_column).execute()
         return [
             {
-                "id": row['lista_id'], "movie": row['movie'], "director": row['director'],
-                "genre": row['genre'], "p_year": row['p_year'], "v_date": row['v_date'],
-                "rating": row['rating'], "rewatch": row['rewatch'], "tv_show": row['tv_show'],
-                "poster": row['poster']
+                "id": row['lista_id'], 
+                "movie": format_display_title(row['movie'], season=row.get('season')), 
+                "series_title": row['movie'],
+                "director": row['director'],
+                "genre": row['genre'], 
+                "p_year": row['p_year'], 
+                "v_date": row['v_date'],
+                "rating": row['rating'], 
+                "rewatch": row['rewatch'], 
+                "tv_show": row['tv_show'],
+                "poster": row['poster'],
+                "season": row.get('season'),
+                "tmdb_id": row.get('tmdb_id')
             }
             for row in data.data
         ]
@@ -388,10 +446,20 @@ def get_friend_activity(parent_id, limit=20):
                 v_date_obj = row['v_date']
                 
             lista_dicts.append({
-                "id": row['lista_id'], "movie": format_display_title(row['movie']), "director": row['director'],
-                "genre": row['genre'], "p_year": row['p_year'], "v_date": v_date_obj,
-                "rating": row['rating'], "rewatch": _normalize_flag(row.get('rewatch')), "tv_show": _normalize_flag(row.get('tv_show')),
-                "poster": row['poster'], "cinema": _normalize_flag(row.get('cinema')),
+                "id": row['lista_id'], 
+                "movie": format_display_title(row['movie'], season=row.get('season')), 
+                "series_title": row['movie'],
+                "director": row['director'],
+                "genre": row['genre'], 
+                "p_year": row['p_year'], 
+                "v_date": v_date_obj,
+                "rating": row['rating'], 
+                "rewatch": _normalize_flag(row.get('rewatch')), 
+                "tv_show": _normalize_flag(row.get('tv_show')),
+                "poster": row['poster'], 
+                "cinema": _normalize_flag(row.get('cinema')),
+                "season": row.get('season'),
+                "tmdb_id": row.get('tmdb_id'),
                 "f_username": friend_map.get(row['parent_id'], "Unknown"),
                 "f_user_id": row['parent_id']
             })
@@ -429,7 +497,8 @@ def get_enriched_friends(parent_id):
                             v_date_obj = row['v_date']
                         movies_by_friend[uid].append({
                             "id": row.get('lista_id'),
-                            "movie": format_display_title(row.get('movie')),
+                            "movie": format_display_title(row.get('movie'), season=row.get('season')),
+                            "series_title": row.get('movie'),
                             "director": row.get('director'),
                             "genre": row.get('genre'),
                             "p_year": row.get('p_year'),
@@ -438,7 +507,9 @@ def get_enriched_friends(parent_id):
                             "rewatch": _normalize_flag(row.get('rewatch')),
                             "tv_show": _normalize_flag(row.get('tv_show')),
                             "poster": row.get('poster'),
-                            "cinema": _normalize_flag(row.get('cinema'))
+                            "cinema": _normalize_flag(row.get('cinema')),
+                            "season": row.get('season'),
+                            "tmdb_id": row.get('tmdb_id')
                         })
             except Exception as e:
                 logger.error(f"Error batch fetching friend movies: {e}")
@@ -620,13 +691,16 @@ def get_taste_match(user_id, friend_id):
         for um, fm in shared_movie_pairs:
             u_r, f_r = um['rating'], fm['rating']
             diff = abs(u_r - f_r)
+            s_val = fm.get('season') or um.get('season')
             item = {
-                "movie": format_display_title(fm.get('movie') or um.get('movie')),
+                "movie": format_display_title(fm.get('movie') or um.get('movie'), season=s_val),
+                "series_title": fm.get('movie') or um.get('movie'),
                 "poster": fm.get('poster') or um.get('poster'),
                 "year": fm.get('p_year') or um.get('p_year'),
                 "director": fm.get('director') or um.get('director'),
                 "genre": fm.get('genre') or um.get('genre'),
                 "tv_show": fm.get('tv_show') or um.get('tv_show'),
+                "season": s_val,
                 "u_rating": u_r,
                 "f_rating": f_r,
                 "diff": diff

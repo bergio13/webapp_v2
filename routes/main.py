@@ -429,6 +429,7 @@ def api_media_details():
     title = request.args.get("title")
     year = request.args.get("year")
     tmdb_id = request.args.get("tmdb_id")
+    season = request.args.get("season")
     is_tv_str = str(request.args.get("tv") or request.args.get("is_tv") or "").strip().lower()
     is_tv = is_tv_str in ["1", "true", "t", "yes"]
     country = request.args.get("country", "IT").strip().upper()
@@ -437,19 +438,81 @@ def api_media_details():
         return jsonify({"success": False, "error": "Missing title or tmdb_id parameter"}), 400
         
     try:
+        clean_title = title
+        if is_tv and not season and title:
+            import re
+            from services.catalog_service import resolve_tv_season_number
+            inferred = resolve_tv_season_number(title, tmdb_id=tmdb_id)
+            if inferred and inferred > 1:
+                season = inferred
+            elif re.search(r'(?i)\b(?:season|series|volume|vol|part|bk|book|s)\s*1\b', title):
+                season = 1
+            clean_title = re.sub(r',?\s*(?:season|series|volume|vol|part|bk|book|the final season|final season)\s*\d*.*$', '', title, flags=re.IGNORECASE).strip()
+
         details = tmdb_service.get_full_media_details(
             tmdb_id=tmdb_id,
-            title=title,
+            title=clean_title or title,
             year=year,
             is_tv=is_tv,
             country=country
         )
+
+        # Augment with TV season-specific canonical data if viewing a season
+        if details.get("success") and is_tv:
+            target_tmdb_id = details.get("tmdb_id") or details.get("id") or tmdb_id
+            if target_tmdb_id:
+                details["tmdb_id"] = int(target_tmdb_id)
+            if not season and target_tmdb_id and title:
+                import re
+                from services.catalog_service import resolve_tv_season_number
+                inferred = resolve_tv_season_number(title, tmdb_id=int(target_tmdb_id))
+                if inferred and (inferred > 1 or re.search(r'(?i)\b(?:season|series|volume|vol|part|bk|book|s)\s*1\b', title)):
+                    season = inferred
+
+            if season and target_tmdb_id:
+                try:
+                    s_int = int(season)
+                    from services.catalog_service import (
+                        get_tv_season_catalog_item, 
+                        fetch_and_enrich_tv_season, 
+                        upsert_tv_season_catalog_item
+                    )
+                    season_item = get_tv_season_catalog_item(int(target_tmdb_id), s_int)
+                    if not season_item:
+                        season_item = fetch_and_enrich_tv_season(int(target_tmdb_id), s_int, show_title=details.get("title") or title)
+                        if season_item:
+                            upsert_tv_season_catalog_item(season_item, compute_embedding=True)
+                    
+                    if season_item:
+                        details["season_number"] = s_int
+                        s_name = season_item.get("season_name") or f"Season {s_int}"
+                        details["season_name"] = s_name
+                        base_title = details.get("title") or clean_title or title
+                        # Provide distinct season title for drawer header
+                        if s_name.lower() not in base_title.lower():
+                            details["title"] = f"{base_title} - {s_name}"
+                        if season_item.get("overview"):
+                            details["overview"] = season_item["overview"]
+                        if season_item.get("poster") and "placeholder" not in season_item["poster"]:
+                            details["poster"] = season_item["poster"]
+                        if season_item.get("year"):
+                            details["year"] = str(season_item["year"])
+                        if season_item.get("director"):
+                            details["director"] = season_item["director"]
+                        if season_item.get("episode_count"):
+                            details["runtime"] = f"{season_item['episode_count']} Episodes"
+                        if season_item.get("lead_actors"):
+                            season_cast = [a.strip() for a in season_item["lead_actors"].split(",") if a.strip()]
+                            if season_cast:
+                                details["cast"] = [{"name": actor, "character": f"Season {s_int} Cast", "profile": None} for actor in season_cast]
+                except Exception as se:
+                    current_app.logger.debug(f"Notice augmenting media details with season info: {se}")
         
         # Add user library status if authenticated
         if details.get("success") and current_user.is_authenticated:
             try:
                 watched_set = get_watched_title_year_lookup(current_user.id)
-                m_title = (details.get("title") or title or "").strip().lower()
+                m_title = (clean_title or details.get("title") or title or "").strip().lower()
                 m_year = str(details.get("year") or year or "").strip()
                 
                 is_watched = any(

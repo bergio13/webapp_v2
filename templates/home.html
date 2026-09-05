@@ -1105,10 +1105,20 @@
     return confirm(`Are you sure you want to remove "${movieName}"?`);
   }
 
+  function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta && meta.content) return meta.content;
+    const input = document.querySelector('input[name="csrf_token"]');
+    if (input && input.value) return input.value;
+    const el = document.getElementById("csrf_token");
+    if (el && el.value) return el.value;
+    return '';
+  }
+
   function handleDelete(btn) {
     let movieId = btn.getAttribute('data-id');
     const movieName = btn.getAttribute('data-movie');
-    const csrfToken = btn.getAttribute('data-csrf');
+    const csrfToken = btn.getAttribute('data-csrf') || getCsrfToken();
     if (!isNaN(movieId)) movieId = parseInt(movieId, 10);
     deleteMovie(btn, movieId, movieName, csrfToken);
   }
@@ -1116,6 +1126,7 @@
   async function deleteMovie(btn, movieId, movieName, csrfToken) {
     if (!confirmDeletion(movieName)) return;
     
+    const token = csrfToken || getCsrfToken();
     const row = btn.closest('tr');
     
     try {
@@ -1124,7 +1135,7 @@
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'X-CSRFToken': csrfToken
+          'X-CSRFToken': token
         },
         body: JSON.stringify({ movie_id: movieId })
       });
@@ -1135,7 +1146,8 @@
         row.style.transform = 'scale(0.95)';
         setTimeout(() => row.remove(), 400);
       } else {
-        alert('Failed to delete movie.');
+        const errData = await response.json().catch(() => ({}));
+        alert(errData.message || 'Failed to delete movie.');
       }
     } catch (e) {
       console.error(e);
@@ -1421,7 +1433,7 @@
         {% endif %} {% for movie in movies%}
         <tr style="color: white">
           <td style="padding: 10px">
-            <a href="#" class="trigger-movie-drawer" data-movie-drawer="true" data-title="{{ movie['movie'] }}" data-year="{{ movie['p_year'] }}" data-poster="{{ movie['poster'] }}" data-director="{{ movie['director'] }}" data-tv="{{ movie['tv_show'] }}" title="Open {{ movie['movie'] }} details" style="display: block; line-height: 0;">
+            <a href="#" class="trigger-movie-drawer" data-movie-drawer="true" data-title="{{ movie['movie'] }}" data-year="{{ movie['p_year'] }}" data-poster="{{ movie['poster'] }}" data-director="{{ movie['director'] }}" data-tv="{{ movie['tv_show'] }}" data-season="{{ movie['season'] if movie['season'] else '' }}" data-tmdb-id="{{ movie['tmdb_id'] if movie['tmdb_id'] else '' }}" title="Open {{ movie['movie'] }} details" style="display: block; line-height: 0;">
               <img
                 class="table-poster1"
                 src="{{movie['poster']}}"
@@ -1443,6 +1455,8 @@
               data-poster="{{ movie['poster'] }}"
               data-director="{{ movie['director'] }}"
               data-tv="{{ movie['tv_show'] }}"
+              data-season="{{ movie['season'] if movie['season'] else '' }}"
+              data-tmdb-id="{{ movie['tmdb_id'] if movie['tmdb_id'] else '' }}"
               style="color: white; text-decoration: none;"
               title="Open {{ movie['movie'] }} details"
             >

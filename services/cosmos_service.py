@@ -939,15 +939,30 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
     # 3. Build Combined Item Pool with Cosmic Void Classification
     pool: List[Dict[str, Any]] = []
     pool_keys = set()
+    user_pool_items = {}
 
-    # User watched movies
+    # User watched movies (aggregating multiple viewing logs/rewatches for the same film)
     for m in user_raw_movies:
         title = m.get("movie") or "Untitled"
         year = str(m.get("p_year") or "")
         key = f"{_normalize_name(title)}_{year}"
-        if key not in pool_keys:
-            rating = int(m.get("rating") or 3)
-            
+        rating = int(m.get("rating") or 3)
+
+        if key in user_pool_items:
+            existing = user_pool_items[key]
+            if rating > existing["rating"]:
+                existing["rating"] = rating
+                if rating <= 2:
+                    existing["category"] = "void_repulsor"
+                elif rating >= 5:
+                    existing["category"] = "watched_5"
+                elif rating == 4:
+                    existing["category"] = "watched_4"
+                else:
+                    existing["category"] = "watched_standard"
+            existing["rewatch"] = 1
+            existing["view_count"] = existing.get("view_count", 1) + 1
+        else:
             # Category assignment with Cosmic Void / Repulsor support
             if rating <= 2:
                 cat = "void_repulsor"
@@ -958,8 +973,8 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
             else:
                 cat = "watched_standard"
 
-            pool.append({
-                "id": f"watched_{m.get('id') or key}",
+            item_dict = {
+                "id": f"watched_{m.get('id') or m.get('lista_id') or key}",
                 "title": title,
                 "year": year,
                 "director": m.get("director") or "Unknown",
@@ -975,11 +990,16 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
                 "tv_show": m.get("tv_show", 0),
                 "cinema": m.get("cinema", 0),
                 "rewatch": m.get("rewatch", 0),
+                "season": m.get("season"),
+                "tmdb_id": m.get("tmdb_id"),
                 "v_date": m.get("v_date"),
                 "is_watched": True,
                 "is_watchlist": _is_in_watchlist(title, year),
-                "source": "user_log"
-            })
+                "source": "user_log",
+                "view_count": 1
+            }
+            user_pool_items[key] = item_dict
+            pool.append(item_dict)
             pool_keys.add(key)
 
     # Watchlist items that aren't already in watched pool
@@ -1061,6 +1081,14 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
                 })
                 pool_keys.add(key)
 
+    # 3.9 Enrich pool with canonical metadata (overview, keywords, multi-genres, craft) from Supabase / catalog cache
+    try:
+        from services.catalog_service import enrich_pool_items
+        catalog_crafts = enrich_pool_items(pool)
+    except Exception as e:
+        logger.debug(f"Catalog enrichment notice in cosmos: {e}")
+        catalog_crafts = {}
+
     # 4. Build Collision-Free Auteur & Lead Cast Indexers
     from collections import Counter
     director_counts = Counter()
@@ -1091,6 +1119,10 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
 
     # 4b. Fetch / resolve craft credits (Cinematographer, Composer, Writer, Studios)
     crafts_by_key = batch_get_movie_crafts(pool)
+    if catalog_crafts:
+        for k, c in catalog_crafts.items():
+            if k not in crafts_by_key or not crafts_by_key[k].get("cinematographer"):
+                crafts_by_key[k] = c
 
     # 4c. Heterogeneous Cinephile Knowledge Graph & LightGCN Graph Convolution
     try:

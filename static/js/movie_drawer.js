@@ -359,7 +359,7 @@
   }
 
   function fetchDetails(media, country, showSkeleton = true) {
-    const cacheKey = `${media.tmdb_id || media.title}_${media.year || ''}_${media.is_tv ? '1' : '0'}_${country}`;
+    const cacheKey = `${media.tmdb_id || media.title}_${media.year || ''}_${media.season || ''}_${media.is_tv ? '1' : '0'}_${country}`;
 
     if (drawerCache.has(cacheKey)) {
       const cached = drawerCache.get(cacheKey);
@@ -379,6 +379,7 @@
     if (media.tmdb_id) params.append("tmdb_id", media.tmdb_id);
     if (media.title) params.append("title", media.title);
     if (media.year) params.append("year", media.year);
+    if (media.season) params.append("season", media.season);
     if (media.is_tv !== undefined) params.append("is_tv", media.is_tv ? "1" : "0");
 
     fetch(`/api/media_details?${params.toString()}`)
@@ -472,6 +473,7 @@
       let title = trigger.getAttribute("data-title");
       let year = trigger.getAttribute("data-year");
       let is_tv = trigger.getAttribute("data-tv");
+      let season = trigger.getAttribute("data-season");
       let tmdb_id = trigger.getAttribute("data-tmdb-id");
       let poster = trigger.getAttribute("data-poster");
       let director = trigger.getAttribute("data-director");
@@ -491,12 +493,17 @@
         const card = trigger.closest(".movie-card, .card-grid, tr");
         title = card.getAttribute("data-title") || (card.querySelector(".card-title, .movie-title") ? card.querySelector(".card-title, .movie-title").textContent.trim() : "");
       }
+      if (!season && trigger.closest(".movie-card, .card-grid, tr")) {
+        const card = trigger.closest(".movie-card, .card-grid, tr");
+        season = card.getAttribute("data-season");
+      }
 
       if (title || tmdb_id) {
         window.openMovieDrawer({
           title: title ? title.trim() : "",
           year: year ? year.trim() : null,
           is_tv: is_tv === "1" || is_tv === "true" || is_tv === true,
+          season: season ? season.trim() : null,
           tmdb_id: tmdb_id || null,
           poster: poster || null,
           director: director || null

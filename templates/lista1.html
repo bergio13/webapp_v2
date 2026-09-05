@@ -394,10 +394,20 @@ body_class %} list_page{% endblock %} {% block body %}
     return confirm(`Are you sure you want to remove "${movieName}"?`);
   }
 
+  function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta && meta.content) return meta.content;
+    const input = document.querySelector('input[name="csrf_token"]');
+    if (input && input.value) return input.value;
+    const el = document.getElementById("csrf_token");
+    if (el && el.value) return el.value;
+    return '';
+  }
+
   function handleDelete(btn) {
     let movieId = btn.getAttribute('data-id');
     const movieName = btn.getAttribute('data-movie');
-    const csrfToken = btn.getAttribute('data-csrf');
+    const csrfToken = btn.getAttribute('data-csrf') || getCsrfToken();
     if (!isNaN(movieId)) movieId = parseInt(movieId, 10);
     deleteMovie(btn, movieId, movieName, csrfToken);
   }
@@ -405,6 +415,7 @@ body_class %} list_page{% endblock %} {% block body %}
   async function deleteMovie(btn, movieId, movieName, csrfToken) {
     if (!confirmDeletion(movieName)) return;
     
+    const token = csrfToken || getCsrfToken();
     // Find either the row (if in table) or the card (if in grid)
     const elementToRemove = btn.closest('tr') || btn.closest('.library-card');
     
@@ -414,7 +425,7 @@ body_class %} list_page{% endblock %} {% block body %}
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'X-CSRFToken': csrfToken
+          'X-CSRFToken': token
         },
         body: JSON.stringify({ movie_id: movieId })
       });
@@ -427,7 +438,8 @@ body_class %} list_page{% endblock %} {% block body %}
           setTimeout(() => elementToRemove.remove(), 400);
         }
       } else {
-        alert('Failed to delete movie.');
+        const errData = await response.json().catch(() => ({}));
+        alert(errData.message || 'Failed to delete movie.');
       }
     } catch (e) {
       console.error(e);
@@ -696,7 +708,7 @@ body_class %} list_page{% endblock %} {% block body %}
           let cinemaIcon = movie.cinema == 1 ? '<i class="fa-solid fa-film" style="font-size: 16px" title="Cinema"></i>' : '';
           let rewatchIcon = movie.rewatch == 1 ? '<i class="fa-solid fa-repeat" style="font-size: 16px" title="Rewatch"></i>' : '';
           
-          const csrfVal = document.querySelector('[name="csrf_token"]') ? document.querySelector('[name="csrf_token"]').value : '';
+          const csrfVal = getCsrfToken();
           
           if (tableFrag) {
             const tr = document.createElement('tr');

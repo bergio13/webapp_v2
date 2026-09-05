@@ -92,3 +92,50 @@ def test_api_media_details_route_success(monkeypatch):
         assert data["success"] is True
         assert data["title"] == "Mock Film"
         assert data["trailer"]["key"] == "testkey"
+
+
+def test_api_media_details_route_with_tv_season(monkeypatch):
+    """Test /api/media_details endpoint correctly augments TV season details."""
+    import services.catalog_service as catalog_service
+    fake_details = {
+        "success": True,
+        "tmdb_id": 203857,
+        "title": "The Diplomat",
+        "year": "2023",
+        "poster": "https://image.tmdb.org/t/p/w500/series_poster.jpg",
+        "overview": "Series overview",
+        "trailer": None,
+        "watch_providers": {"flatrate": [], "rent": []}
+    }
+    fake_season = {
+        "season_key": "203857_s3",
+        "tmdb_id": 203857,
+        "season_number": 3,
+        "show_title": "The Diplomat",
+        "season_name": "Season 3",
+        "year": 2025,
+        "poster": "https://image.tmdb.org/t/p/w500/season3_poster.jpg",
+        "overview": "Season 3 specific synopsis",
+        "director": "Alex Graves",
+        "lead_actors": "Keri Russell, Rufus Sewell",
+        "episode_count": 8
+    }
+
+    monkeypatch.setattr(tmdb_service, "get_full_media_details", lambda **kwargs: fake_details)
+    monkeypatch.setattr(catalog_service, "get_tv_season_catalog_item", lambda tmdb_id, season_num: fake_season)
+
+    with app.test_client() as client:
+        res = client.get('/api/media_details?tmdb_id=203857&season=3&tv=1')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data["success"] is True
+        assert data["season_number"] == 3
+        assert data["season_name"] == "Season 3"
+        assert "Season 3" in data["title"]
+        assert data["poster"] == "https://image.tmdb.org/t/p/w500/season3_poster.jpg"
+        assert data["overview"] == "Season 3 specific synopsis"
+        assert data["director"] == "Alex Graves"
+        assert data["runtime"] == "8 Episodes"
+        assert len(data["cast"]) == 2
+        assert data["cast"][0]["name"] == "Keri Russell"
+

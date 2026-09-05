@@ -109,10 +109,18 @@ content %}
     transition: all 0.3s ease;
   }
 
-  .add-movie-main .button:hover {
+  .add-movie-main .button:hover:not(:disabled) {
     background: var(--theme-accent-soft);
     box-shadow: 0 0 10px rgba(131, 111, 255, 0.4);
     transform: scale(1.02);
+  }
+
+  .add-movie-main .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(131, 111, 255, 0.4);
   }
 
   .add-movie-main .season-counter {
@@ -272,6 +280,237 @@ content %}
       margin-bottom: 6rem;
     }
   }
+
+  /* Scoped Media Preview Confirmation Pill */
+  .selected-media-preview {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    background: rgba(131, 111, 255, 0.08);
+    border: 1px solid rgba(131, 111, 255, 0.25);
+    border-radius: 12px;
+    padding: 6px 12px;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .selected-media-preview img,
+  #previewPosterImg {
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    border-radius: 6px !important;
+    object-fit: cover !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+  }
+
+  .preview-media-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .preview-media-title {
+    font-family: "VT323", monospace;
+    font-size: 1.3rem;
+    color: var(--text-secondary, #ffffff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+
+  .preview-media-sub {
+    font-family: "Inter", sans-serif;
+    font-size: 0.8rem;
+    color: #a5b4fc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+
+  .preview-clear-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .preview-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+  }
+
+  /* Scoped Season Picker Container & Cards */
+  .season-counter-panel {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease;
+    margin-top: 0;
+  }
+
+  .season-counter-panel.expanded {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .season-picker-container {
+    background: rgba(131, 111, 255, 0.06);
+    border: 1px dashed rgba(131, 111, 255, 0.3);
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .season-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .season-selected-badge {
+    font-family: "VT323", monospace;
+    font-size: 1.1rem;
+    background: var(--theme-accent-soft, rgba(131, 111, 255, 0.2));
+    color: var(--theme-accent, #836fff);
+    border: 1px solid rgba(131, 111, 255, 0.3);
+    padding: 2px 10px;
+    border-radius: 99px;
+    letter-spacing: 1px;
+  }
+
+  .season-cards-track {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 4px 2px 8px 2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(131, 111, 255, 0.4) transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .season-cards-track::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .season-cards-track::-webkit-scrollbar-thumb {
+    background: rgba(131, 111, 255, 0.4);
+    border-radius: 4px;
+  }
+
+  .season-card {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 6px 12px;
+    min-width: 140px;
+    max-width: 200px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    box-sizing: border-box;
+  }
+
+  .season-card:hover {
+    background: rgba(131, 111, 255, 0.12);
+    border-color: rgba(131, 111, 255, 0.5);
+    transform: translateY(-2px);
+  }
+
+  .season-card.active {
+    background: rgba(131, 111, 255, 0.25);
+    border-color: #836fff;
+    box-shadow: 0 0 12px rgba(131, 111, 255, 0.35);
+  }
+
+  .season-card-poster {
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    border-radius: 4px !important;
+    object-fit: cover !important;
+    background: #111;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    flex-shrink: 0 !important;
+    display: block !important;
+  }
+
+  .season-card-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .season-card-title {
+    font-family: "VT323", monospace;
+    font-size: 1.15rem;
+    color: var(--text-secondary, #ffffff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+  }
+
+  .season-card.active .season-card-title {
+    color: #ffffff;
+  }
+
+  .season-card-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted, #94a3b8);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .season-manual-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    padding-top: 0.6rem;
+  }
+
+  .season-manual-label {
+    font-family: "VT323", monospace;
+    font-size: 1.1rem;
+    color: var(--text-muted, #94a3b8);
+  }
 </style>
 
 
@@ -283,14 +522,21 @@ content %}
       <label for="title" class="label">Title</label>
       <div id="autocomplete-list" class="autocomplete-items"></div>
     </div>
+
+    <!-- Selected Media Confirmation Pill -->
+    <div class="selected-media-preview" id="selectedMediaPreview" style="display: none; align-items: center; gap: 12px; background: rgba(131, 111, 255, 0.08); border: 1px solid rgba(131, 111, 255, 0.25); border-radius: 12px; padding: 6px 12px; margin-top: 8px; margin-bottom: 16px; box-sizing: border-box; width: 100%; max-width: 100%; overflow: hidden;">
+      <img id="previewPosterImg" src="" alt="Poster" width="34" height="48" style="width: 34px !important; min-width: 34px !important; max-width: 34px !important; height: 48px !important; min-height: 48px !important; max-height: 48px !important; border-radius: 6px !important; object-fit: cover !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important; flex-shrink: 0 !important; display: block !important;" />
+      <div class="preview-media-info" style="display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: 1 1 auto; overflow: hidden;">
+        <div class="preview-media-title" id="previewMediaTitle" style="font-family: 'VT323', monospace; font-size: 1.3rem; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;"></div>
+        <div class="preview-media-sub" id="previewMediaSub" style="font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #a5b4fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;"></div>
+      </div>
+      <button type="button" class="preview-clear-btn" onclick="clearSelectedMedia()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #cbd5e1; font-size: 0.85rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s ease; flex-shrink: 0;" title="Clear selection">✕</button>
+    </div>
+
     <input type="hidden" id="tmdb_id" name="tmdb_id" />
     <input type="hidden" id="poster_url" name="poster_url" />
     <input type="hidden" id="year" name="year" />
     {% include 'components/_sentiment_selector.html' %}
-    <div class="field field-director">
-      <input type="text" class="input" id="director" name="director" placeholder=" " />
-      <label for="director" class="label">Director (optional)</label>
-    </div>
     <div class="field">
       <input type="date" class="input" id="date" name="date" required />
       <label for="date" class="label">Watch Date</label>
@@ -313,14 +559,27 @@ content %}
         </button>
       </div>
 
-      <!-- Collapsible Season Counter -->
+      <!-- Collapsible Season Picker Panel -->
       <div class="season-counter-panel" id="seasonField">
-        <div class="season-counter-wrapper">
-          <span class="season-label">📺 Season Number</span>
-          <div class="season-stepper">
-            <button type="button" class="season-stepper-btn" onclick="stepSeason(-1)">-</button>
-            <input type="number" class="season-stepper-input" id="season" name="season" value="1" min="1" readonly />
-            <button type="button" class="season-stepper-btn" onclick="stepSeason(1)">+</button>
+        <div class="season-picker-container">
+          <div class="season-picker-header">
+            <span class="season-label">📺 Choose Season</span>
+            <span class="season-selected-badge" id="selectedSeasonBadge">Season 1</span>
+          </div>
+
+          <!-- Dynamic Season Cards Carousel -->
+          <div class="season-cards-track" id="seasonCardsTrack">
+            <!-- Populated dynamically via /api/tv_seasons -->
+          </div>
+
+          <!-- Fallback / Manual Stepper Row -->
+          <div class="season-manual-row">
+            <span class="season-manual-label">Season #:</span>
+            <div class="season-stepper">
+              <button type="button" class="season-stepper-btn" onclick="stepSeason(-1)">-</button>
+              <input type="number" class="season-stepper-input" id="season" name="season" value="1" min="1" readonly />
+              <button type="button" class="season-stepper-btn" onclick="stepSeason(1)">+</button>
+            </div>
           </div>
         </div>
       </div>
@@ -348,9 +607,11 @@ content %}
       </div>
     </div>
 
-    <button type="submit" class="button">[ SUBMIT ]</button>
+    <button type="submit" class="button" id="submit-movie-btn">[ SUBMIT ]</button>
   </form>
   <script>
+    let currentSeasonsList = [];
+
     function setMediaType(type) {
       const tvYes = document.getElementById("tv_yes");
       const tvNo = document.getElementById("tv_no");
@@ -364,6 +625,12 @@ content %}
         segMovie.classList.remove("active");
         segTv.classList.add("active");
         seasonPanel.classList.add("expanded");
+
+        const tmdbId = document.getElementById("tmdb_id").value;
+        const titleVal = document.getElementById("title").value;
+        if (tmdbId && !currentSeasonsList.length) {
+          loadTvSeasons(tmdbId, titleVal);
+        }
       } else {
         tvNo.checked = true;
         tvYes.checked = false;
@@ -381,12 +648,155 @@ content %}
       setMediaType('movie');
     }
 
+    function loadTvSeasons(tmdbId, showTitle) {
+      const track = document.getElementById('seasonCardsTrack');
+      if (!track) return;
+
+      track.innerHTML = `<div style="font-size: 0.95rem; font-family: 'VT323', monospace; color: var(--text-muted); padding: 8px;">[ LOADING SEASONS... ]</div>`;
+
+      fetch(`/api/tv_seasons?id=${encodeURIComponent(tmdbId)}&title=${encodeURIComponent(showTitle || '')}`)
+        .then(res => res.json())
+        .then(seasons => {
+          currentSeasonsList = seasons || [];
+          if (!currentSeasonsList.length) {
+            track.innerHTML = `<div style="font-size: 0.95rem; font-family: 'VT323', monospace; color: var(--text-muted); padding: 8px;">Season 1 (Default)</div>`;
+            return;
+          }
+          renderSeasonCards(currentSeasonsList);
+        })
+        .catch(err => {
+          console.error("Error loading seasons:", err);
+          track.innerHTML = `<div style="font-size: 0.95rem; font-family: 'VT323', monospace; color: var(--text-muted); padding: 8px;">Use stepper below to select season</div>`;
+        });
+    }
+
+    function clearSelectedMedia() {
+      document.getElementById('title').value = '';
+      document.getElementById('tmdb_id').value = '';
+      document.getElementById('poster_url').value = '';
+      document.getElementById('year').value = '';
+      const preview = document.getElementById('selectedMediaPreview');
+      if (preview) preview.style.display = 'none';
+      currentSeasonsList = [];
+      const track = document.getElementById('seasonCardsTrack');
+      if (track) track.innerHTML = '';
+      setMediaType('movie');
+      document.getElementById('title').focus();
+    }
+
+    function renderSeasonCards(seasons) {
+      const track = document.getElementById('seasonCardsTrack');
+      const seasonInput = document.getElementById('season');
+      const currentSeasonVal = parseInt(seasonInput.value) || 1;
+      track.innerHTML = '';
+
+      seasons.forEach(s => {
+        const card = document.createElement('div');
+        const isCurrent = s.season_number === currentSeasonVal;
+        card.className = `season-card ${isCurrent ? 'active' : ''}`;
+        card.id = `season-card-${s.season_number}`;
+        card.style.cssText = `
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: ${isCurrent ? 'rgba(131, 111, 255, 0.28)' : 'rgba(0, 0, 0, 0.4)'};
+          border: 1px solid ${isCurrent ? '#836fff' : 'rgba(255, 255, 255, 0.15)'};
+          box-shadow: ${isCurrent ? '0 0 12px rgba(131, 111, 255, 0.35)' : 'none'};
+          border-radius: 10px;
+          padding: 6px 12px;
+          min-width: 140px;
+          max-width: 200px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          user-select: none;
+          box-sizing: border-box;
+        `;
+        
+        const epText = s.episode_count ? `${s.episode_count} eps` : '';
+        const yrText = s.year ? `${s.year}` : '';
+        const metaParts = [yrText, epText].filter(Boolean).join(' • ');
+        const posterSrc = s.poster || 'https://via.placeholder.com/100x150?text=No+Poster';
+
+        card.innerHTML = `
+          <img class="season-card-poster" src="${posterSrc}" alt="Season Poster" width="34" height="50" style="width: 34px !important; min-width: 34px !important; max-width: 34px !important; height: 50px !important; min-height: 50px !important; max-height: 50px !important; border-radius: 4px !important; object-fit: cover !important; background: #111 !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important; flex-shrink: 0 !important; display: block !important;" />
+          <div class="season-card-info" style="display: flex; flex-direction: column; overflow: hidden; min-width: 0;">
+            <div class="season-card-title" style="font-family: 'VT323', monospace; font-size: 1.15rem; color: ${isCurrent ? '#ffffff' : '#e2e8f0'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1;">${s.name || 'Season ' + s.season_number}</div>
+            ${metaParts ? `<div class="season-card-meta" style="font-family: 'Inter', sans-serif; font-size: 0.75rem; color: #94a3b8; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${metaParts}</div>` : ''}
+          </div>
+        `;
+
+        card.addEventListener('click', function() {
+          selectSeason(s);
+        });
+
+        track.appendChild(card);
+      });
+
+      const activeSeason = seasons.find(s => s.season_number === currentSeasonVal) || seasons[0];
+      if (activeSeason) {
+        selectSeason(activeSeason, false);
+      }
+    }
+
+    function selectSeason(seasonObj, updatePosterInput = true) {
+      const seasonInput = document.getElementById('season');
+      const posterInput = document.getElementById('poster_url');
+      const badge = document.getElementById('selectedSeasonBadge');
+      const previewImg = document.getElementById('previewPosterImg');
+      const previewSub = document.getElementById('previewMediaSub');
+
+      seasonInput.value = seasonObj.season_number;
+      if (updatePosterInput && seasonObj.poster) {
+        posterInput.value = seasonObj.poster;
+        if (previewImg) previewImg.src = seasonObj.poster;
+      }
+      if (badge) {
+        badge.innerText = seasonObj.name || `Season ${seasonObj.season_number}`;
+      }
+      if (previewSub) {
+        const yrText = seasonObj.year ? `${seasonObj.year}` : '';
+        const sName = seasonObj.name || `Season ${seasonObj.season_number}`;
+        previewSub.innerText = `${sName}${yrText ? ' • ' + yrText : ''} • TV Series`;
+      }
+
+      document.querySelectorAll('.season-card').forEach(c => {
+        c.classList.remove('active');
+        c.style.background = 'rgba(0, 0, 0, 0.4)';
+        c.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        c.style.boxShadow = 'none';
+        const titleEl = c.querySelector('.season-card-title');
+        if (titleEl) titleEl.style.color = '#e2e8f0';
+      });
+      const activeCard = document.getElementById(`season-card-${seasonObj.season_number}`);
+      if (activeCard) {
+        activeCard.classList.add('active');
+        activeCard.style.background = 'rgba(131, 111, 255, 0.28)';
+        activeCard.style.borderColor = '#836fff';
+        activeCard.style.boxShadow = '0 0 12px rgba(131, 111, 255, 0.35)';
+        const titleEl = activeCard.querySelector('.season-card-title');
+        if (titleEl) titleEl.style.color = '#ffffff';
+        activeCard.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      }
+    }
+
     function stepSeason(delta) {
       const input = document.getElementById('season');
       let val = parseInt(input.value) || 1;
       val += delta;
       if (val < 1) val = 1;
       input.value = val;
+
+      if (currentSeasonsList && currentSeasonsList.length) {
+        const matched = currentSeasonsList.find(s => s.season_number === val);
+        if (matched) {
+          selectSeason(matched);
+          return;
+        }
+      }
+      const badge = document.getElementById('selectedSeasonBadge');
+      if (badge) badge.innerText = `Season ${val}`;
+      document.querySelectorAll('.season-card').forEach(c => c.classList.remove('active'));
     }
 
     function toggleCinemaChip() {
@@ -438,9 +848,14 @@ content %}
         clearTimeout(timeout);
         const query = this.value;
         
-        // Reset previously selected IDs when title is manually modified
+        // Reset previously selected IDs and previews when title is manually modified
         document.getElementById('tmdb_id').value = '';
         document.getElementById('poster_url').value = '';
+        const preview = document.getElementById('selectedMediaPreview');
+        if (preview) preview.style.display = 'none';
+        currentSeasonsList = [];
+        const track = document.getElementById('seasonCardsTrack');
+        if (track) track.innerHTML = '';
         
         if (!query || query.length < 2) {
           autocompleteList.innerHTML = '';
@@ -470,27 +885,29 @@ content %}
                   document.getElementById('tmdb_id').value = item.id || '';
                   document.getElementById('poster_url').value = item.poster_w500 || item.poster || '';
                   
+                  // Update Media Preview Badge
+                  const preview = document.getElementById('selectedMediaPreview');
+                  const previewImg = document.getElementById('previewPosterImg');
+                  const previewTitle = document.getElementById('previewMediaTitle');
+                  const previewSub = document.getElementById('previewMediaSub');
+                  if (preview && previewImg && previewTitle) {
+                    preview.style.display = 'flex';
+                    previewImg.src = item.poster_w500 || item.poster || '';
+                    previewTitle.innerText = item.title;
+                    previewSub.innerText = `${item.year || ''} • ${item.type === 'tv' ? 'TV Series' : 'Movie'}`;
+                  }
+
                   if (item.type === 'tv') {
                     setMediaType('tv');
+                    loadTvSeasons(item.id, item.title);
                   } else {
                     setMediaType('movie');
+                    currentSeasonsList = [];
+                    const track = document.getElementById('seasonCardsTrack');
+                    if (track) track.innerHTML = '';
                   }
 
                   autocompleteList.innerHTML = '';
-                  
-                  // Fetch director
-                  const dirInput = document.getElementById('director');
-                  dirInput.value = 'Loading...';
-                  fetch(`/api/director?id=${item.id}&type=${item.type}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if(data.director) {
-                            dirInput.value = data.director;
-                        } else {
-                            dirInput.value = '';
-                        }
-                    })
-                    .catch(() => dirInput.value = '');
                 });
                 autocompleteList.appendChild(div);
               });
@@ -505,6 +922,16 @@ content %}
           autocompleteList.innerHTML = '';
         }
       });
+
+      // Submit feedback & double-click protection
+      const movieForm = document.querySelector('.add-movie-main form');
+      const submitBtn = document.getElementById('submit-movie-btn');
+      if (movieForm && submitBtn) {
+        movieForm.addEventListener('submit', function() {
+          submitBtn.disabled = true;
+          submitBtn.innerText = '[ ADDING... ]';
+        });
+      }
     });
   </script>
 </main>
