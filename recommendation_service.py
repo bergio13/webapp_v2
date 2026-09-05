@@ -299,7 +299,8 @@ def build_user_taste_genome(movies):
     for g, ratings in genre_ratings.items():
         count = len(ratings)
         avg = sum(ratings) / count
-        if count >= 2 and avg <= 2.5:
+        pos_in_g = sum(1 for r in ratings if r >= 4.0)
+        if count >= 2 and avg <= 2.5 and pos_in_g < 2:
             disliked_genres.append(g)
         elif avg >= 3.5 and count >= min_count_req:
             weighted_score = avg * math.log2(1 + count)

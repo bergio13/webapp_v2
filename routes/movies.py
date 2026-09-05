@@ -15,8 +15,16 @@ _NO_POSTER = "https://via.placeholder.com/200x300?text=No+Poster"
 
 
 def _clear_user_cache():
-    """Invalidate all cached data (SimpleCache — clears everything)."""
+    """Invalidate all cached data (SimpleCache — clears everything) and cosmos galaxy cache."""
     cache.clear()
+    try:
+        from services.cosmos_service import invalidate_galaxy_cache
+        if current_user and current_user.is_authenticated:
+            invalidate_galaxy_cache(current_user.id)
+        else:
+            invalidate_galaxy_cache()
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------

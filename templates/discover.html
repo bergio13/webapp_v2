@@ -1,1255 +1,368 @@
-{% extends 'base.html' %} 
-{% block title %}Discover Studio | Kineto{% endblock %} 
-{% block body_class %} discover_page{% endblock %} 
+{% extends 'base.html' %}
+{% block title %}Taste Manifold | Kineto{% endblock %}
+{% block body_class %} discover_page cosmos_page{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+{% endblock %}
 {% block content %}
 
+<input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}" />
+<div class="cosmos-atmosphere" aria-hidden="true"></div>
 
-<canvas class="canvas_discover" id="canvas"></canvas>
-<div class="discover-atmosphere" aria-hidden="true"></div>
-<script src="/static/js/canvas_bg.js"></script>
+<!-- MAIN VIEWPORT CONTAINER -->
+<main class="cosmos-viewport view-mode-split mobile-view-feed" id="cosmos-viewport">
 
-<main class="discover-main">
-  <div class="discover-wrap">
+  <!-- TOP TELEMETRY & VIEW CONTROL DECK (DESKTOP) -->
+  <header class="cosmos-top-deck" id="cosmos-top-deck">
+    <div class="deck-brand">
+      <h1 class="brand-title">TASTE MANIFOLD</h1>
+    </div>
 
-    <!-- CONTROL PANEL GRID -->
-    <section class="discover-grid">
-      <div class="cyber-card glass-panel discover-card discover-form-card">
-        <form method="post" class="recommendation-form" id="recommendation-form">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <!-- VIEW SWITCHER (SPLIT / FEED / MAP) -->
+    <div class="view-mode-toggle" id="view-mode-toggle">
+      <button type="button" class="view-mode-btn active" data-view="split" title="Split View: Feed + Live Manifold">
+        <i class="fa-solid fa-table-columns"></i> <span>Split</span>
+      </button>
+      <button type="button" class="view-mode-btn" data-view="feed" title="Magazine Feed View">
+        <i class="fa-solid fa-list-ul"></i> <span>Feed</span>
+      </button>
+      <button type="button" class="view-mode-btn" data-view="manifold" title="Full Topological Map">
+        <i class="fa-solid fa-cubes"></i> <span>Map</span>
+      </button>
+    </div>
 
-          <!-- MEDIA TYPE SEGMENTED TOGGLE -->
-          <div class="form-group">
-            <span class="form-label">&gt; MEDIA FORMAT CONSTRAINT</span>
-            <div class="segmented-control" id="media-type-segmented">
-              <button type="button" class="segmented-btn active" data-value="both">
-                <i class="fa-solid fa-layer-group"></i> Hybrid (Both)
-              </button>
-              <button type="button" class="segmented-btn" data-value="movie">
-                <i class="fa-solid fa-film"></i> Movies
-              </button>
-              <button type="button" class="segmented-btn" data-value="tv">
-                <i class="fa-solid fa-tv"></i> TV Series
-              </button>
-            </div>
-            <input type="hidden" name="media_type" id="media_type_input" value="both" />
-          </div>
 
-          <!-- NATURAL LANGUAGE PROMPT BOX -->
-          <div class="form-group">
-            <div class="label-with-clear">
-              <label for="user_request" class="form-label">&gt; NATURAL LANGUAGE PROMPT</label>
-              <button type="button" class="text-link-btn" id="clear-prompt-btn">Clear</button>
-            </div>
-            <textarea
-              id="user_request"
-              name="user_request"
-              class="form-textarea"
-              rows="3"
-              placeholder="Describe what you want to watch... (e.g. 90s atmospheric mystery, comforting sci-fi, or intense psychological drama)"
-              required
-            >{{ user_request }}</textarea>
-          </div>
-
-          <!-- ADVANCED TASTE PROFILE SETTINGS -->
-          <div class="form-group">
-            <span class="form-label">&gt; ALGORITHM MODE</span>
-            <div class="option-grid mode-grid">
-              <label class="choice-card">
-                <input type="radio" name="recommendation_mode" value="similar" checked />
-                <span class="choice-title">
-                  <span class="choice-main">Closest Taste Match</span>
-                  <span class="choice-sub">Aligns strictly with your highest rated films</span>
-                </span>
-              </label>
-              <label class="choice-card">
-                <input type="radio" name="recommendation_mode" value="explore" />
-                <span class="choice-title">
-                  <span class="choice-main">Exploratory Push</span>
-                  <span class="choice-sub">Pushes slightly beyond your usual genre clusters</span>
-                </span>
-              </label>
-              <label class="choice-card">
-                <input type="radio" name="recommendation_mode" value="wildcard" />
-                <span class="choice-title">
-                  <span class="choice-main">Serendipity Matrix</span>
-                  <span class="choice-sub">High-variance discovery for unexpected gems</span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <button type="submit" class="recommend-button" id="submit-button">
-            [ LAUNCH DISCOVERY ]
-          </button>
-        </form>
+    <!-- SEARCH & TELEPORT BAR (DESKTOP) -->
+    <div class="cosmos-search-container">
+      <div class="search-input-box">
+        <i class="fa-solid fa-crosshairs search-icon"></i>
+        <input type="text" id="cosmos-search-input" placeholder="Search title, director, genre..." autocomplete="off" />
       </div>
-    </section>
+      <div class="search-results-dropdown" id="cosmos-search-results" style="display: none;"></div>
+    </div>
+  </header>
 
-    <!-- STREAMING / NON-STREAMING RESPONSE SECTION -->
-    <section class="cyber-card glass-panel discover-card response-card" id="response-section" {% if not ai_response %}style="display: none;"{% endif %}>
-      <div class="response-headline">
-        <div class="headline-title-wrap">
-          <h2>NEURAL_SYNTHESIS_RESULTS</h2>
-          <div class="live-status-pill" id="live-status-pill">
-            <span class="status-dot"></span> <span id="status-text">{% if ai_response %}Complete{% else %}Ready{% endif %}</span>
+  <!-- WORKSPACE CONTAINER (SPLIT ON DESKTOP, STRICT SINGLE-VIEW ON MOBILE) -->
+  <div class="cosmos-split-container" id="cosmos-split-container">
+
+    <!-- ========================================================================= -->
+    <!-- LEFT PANE: CURATED TASTE FRONTIER FEED                                    -->
+    <!-- ========================================================================= -->
+    <section class="taste-feed-pane" id="taste-feed-pane">
+      
+
+      <!-- STICKY COMPACT FILTER & VIEW BAR -->
+      <div class="feed-filter-bar" id="feed-filter-bar">
+        <!-- Top Action Row: Cluster Expand/Collapse & Mobile View Switcher (Feed | Map) -->
+        <div class="feed-top-action-row">
+          <button type="button" class="feed-toggle-clusters-btn" id="feed-toggle-clusters-btn" title="Expand or collapse all cluster sections">
+            <i class="fa-solid fa-layer-group"></i> <span id="feed-toggle-clusters-label">Expand All</span>
+          </button>
+          <div class="mobile-view-toggle" id="mobile-feed-view-toggle">
+            <button type="button" class="mobile-nav-btn active" data-mobile-view="feed" id="mobile-feed-tab">
+              <i class="fa-solid fa-newspaper"></i> <span>Feed</span>
+            </button>
+            <button type="button" class="mobile-nav-btn" data-mobile-view="manifold" id="mobile-feed-map-tab">
+              <i class="fa-solid fa-map"></i> <span>Map</span>
+            </button>
           </div>
         </div>
-        <p id="response-meta-text">{% if ai_response %}Direct synthesis complete.{% else %}Configuring neural synthesis...{% endif %}</p>
+
+        <!-- Single Horizontal Scrolling Filter Rail -->
+        <div class="filter-rail-track filter-rail-focus">
+          <div class="filter-pills">
+            <button type="button" class="filter-pill active" data-filter-type="category" data-filter="all">All (<span id="stat-total-feed">{{ stats.total_celestial_bodies or 0 }}</span>)</button>
+            <button type="button" class="filter-pill" data-filter-type="category" data-filter="watched">Watched (<span id="stat-watched-feed">{{ stats.watched_stars or 0 }}</span>)</button>
+            <button type="button" class="filter-pill" data-filter-type="category" data-filter="uncharted">Uncharted (<span id="stat-uncharted-feed">{{ stats.uncharted_beacons or 0 }}</span>)</button>
+            <button type="button" class="filter-pill" data-filter-type="category" data-filter="watchlist">Watchlist (<span id="stat-watchlist-feed">{{ stats.watchlist_stars or 0 }}</span>)</button>
+            <span class="filter-rail-divider"></span>
+            <button type="button" class="filter-pill pill-sm active" data-filter-type="mediaType" data-filter="all">All Media</button>
+            <button type="button" class="filter-pill pill-sm" data-filter-type="mediaType" data-filter="movie">Films</button>
+            <button type="button" class="filter-pill pill-sm" data-filter-type="mediaType" data-filter="tv">Series</button>
+          </div>
+        </div>
       </div>
 
-      <div class="formatted-recommendations" id="formatted-recommendations">
-        {% if ai_response %}{{ ai_response|safe }}{% endif %}
+      <!-- SCROLLABLE FEED LIST (INJECTED DYNAMICALLY BY COSMOS_ENGINE.JS) -->
+      <div class="taste-feed-scroll" id="taste-feed-scroll">
+        <div class="feed-loading-state">
+          <i class="fa-solid fa-circle-notch fa-spin"></i>
+          <span>Synthesizing Taste Frontier Feed...</span>
+        </div>
       </div>
+
     </section>
 
-  </div>
-</main>
-
-<style>
-  :root {
-    --discover-bg: #141b26;
-    --discover-cyan: #7eb5c4;
-    --discover-purple: #a89bc4;
-    --discover-green: #7aa898;
-    --discover-gold: #c4a96d;
-    --discover-coral: #d97b7b;
-    --discover-light: #d0dde5;
-    --discover-muted: #8ca2af;
-  }
-
-  .canvas_discover {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 0 !important;
-    pointer-events: none !important;
-  }
-
-  .discover-main {
-    position: relative;
-    z-index: 2;
-    margin-left: 5rem;
-    padding: 0.5rem 1.5rem 3rem;
-    background: transparent;
-  }
-
-  .discover-wrap {
-    max-width: 1260px;
-    margin: 0 auto;
-  }
-
-  .discover-header {
-    margin-bottom: 1rem;
-  }
-
-  .header-tag {
-    font-family: "VT323", monospace;
-    font-size: 1.1rem;
-    color: var(--discover-cyan);
-    letter-spacing: 2px;
-    opacity: 0.85;
-  }
-
-  .discover-header h1 {
-    font-family: "VT323", monospace;
-    font-size: 2.5rem;
-    color: var(--discover-light);
-    margin: 0.1rem 0 0;
-    letter-spacing: 2px;
-  }
-
-  .discover-header h1 span {
-    color: var(--discover-cyan);
-  }
-
-  .discover-intro {
-    font-family: "Rajdhani", sans-serif;
-    font-size: 1.05rem;
-    color: var(--discover-muted);
-    margin: 0.2rem 0 0;
-  }
-
-  .discover-card {
-    background: linear-gradient(150deg, rgba(17, 25, 36, 0.65), rgba(12, 18, 27, 0.55)) !important;
-    border: 1px solid rgba(126, 181, 196, 0.22) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px) saturate(1.1) !important;
-    padding: 20px;
-  }
-
-  .recommendation-form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-top: 0 !important;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .form-label {
-    color: var(--discover-purple);
-    font-family: "VT323", monospace;
-    font-size: 1.25rem;
-    letter-spacing: 1px;
-  }
-
-  .label-with-clear {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .text-link-btn {
-    background: none;
-    border: none;
-    color: var(--discover-muted);
-    font-family: "VT323", monospace;
-    font-size: 1rem;
-    cursor: pointer;
-    text-decoration: underline;
-  }
-
-  .text-link-btn:hover {
-    color: var(--discover-cyan);
-  }
-
-  /* SEGMENTED CONTROL */
-  .segmented-control {
-    display: flex;
-    background: rgba(10, 15, 22, 0.7);
-    border: 1px solid rgba(126, 181, 196, 0.2);
-    border-radius: 12px;
-    padding: 4px;
-    gap: 4px;
-  }
-
-  .segmented-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--discover-muted);
-    font-family: "Rajdhani", sans-serif;
-    font-weight: 600;
-    font-size: 1.05rem;
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.22s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .segmented-btn:hover {
-    color: var(--discover-light);
-    background: rgba(126, 181, 196, 0.1);
-  }
-
-  .segmented-btn.active {
-    background: linear-gradient(135deg, rgba(126, 181, 196, 0.25), rgba(126, 181, 196, 0.12));
-    border: 1px solid var(--discover-cyan);
-    color: #ffffff;
-    box-shadow: 0 0 12px rgba(126, 181, 196, 0.25);
-  }
-
-  /* MOOD PRESETS GRID */
-  .mood-presets-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 10px;
-  }
-
-  .mood-chip {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    background: rgba(12, 19, 28, 0.7);
-    border: 1px solid rgba(126, 181, 196, 0.18);
-    border-radius: 12px;
-    padding: 12px 8px;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .mood-chip:hover {
-    border-color: var(--discover-cyan);
-    transform: translateY(-2px);
-    background: rgba(126, 181, 196, 0.12);
-  }
-
-  .mood-chip.active {
-    border-color: var(--discover-cyan);
-    background: linear-gradient(145deg, rgba(126, 181, 196, 0.28), rgba(168, 155, 196, 0.18));
-    box-shadow: 0 0 14px rgba(126, 181, 196, 0.3);
-  }
-
-  .mood-icon {
-    font-size: 1.4rem;
-  }
-
-  .mood-title {
-    font-family: "Rajdhani", sans-serif;
-    font-weight: 600;
-    font-size: 0.88rem;
-    color: var(--discover-light);
-    text-align: center;
-  }
-
-  /* VIBE SLIDERS */
-  .vibe-sliders-container {
-    background: rgba(10, 16, 24, 0.5);
-    border: 1px solid rgba(126, 181, 196, 0.15);
-    border-radius: 12px;
-    padding: 16px;
-    gap: 16px;
-  }
-
-  .slider-row {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .slider-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: "VT323", monospace;
-    font-size: 1.1rem;
-    color: var(--discover-light);
-  }
-
-  .slider-badge {
-    font-family: "VT323", monospace;
-    font-size: 0.95rem;
-    color: var(--discover-cyan);
-    background: rgba(126, 181, 196, 0.12);
-    border: 1px solid rgba(126, 181, 196, 0.25);
-    padding: 2px 8px;
-    border-radius: 6px;
-  }
-
-  .slider-track-wrap {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .slider-hint {
-    font-family: "Rajdhani", sans-serif;
-    font-size: 0.85rem;
-    color: var(--discover-muted);
-    min-width: 90px;
-  }
-
-  .slider-hint:last-child {
-    text-align: right;
-  }
-
-  .vibe-slider {
-    flex: 1;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(126, 181, 196, 0.2);
-    outline: none;
-  }
-
-  .vibe-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--discover-cyan);
-    cursor: pointer;
-    box-shadow: 0 0 10px var(--discover-cyan);
-    transition: transform 0.15s ease;
-  }
-
-  .vibe-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-  }
-
-  /* TEXTAREA & STARTERS */
-  .form-textarea {
-    width: 100%;
-    border-radius: 12px;
-    box-sizing: border-box;
-    resize: vertical;
-    border: 1px solid rgba(126, 181, 196, 0.24);
-    background: rgba(10, 16, 24, 0.85);
-    color: var(--discover-light);
-    padding: 14px;
-    font-family: "VT323", monospace;
-    font-size: 1.25rem;
-    line-height: 1.35;
-  }
-
-  .form-textarea:focus {
-    outline: none;
-    border-color: var(--discover-cyan);
-    box-shadow: 0 0 14px rgba(126, 181, 196, 0.3);
-  }
-
-  .prompt-starters {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 4px;
-  }
-
-  .starter-label {
-    font-family: "VT323", monospace;
-    color: var(--discover-muted);
-    font-size: 0.95rem;
-  }
-
-  .starter-chip {
-    background: rgba(126, 181, 196, 0.08);
-    border: 1px solid rgba(126, 181, 196, 0.2);
-    color: var(--discover-light);
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-family: "Rajdhani", sans-serif;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .starter-chip:hover {
-    border-color: var(--discover-cyan);
-    background: rgba(126, 181, 196, 0.2);
-  }
-
-  /* OPTION GRID MODES */
-  .option-grid {
-    display: grid;
-    gap: 9px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .choice-card {
-    position: relative;
-    display: block;
-  }
-
-  .choice-card input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .choice-title {
-    display: grid;
-    align-content: center;
-    justify-items: start;
-    min-height: 56px;
-    text-align: left;
-    border: 1px solid rgba(126, 181, 196, 0.26);
-    background: rgba(14, 22, 32, 0.75);
-    color: var(--discover-light);
-    padding: 8px 10px;
-    font-family: "VT323", monospace;
-    font-size: 1.12rem;
-    transition: all 0.22s ease;
-    cursor: pointer;
-    border-radius: 10px;
-  }
-
-  .choice-main {
-    display: block;
-    color: #e2ecf2;
-    font-size: 1.08rem;
-    line-height: 1.05;
-  }
-
-  .choice-sub {
-    display: block;
-    color: rgba(176, 190, 197, 0.9);
-    font-size: 0.9rem;
-    margin-top: 2px;
-  }
-
-  .choice-card input:checked + .choice-title {
-    border-color: var(--discover-cyan);
-    background: linear-gradient(145deg, rgba(126, 181, 196, 0.22), rgba(126, 181, 196, 0.1));
-    color: #d0dde5;
-    box-shadow: 0 0 8px rgba(126, 181, 196, 0.25);
-  }
-
-  /* SUBMIT BUTTON */
-  .recommend-button {
-    align-self: center;
-    border: 1px solid var(--discover-cyan);
-    background: linear-gradient(135deg, rgba(126, 181, 196, 0.28), rgba(126, 181, 196, 0.12));
-    color: var(--discover-cyan);
-    padding: 14px 32px;
-    font-family: "VT323", monospace;
-    font-size: 1.4rem;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    border-radius: 12px;
-    margin-top: 6px;
-  }
-
-  .recommend-button:hover:not(:disabled) {
-    background: rgba(126, 181, 196, 0.35);
-    box-shadow: 0 0 24px rgba(126, 181, 196, 0.5);
-    color: #ffffff;
-    transform: translateY(-1px);
-  }
-
-  /* RESPONSE SECTION & CARDS */
-  .response-card {
-    margin-top: 28px;
-  }
-
-  .response-headline {
-    margin-bottom: 16px;
-  }
-
-  .headline-title-wrap {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .response-headline h2 {
-    margin: 0;
-    color: var(--discover-cyan);
-    font-family: "VT323", monospace;
-    font-size: 2.2rem;
-    letter-spacing: 1.5px;
-  }
-
-  .live-status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(126, 181, 196, 0.12);
-    border: 1px solid rgba(126, 181, 196, 0.25);
-    padding: 4px 12px;
-    border-radius: 999px;
-    font-family: "VT323", monospace;
-    font-size: 0.95rem;
-    color: var(--discover-light);
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--discover-green);
-    box-shadow: 0 0 8px var(--discover-green);
-  }
-
-  #response-meta-text {
-    font-family: "VT323", monospace;
-    font-size: 1.1rem;
-    color: var(--discover-muted);
-    margin: 6px 0 0;
-  }
-
-  .movie-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
-  }
-
-  /* CARD OVERLAY & ACTIONS */
-  .movie-frame {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    border-radius: 14px;
-    overflow: hidden;
-    background: rgba(30, 30, 40, 0.55);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
-    cursor: pointer;
-  }
-
-  .movie-frame:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.62);
-  }
-
-  .movie-poster {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: filter 0.4s ease, transform 0.4s ease;
-  }
-
-  .movie-frame:hover .movie-poster {
-    filter: brightness(0.68) saturate(1.15);
-    transform: scale(1.05);
-  }
-
-  .frame-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: flex-end;
-    padding: 1.1rem 1rem 0.9rem;
-    background: linear-gradient(to top, rgba(10, 14, 20, 0.96) 0%, rgba(10, 14, 20, 0.65) 65%, transparent 100%);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-sizing: border-box;
-    transform: translateY(24px);
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    pointer-events: none;
-  }
-
-  .movie-frame:hover .frame-overlay {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .overlay-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    width: 100%;
-  }
-
-  .frame-title {
-    font-family: "VT323", monospace;
-    font-size: 1.35rem;
-    color: #ffffff;
-    margin: 0;
-    line-height: 1.1;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.85);
-  }
-
-  .frame-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: "VT323", monospace;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.75);
-  }
-
-  .frame-genre {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.2rem 0.5rem;
-    border-radius: 999px;
-    border: 1px solid rgba(126, 181, 196, 0.2);
-    background: rgba(126, 181, 196, 0.12);
-    color: var(--discover-light);
-    font-family: "VT323", monospace;
-    font-size: 0.82rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .frame-rating {
-    color: var(--discover-gold);
-    font-family: "VT323", monospace;
-    font-size: 0.9rem;
-    letter-spacing: 0.6px;
-  }
-
-  .frame-summary {
-    color: rgba(255, 255, 255, 0.88);
-    font-family: "VT323", monospace;
-    font-size: 0.88rem;
-    line-height: 1.25;
-    max-height: 4.5em;
-    overflow-y: auto;
-  }
-
-  .frame-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-  }
-
-  .card-action-btn {
-    flex: 1;
-    background: rgba(14, 22, 32, 0.85);
-    border: 1px solid rgba(126, 181, 196, 0.25);
-    color: var(--discover-light);
-    border-radius: 8px;
-    padding: 6px 8px;
-    font-family: "Rajdhani", sans-serif;
-    font-weight: 600;
-    font-size: 0.8rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    transition: all 0.2s ease;
-    text-decoration: none;
-  }
-
-  .card-action-btn:hover {
-    border-color: var(--discover-cyan);
-    background: rgba(126, 181, 196, 0.25);
-    color: #ffffff;
-  }
-
-  .card-action-btn.added {
-    border-color: var(--discover-green);
-    background: rgba(122, 168, 152, 0.25);
-    color: #ffffff;
-  }
-
-  /* MOBILE DEVICE RESPONSIVE MEDIA QUERIES */
-  @media (max-width: 1024px) {
-    .movie-gallery {
-      grid-template-columns: repeat(2, 1fr) !important;
-      gap: 16px !important;
-    }
-  }
-
-  @media (max-width: 600px) {
-    .discover-main {
-      margin-left: 0 !important;
-      padding: 0.5rem 0.85rem 6rem !important; /* 6rem clears the 5rem bottom nav */
-    }
-
-    .discover-header h1 {
-      font-size: 2rem !important;
-    }
-
-    .discover-intro {
-      font-size: 0.95rem !important;
-    }
-
-    .movie-gallery {
-      grid-template-columns: 1fr !important;
-      gap: 16px !important;
-    }
-
-    .segmented-control {
-      flex-direction: column !important;
-    }
-
-    .segmented-btn {
-      padding: 8px 12px !important;
-      font-size: 0.95rem !important;
-      justify-content: flex-start !important;
-    }
-
-    .mode-grid {
-      grid-template-columns: 1fr !important;
-    }
-
-    .slider-track-wrap {
-      gap: 4px !important;
-    }
-
-    .slider-hint {
-      font-size: 0.7rem !important;
-    }
-
-    .discover-card {
-      padding: 14px !important;
-      border-radius: 12px !important;
-    }
-
-    .recommend-button {
-      padding: 13px 16px !important;
-      font-size: 1.1rem !important;
-      width: 100% !important;
-      text-align: center !important;
-    }
-
-    .movie-frame {
-      min-height: 400px !important;
-    }
-
-    .overlay-content {
-      padding: 12px !important;
-    }
-
-    .frame-actions {
-      flex-wrap: wrap !important;
-      gap: 6px !important;
-    }
-
-    .card-action-btn {
-      font-size: 0.75rem !important;
-      padding: 7px 4px !important;
-    }
-
-    .discover-grid {
-      gap: 12px !important;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .discover-main {
-      padding: 0.4rem 0.6rem 6rem !important;
-    }
-
-    .header-tag {
-      font-size: 0.9rem !important;
-    }
-
-    .discover-header h1 {
-      font-size: 1.65rem !important;
-    }
-
-    .form-label {
-      font-size: 1.05rem !important;
-    }
-  }
-</style>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("recommendation-form");
-  const submitButton = document.getElementById("submit-button");
-  const responseSection = document.getElementById("response-section");
-  const formattedRecs = document.getElementById("formatted-recommendations");
-  const responseMeta = document.getElementById("response-meta-text");
-  const statusText = document.getElementById("status-text");
-  const userRequestInput = document.getElementById("user_request");
-
-  const movieDetailsCache = new Map();
-
-
-
-  // MEDIA TYPE SEGMENTED TOGGLE
-  const segmentedBtns = document.querySelectorAll("#media-type-segmented .segmented-btn");
-  const mediaTypeInput = document.getElementById("media_type_input");
-
-  segmentedBtns.forEach(btn => {
-    btn.addEventListener("click", function() {
-      segmentedBtns.forEach(b => b.classList.remove("active"));
-      this.classList.add("active");
-      mediaTypeInput.value = this.dataset.value;
-    });
-  });
-
-  document.getElementById("clear-prompt-btn").addEventListener("click", function() {
-    userRequestInput.value = "";
-  });
-
-  // WATCHLIST AJAX ACTION
-  window.handleWatchlistAdd = async function(btn, title, year, director, mediaType) {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-
-    try {
-      const csrfToken = document.querySelector('input[name="csrf_token"]').value;
-      const res = await fetch("/api/watchlist/add_ajax", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken
-        },
-        body: JSON.stringify({ title, year, director, media_type: mediaType })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        btn.classList.add("added");
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> In Watchlist';
-      } else {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-plus"></i> + Watchlist';
-        alert(data.error || "Failed to add to watchlist.");
-      }
-    } catch (e) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-plus"></i> + Watchlist';
-      alert("Error adding to watchlist.");
-    }
-  };
-
-  // SINGLE CARD SWAP ACTION
-  window.handleCardSwap = async function(cardIndex, rejectedTitle) {
-    const activeCards = Array.from(formattedRecs.querySelectorAll(".movie-frame[data-title]"));
-    const activeTitles = activeCards.map(c => c.dataset.title);
-    const targetCard = activeCards[cardIndex];
-
-    if (!targetCard) return;
-
-    targetCard.style.opacity = "0.5";
-    targetCard.style.pointerEvents = "none";
-
-    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
-    const mediaType = mediaTypeInput.value;
-    const tone = sliders.tone.input.value;
-    const pace = sliders.pace.input.value;
-    const distance = sliders.distance.input.value;
-    const userRequest = userRequestInput.value;
-
-    try {
-      const response = await fetch("/api/recommend_swap", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken
-        },
-        body: JSON.stringify({
-          user_request: userRequest,
-          active_titles: activeTitles,
-          rejected_title: rejectedTitle,
-          media_type: mediaType,
-          tone: tone,
-          pace: pace,
-          distance: distance
-        })
-      });
-
-      if (!response.ok) throw new Error("Swap request failed");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let streamText = "";
-      let sseBuffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        sseBuffer += decoder.decode(value, { stream: true });
-        const events = sseBuffer.split("\n\n");
-        sseBuffer = events.pop() || "";
-
-        for (const eventBlock of events) {
-          const payloadRaw = eventBlock
-            .split("\n")
-            .filter((line) => line.startsWith("data: "))
-            .map((line) => line.slice(6))
-            .join("\n")
-            .trim();
-
-          if (!payloadRaw) continue;
-
-          try {
-            const data = JSON.parse(payloadRaw);
-            if (data.token) {
-              streamText += data.token;
-            } else if (data.error) {
-              console.error("[DEBUG] Swap SSE error:", data.error);
-            }
-          } catch (_e) {}
-        }
-      }
-
-      targetCard.style.opacity = "1";
-      targetCard.style.pointerEvents = "auto";
-
-      console.log("[DEBUG] Swap raw streamText:", streamText);
-      const items = parseStreamedText(streamText);
-      console.log("[DEBUG] Swap parsed items:", items);
-      if (items && items.length > 0) {
-        const newItem = items[0];
-        const details = await fetchMovieDetails(newItem.title, newItem.year, newItem.director);
-        const poster = (details && details.poster && !details.poster.includes("via.placeholder"))
-          ? details.poster
-          : `https://placehold.co/500x750/0f172a/7eb5c4?text=${encodeURIComponent(newItem.title)}`;
-        const genre = (details && details.genre) ? details.genre : "Cinematic Pick";
-        const rating = newItem.rating ? `Match ${newItem.rating}` : "95% Match";
-
-        const newCardHtml = `
-          <article class="movie-frame" data-title="${newItem.title}" data-year="${newItem.year}">
-            <img src="${poster}" alt="${newItem.title}" class="movie-poster" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=${encodeURIComponent(newItem.title)}';">
-            <div class="frame-overlay">
-              <div class="overlay-content">
-                <h3 class="frame-title">${newItem.title}</h3>
-                <div class="frame-meta">
-                  <span>${newItem.year}</span> • <span>${newItem.director}</span>
-                </div>
-                <div class="frame-genre">${genre}</div>
-                <div class="frame-rating"><i class="fa-solid fa-bolt"></i> ${rating}</div>
-                <div class="frame-summary"><strong>Rationale:</strong> ${newItem.why || "Perfect replacement pick for your vibe profile."}</div>
-                
-                <div class="frame-actions">
-                  <button type="button" class="card-action-btn" onclick="event.stopPropagation(); event.preventDefault(); handleWatchlistAdd(this, '${newItem.title.replace(/'/g, "\\'")}', '${newItem.year}', '${newItem.director.replace(/'/g, "\\'")}', '${mediaType}')">
-                    <i class="fa-solid fa-plus"></i> + Watchlist
-                  </button>
-                  <a href="/add_movie?movie=${encodeURIComponent(newItem.title)}&p_year=${newItem.year}&director=${encodeURIComponent(newItem.director)}" target="_blank" class="card-action-btn" onclick="event.stopPropagation();">
-                    <i class="fa-solid fa-eye"></i> Log Watch
-                  </a>
-                  <button type="button" class="card-action-btn" onclick="event.stopPropagation(); event.preventDefault(); handleCardSwap(${cardIndex}, '${newItem.title.replace(/'/g, "\\'")}')">
-                    <i class="fa-solid fa-rotate"></i> Swap
-                  </button>
-                </div>
+    <!-- ========================================================================= -->
+    <!-- RIGHT PANE: LIVE TOPOLOGICAL MANIFOLD                                     -->
+    <!-- ========================================================================= -->
+    <section class="taste-manifold-pane" id="taste-manifold-pane">
+
+      <!-- ULTRA-COMPACT GLASS TOP BAR (MOBILE < 992px, HEIGHT: 46px) -->
+      <header class="cosmos-mobile-map-topbar" id="cosmos-mobile-map-topbar">
+        <div class="mobile-topbar-left">
+          <button type="button" class="mobile-realm-badge-btn" id="mobile-active-realm-btn" title="Current Cluster" aria-haspopup="true" aria-expanded="false">
+            <span class="mobile-realm-dot" id="mobile-realm-dot" style="background: #bae6fd;"></span>
+            <span class="mobile-realm-name" id="mobile-realm-name">⬡ ALL CLUSTERS</span>
+            <i class="fa-solid fa-chevron-down mobile-realm-chevron"></i>
+          </button>
+          <div class="mobile-cluster-dropdown-menu" id="mobile-cluster-dropdown-menu" style="display: none;">
+            <div class="cluster-dropdown-item active" data-sector="all">
+              <span class="cluster-dot" style="background: #bae6fd;"></span>
+              <span class="cluster-name">All Clusters</span>
+            </div>
+            {% for sec in sectors %}
+            <div class="cluster-dropdown-item" data-sector="{{ sec.id }}" title="{{ sec.subtitle or sec.name }}">
+              <span class="cluster-dot" style="background: {{ sec.color }};"></span>
+              <span class="cluster-code">{{ sec.code }}</span>
+              <span class="cluster-name">{{ sec.name }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="mobile-topbar-right">
+          <div class="mobile-view-toggle mobile-view-toggle-map" id="mobile-map-view-toggle">
+            <button type="button" class="mobile-nav-btn" data-mobile-view="feed" id="mobile-map-feed-tab" title="Feed View">
+              <i class="fa-solid fa-newspaper"></i> <span>Feed</span>
+            </button>
+            <button type="button" class="mobile-nav-btn active" data-mobile-view="manifold" id="mobile-map-manifold-tab" title="Map View">
+              <i class="fa-solid fa-map"></i> <span>Map</span>
+            </button>
+          </div>
+          <button type="button" class="mobile-glass-icon-btn" id="mobile-map-search-btn" title="Search Manifold" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+          <button type="button" class="mobile-glass-icon-btn" id="mobile-map-filters-btn" title="Filter Nodes" aria-label="Filters">
+            <i class="fa-solid fa-sliders"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- EXPANDABLE MOBILE MAP SEARCH OVERLAY -->
+      <div class="mobile-map-search-overlay" id="mobile-map-search-overlay" style="display: none;">
+        <div class="mobile-search-input-wrap">
+          <i class="fa-solid fa-crosshairs mobile-search-icon"></i>
+          <input type="text" id="mobile-map-search-input" placeholder="Search title, director, genre..." autocomplete="off" />
+          <button type="button" class="mobile-search-clear-btn" id="mobile-search-clear-btn" aria-label="Clear">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="mobile-search-results-list" id="mobile-map-search-results" style="display: none;"></div>
+      </div>
+
+      <!-- MOBILE SLIDE-UP FILTER SHEET -->
+      <div class="mobile-filter-sheet" id="mobile-filter-sheet" style="display: none;">
+        <div class="mobile-filter-sheet-header">
+          <div class="sheet-pull-handle"></div>
+          <div class="sheet-header-title">
+            <span><i class="fa-solid fa-sliders"></i> MANIFOLD FILTERS</span>
+            <button type="button" class="sheet-close-btn" id="mobile-filter-sheet-close" aria-label="Close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mobile-filter-sheet-body">
+          <div class="mobile-filter-track">
+            <div class="filter-track-title">FOCUS</div>
+            <div class="filter-pills mobile-filter-pills">
+              <button type="button" class="filter-pill active" data-filter-type="category" data-filter="all">All</button>
+              <button type="button" class="filter-pill" data-filter-type="category" data-filter="watched">Watched</button>
+              <button type="button" class="filter-pill" data-filter-type="category" data-filter="uncharted">Uncharted</button>
+              <button type="button" class="filter-pill" data-filter-type="category" data-filter="watchlist">Watchlist</button>
+            </div>
+          </div>
+          <div class="mobile-filter-track">
+            <div class="filter-track-title">FORMAT</div>
+            <div class="filter-pills mobile-filter-pills">
+              <button type="button" class="filter-pill pill-sm active" data-filter-type="mediaType" data-filter="all">All Media</button>
+              <button type="button" class="filter-pill pill-sm" data-filter-type="mediaType" data-filter="movie">Films</button>
+              <button type="button" class="filter-pill pill-sm" data-filter-type="mediaType" data-filter="tv">Series</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESKTOP FLOATING CANVAS CONTROLS (HIDDEN ON MOBILE) -->
+      <div class="manifold-floating-toolbar">
+        <div class="toolbar-modes">
+          <button type="button" class="cosmos-mode-btn active" data-mode="explore" title="Free exploration">
+            <i class="fa-solid fa-compass"></i> Explore
+          </button>
+          <button type="button" class="cosmos-mode-btn" data-mode="probe" title="Neighborhood sampler">
+            <i class="fa-solid fa-crosshairs"></i> Sampler
+          </button>
+        </div>
+
+        <!-- CLUSTER DROPDOWN FILTER IN MAP -->
+        <div class="toolbar-cluster-dropdown" id="toolbar-cluster-dropdown">
+          <button type="button" class="cluster-dropdown-btn" id="cluster-dropdown-btn" title="Filter by Cluster" aria-haspopup="true" aria-expanded="false">
+            <span class="cluster-dot" id="cluster-active-dot" style="background: #bae6fd;"></span>
+            <span class="cluster-label" id="cluster-active-label">All Clusters</span>
+            <i class="fa-solid fa-chevron-down cluster-arrow"></i>
+          </button>
+          <div class="cluster-dropdown-menu" id="cluster-dropdown-menu" style="display: none;">
+            <div class="cluster-dropdown-item active" data-sector="all">
+              <span class="cluster-dot" style="background: #bae6fd;"></span>
+              <span class="cluster-name">All Clusters</span>
+            </div>
+            {% for sec in sectors %}
+            <div class="cluster-dropdown-item" data-sector="{{ sec.id }}" title="{{ sec.subtitle or sec.name }}">
+              <span class="cluster-dot" style="background: {{ sec.color }};"></span>
+              <span class="cluster-code">{{ sec.code }}</span>
+              <span class="cluster-name">{{ sec.name }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button type="button" class="toolbar-btn" id="reset-view-btn" title="Center Manifold">
+            <i class="fa-solid fa-arrows-to-dot"></i> Center
+          </button>
+          <button type="button" class="toolbar-btn" id="refresh-galaxy-btn" title="Re-calculate Vectors">
+            <i class="fa-solid fa-rotate"></i> Sync
+          </button>
+        </div>
+      </div>
+
+      <!-- 100% FULL-BLEED INTERACTIVE CANVAS -->
+      <div class="cosmos-canvas-wrapper" id="cosmos-canvas-container">
+        <canvas id="cosmos-canvas"></canvas>
+
+        <!-- FLOATING MODE BANNER -->
+        <div class="cosmos-mode-banner" id="cosmos-mode-banner" style="display: none;">
+          <span class="mode-pulse-dot"></span>
+          <span id="cosmos-mode-banner-text">SAMPLER ACTIVE: TAP CANVAS TO PROBE NEIGHBORHOOD</span>
+          <button type="button" class="banner-close-btn" id="banner-close-btn" aria-label="Close Banner">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STAR TELEMETRY HUD / NATIVE GLASS BOTTOM SHEET (MOBILE & DESKTOP) -->
+      <div class="cosmos-star-hud" id="cosmos-star-hud" style="display: none;">
+        <!-- Dynamic Blurred Poster Backdrop -->
+        <div class="hud-backdrop" id="hud-backdrop"></div>
+
+        <!-- Close button pinned at top-right corner of the sheet -->
+        <button type="button" class="hud-close-btn" id="hud-close-btn" title="Close Overview" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <!-- iOS-style Drag Handle for Mobile Sheet Expansion & Dismissal -->
+        <div class="sheet-pull-handle-wrap" id="hud-drag-handle">
+          <div class="sheet-pull-handle"></div>
+        </div>
+
+        <div class="hud-body">
+          <div class="hud-poster-wrap">
+            <img src="https://via.placeholder.com/100x150" alt="Poster" class="hud-poster" id="hud-poster" />
+          </div>
+          <div class="hud-info">
+            <div class="hud-title-row">
+              <h2 class="hud-title" id="hud-title">Title</h2>
+              <div class="hud-badges" id="hud-badges">
+                <span class="hud-format-tag" id="hud-format-tag" style="display: none;">SERIES</span>
+                <span class="hud-tag" id="hud-tag" style="display: none;"></span>
+                <span class="hud-score" id="hud-score" style="display: none;"></span>
+                <span class="hud-exploratory-tag" id="hud-exploratory-tag" style="display: none;" title="Cross-modal discovery: High intrigue across modalities">✦ EXPLORATORY</span>
+                <span class="hud-low-evidence-tag" id="hud-low-evidence-tag" style="display: none;" title="Sparse evidence: Metadata or graph connections are sparse">⚠ SPARSE EVIDENCE</span>
               </div>
             </div>
-          </article>
-        `;
-        targetCard.outerHTML = newCardHtml;
-      }
-    } catch (err) {
-      console.error(err);
-      targetCard.style.opacity = "1";
-      targetCard.style.pointerEvents = "auto";
-      alert("Could not swap card at this time.");
-    }
-  };
+            <div class="hud-meta" id="hud-meta"></div>
+            <div class="hud-genres" id="hud-genres"></div>
 
-  // HELPER MOVIE DETAILS FETCH
-  async function fetchMovieDetails(title, year, director) {
-    const key = `${title.toLowerCase()}::${year}`;
-    if (movieDetailsCache.has(key)) return movieDetailsCache.get(key);
-    try {
-      const params = new URLSearchParams({ title });
-      if (year) params.set("year", String(year));
-      if (director) params.set("director", String(director));
-      const res = await fetch(`/api/movie_details?${params.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        movieDetailsCache.set(key, data);
-        return data;
-      }
-    } catch (e) {}
-    return null;
-  }
-
-  // PARSE STREAMED RECOMMENDATIONS
-  function parseStreamedText(rawText) {
-    const lines = (rawText || "").split("\n");
-    const results = [];
-    let current = null;
-
-    for (const rawLine of lines) {
-      const line = rawLine.trim();
-      if (!line) continue;
-
-      const numMatch = line.match(/^(?:###\s*)?(?:[1-4]\.|[-*])\s+\*?\*?(.+?)\*?\*?$/);
-      if (numMatch) {
-        const heading = numMatch[1].replace(/\*\*/g, "").trim();
-        const hMatch = heading.match(/^(.*?)\s*\((?:c\.\s*)?(\d{4})\)\s*[-–—:]\s*(.*?)\s*$/) || heading.match(/^(.*?)\s*[-–—:]\s*(.*?)\s*$/);
-        
-        if (hMatch) {
-          if (current && current.title) results.push(current);
-          if (results.length >= 4) break;
-
-          const part1 = hMatch[1] ? hMatch[1].trim() : "";
-          const part2 = hMatch[2] ? hMatch[2].trim() : "";
-          const part3 = hMatch[3] ? hMatch[3].trim() : "";
-
-          current = {
-            title: part1,
-            year: /^\d{4}$/.test(part2) ? part2 : (/^\d{4}$/.test(part3) ? part3 : ""),
-            director: part3 && !/^\d{4}$/.test(part3) ? part3 : (part2 && !/^\d{4}$/.test(part2) ? part2 : "Unknown Creator"),
-            rating: "95/100",
-            why: ""
-          };
-          continue;
-        }
-      }
-
-      if (!current) continue;
-
-      if (/^score\s*:/i.test(line)) {
-        current.rating = line.split(":", 2)[1].replace(/\*\*/g, "").trim();
-      } else if (/^comment\s*:/i.test(line) || /^rationale\s*:/i.test(line)) {
-        current.why = line.split(":", 2)[1].replace(/\*\*/g, "").trim();
-      } else if (!line.startsWith("**") && !line.startsWith("#")) {
-        current.why = (current.why ? current.why + " " : "") + line.replace(/\*\*/g, "").trim();
-      }
-    }
-
-    if (current && current.title && results.length < 4) {
-      results.push(current);
-    }
-    return results.slice(0, 4);
-  }
-
-  // RENDER GALLERY CARDS
-  async function renderGalleryCards(items) {
-    if (!items || !items.length) return;
-
-    const cardsHtml = await Promise.all(items.map(async (item, idx) => {
-      const details = await fetchMovieDetails(item.title, item.year, item.director);
-      const poster = (details && details.poster && !details.poster.includes("via.placeholder")) 
-        ? details.poster 
-        : `https://placehold.co/500x750/0f172a/7eb5c4?text=${encodeURIComponent(item.title)}`;
-      const genre = (details && details.genre) ? details.genre : "Cinematic Pick";
-      const rating = item.rating ? `Match ${item.rating}` : "95% Match";
-
-      return `
-        <article class="movie-frame" data-title="${item.title}" data-year="${item.year}">
-          <img src="${poster}" alt="${item.title}" class="movie-poster" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/500x750/0f172a/7eb5c4?text=${encodeURIComponent(item.title)}';">
-          <div class="frame-overlay">
-            <div class="overlay-content">
-              <h3 class="frame-title">${item.title}</h3>
-              <div class="frame-meta">
-                <span>${item.year}</span> • <span>${item.director}</span>
+            <!-- Sleek 3-Item Horizontal Craft Credits Row -->
+            <div class="hud-craft-grid" id="hud-craft-meta">
+              <div class="hud-craft-badge" id="hud-craft-dop-row">
+                <div class="hud-craft-icon"><i class="fa-solid fa-camera"></i></div>
+                <div class="hud-craft-text">
+                  <span class="hud-craft-label">DoP</span>
+                  <span class="hud-craft-val" id="hud-craft-dop"></span>
+                </div>
               </div>
-              <div class="frame-genre">${genre}</div>
-              <div class="frame-rating"><i class="fa-solid fa-bolt"></i> ${rating}</div>
-              <div class="frame-summary"><strong>Rationale:</strong> ${item.why || "Perfect match for your current vibe profile."}</div>
-              
-              <div class="frame-actions">
-                <button type="button" class="card-action-btn" onclick="event.stopPropagation(); event.preventDefault(); handleWatchlistAdd(this, '${item.title.replace(/'/g, "\\'")}', '${item.year}', '${item.director.replace(/'/g, "\\'")}', '${mediaTypeInput.value}')">
-                  <i class="fa-solid fa-plus"></i> + Watchlist
-                </button>
-                <a href="/add_movie?movie=${encodeURIComponent(item.title)}&p_year=${item.year}&director=${encodeURIComponent(item.director)}" target="_blank" class="card-action-btn" onclick="event.stopPropagation();">
-                  <i class="fa-solid fa-eye"></i> Log Watch
-                </a>
-                <button type="button" class="card-action-btn" onclick="event.stopPropagation(); event.preventDefault(); handleCardSwap(${idx}, '${item.title.replace(/'/g, "\\'")}')">
-                  <i class="fa-solid fa-rotate"></i> Swap
-                </button>
+              <div class="hud-craft-badge" id="hud-craft-composer-row">
+                <div class="hud-craft-icon"><i class="fa-solid fa-music"></i></div>
+                <div class="hud-craft-text">
+                  <span class="hud-craft-label">Score</span>
+                  <span class="hud-craft-val" id="hud-craft-composer"></span>
+                </div>
+              </div>
+              <div class="hud-craft-badge" id="hud-craft-writer-row">
+                <div class="hud-craft-icon"><i class="fa-solid fa-pen-nib"></i></div>
+                <div class="hud-craft-text">
+                  <span class="hud-craft-label">Writer</span>
+                  <span class="hud-craft-val" id="hud-craft-writer"></span>
+                </div>
               </div>
             </div>
           </div>
-        </article>
-      `;
-    }));
+        </div>
 
-    formattedRecs.innerHTML = `<section class="movie-gallery">${cardsHtml.join("")}</section>`;
-  }
+        <!-- Actions Row with Outline Watchlist & Filled Details CTA -->
+        <div class="hud-actions-row">
+          <button type="button" class="hud-action-btn hud-watchlist-btn" id="hud-watchlist-btn" title="Add to Watchlist">
+            <i class="fa-solid fa-plus"></i> <span>Watchlist</span>
+          </button>
+          <button type="button" class="hud-action-btn hud-details-btn" id="hud-action-btn">
+            <i class="fa-solid fa-circle-info"></i> <span>Details</span>
+          </button>
+        </div>
+      </div>
 
-  // FORM SUBMISSION & SSE STREAMING
-  if (form && submitButton) {
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
+      <!-- RECENTLY SCANNED / NEIGHBORHOOD SAMPLER DRAWER -->
+      <div class="probe-drawer" id="probe-drawer">
+        <div class="probe-drawer-header">
+          <div class="sheet-pull-handle-wrap" id="probe-drag-handle">
+            <div class="sheet-pull-handle"></div>
+          </div>
+          <div class="probe-header-title">
+            <span><i class="fa-solid fa-satellite-dish"></i> NEIGHBORHOOD SAMPLER</span>
+            <button type="button" class="sheet-close-btn" id="probe-drawer-close" aria-label="Close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="probe-header-sub">6 nearest films around coordinate probe</div>
+        </div>
+        <div class="probe-list" id="probe-list">
+          <!-- Dynamic Mini Cards -->
+        </div>
+      </div>
 
-      submitButton.classList.add("loading");
-      submitButton.disabled = true;
-      submitButton.textContent = "[ SYNTHESIZING RECOMMENDATIONS... ]";
+      <!-- FLOATING MINIMALIST ACTION CONTROLS (BOTTOM-RIGHT ON MAP) -->
+      <div class="cosmos-mobile-map-actions" id="cosmos-mobile-map-actions">
+        <button type="button" class="mobile-action-btn" id="mobile-map-overview-btn" title="Overview / Reset View" aria-label="Reset View">
+          <i class="fa-solid fa-shapes"></i>
+        </button>
+        <button type="button" class="mobile-action-btn" id="mobile-map-center-btn" title="Center Current Cluster" aria-label="Center Cluster">
+          <i class="fa-solid fa-crosshairs"></i>
+        </button>
+        <button type="button" class="mobile-action-btn" id="mobile-map-sampler-btn" title="Sampler / Probe Mode" aria-label="Sampler Mode">
+          <i class="fa-solid fa-satellite-dish"></i>
+        </button>
+      </div>
 
-      const activeCards = Array.from(formattedRecs.querySelectorAll(".movie-frame[data-title]"));
-      const activeTitles = activeCards.map(c => c.dataset.title);
+    </section>
+  </div>
 
-      const formData = new FormData(form);
-      const requestPayload = {
-        user_request: formData.get("user_request"),
-        recommendation_mode: formData.get("recommendation_mode"),
-        history_profile: formData.get("history_profile"),
-        media_type: formData.get("media_type"),
-        tone: formData.get("tone"),
-        pace: formData.get("pace"),
-        distance: formData.get("distance"),
-        mood_preset: formData.get("mood_preset"),
-        preferred_genres: formData.getAll("preferred_genres"),
-        active_titles: activeTitles
-      };
+  <!-- BOTTOM SEGMENTED VIEW SWITCHER ([ 📰 Feed ] [ 🗺️ Map ]) -->
+  <nav class="cosmos-mobile-bar" id="cosmos-mobile-bar" aria-label="Mobile View Switcher">
+    <button type="button" class="mobile-nav-btn active" data-mobile-view="feed" id="mobile-tab-feed">
+      <i class="fa-solid fa-newspaper"></i>
+      <span>Feed</span>
+    </button>
+    <button type="button" class="mobile-nav-btn" data-mobile-view="manifold" id="mobile-tab-manifold">
+      <i class="fa-solid fa-map"></i>
+      <span>Map</span>
+    </button>
+  </nav>
 
-      const mediaTypeLabel = requestPayload.media_type === "tv" ? "TV Series" : (requestPayload.media_type === "movie" ? "Movies" : "Hybrid");
+</main>
 
-      responseMeta.innerHTML = `Format: ${mediaTypeLabel}`;
-
-      responseSection.style.display = "block";
-      statusText.textContent = "Synthesizing...";
-      formattedRecs.innerHTML = `<p style="font-family:'VT323',monospace;font-size:1.2rem;color:var(--discover-cyan);">[ Neural engine synthesizing recommendations... ]</p>`;
-
-      try {
-        const response = await fetch("/api/recommend_stream", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": formData.get("csrf_token")
-          },
-          body: JSON.stringify(requestPayload)
-        });
-
-        if (!response.ok) {
-          if (response.status === 429) {
-            throw new Error("Rate limit reached: You can only request recommendations 5 times per hour. Please try again later.");
-          }
-          throw new Error("Failed to connect to recommendation server.");
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let sseBuffer = "";
-        let fullText = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          sseBuffer += decoder.decode(value, { stream: true });
-          const events = sseBuffer.split("\n\n");
-          sseBuffer = events.pop() || "";
-
-          for (const eventBlock of events) {
-            const payloadRaw = eventBlock
-              .split("\n")
-              .filter((line) => line.startsWith("data: "))
-              .map((line) => line.slice(6))
-              .join("\n")
-              .trim();
-
-            if (!payloadRaw) continue;
-
-            try {
-              const data = JSON.parse(payloadRaw);
-              if (data.error) {
-                formattedRecs.innerHTML = `<p style="color: var(--discover-gold);">${data.error}</p>`;
-                throw new Error(data.error);
-              }
-              if (typeof data.token === "string") {
-                fullText += data.token;
-              }
-            } catch (_parseError) {}
-          }
-        }
-
-        console.log("[DEBUG] fullText received:", fullText);
-        const items = parseStreamedText(fullText);
-        console.log("[DEBUG] items parsed:", items);
-
-        if (!items || !items.length) {
-          formattedRecs.innerHTML = `<div style="font-family:'VT323',monospace;font-size:1.2rem;color:var(--discover-gold);padding:1rem;background:rgba(20,25,35,0.8);border-radius:10px;border:1px solid rgba(255,200,100,0.3);">
-            <p><strong>[ NEURAL STREAM NOTICE ]</strong> No structured card matches parsed from stream.</p>
-            <details style="margin-top:0.5rem;font-size:0.95rem;color:var(--discover-muted);"><summary style="cursor:pointer;color:var(--discover-cyan);">View Raw LLM Output Stream</summary><pre style="white-space:pre-wrap;margin-top:0.5rem;color:var(--discover-light);">${fullText || '(Empty response stream)'}</pre></details>
-          </div>`;
-        } else {
-          await renderGalleryCards(items);
-        }
-
-        statusText.textContent = `Complete (${items.length} Synced)`;
-
-      } catch (error) {
-        console.error(error);
-        statusText.textContent = "Error";
-      } finally {
-        submitButton.classList.remove("loading");
-        submitButton.disabled = false;
-        submitButton.textContent = "[ LAUNCH NEURAL DISCOVERY ]";
-      }
-    });
-  }
-});
+<script id="cosmos-bootstrap-data" type="application/json">
+  {{ initial_data | tojson | safe if initial_data else "{}" }}
 </script>
-
-<script>
-  initCanvasBg({
-    canvasId: "canvas",
-    mode: "flow",
-    particleCount: 300,
-    colors: ["#2d5a6e", "#3a6d80", "#1f4654", "#4a8898"],
-    curve: 2.5,
-    zoom: 0.2,
-    cellSize: 16,
-    speedRange: [0.5, 2.0],
-    trailRange: [30, 250],
-    lineWidth: 1
-  });
-</script>
+<script src="{{ url_for('static', filename='js/cosmos_engine.js') }}?v=241.0"></script>
 {% endblock %}

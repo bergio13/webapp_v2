@@ -1,6 +1,7 @@
 """Social blueprint — friends, follow/unfollow, compare, and AI discovery."""
 import json
 import os
+import time
 
 from flask import (
     Blueprint, Response, flash, jsonify, redirect,
@@ -161,64 +162,105 @@ def _get_limiter_user_key():
 
 
 # ---------------------------------------------------------------------------
-# AI Discovery
+# Cinephile Cosmos — Autonomous Mathematical Discovery Engine
 # ---------------------------------------------------------------------------
 
-@social_bp.route("/discover", methods=["GET", "POST"])
+@social_bp.route("/discover")
 @login_required
-@limiter.limit("5 per hour", key_func=_get_limiter_user_key, methods=["POST"])
 def discover():
-    ai_response = None
-    user_request = ""
-    recommendation_mode = "similar"
-    history_profile = "balanced"
-    selected_genres = []
+    """
+    Renders the interactive 2D Cinephile Cosmos star-map.
+    Autonomous, vector-embedded galaxy of watched and recommended films.
+    """
+    print(f"[COSMOS BACKEND] >>> GET /discover requested by user_id={current_user.id}", flush=True)
+    from services.cosmos_service import build_taste_cosmos_data, _GALAXY_CACHE
+    cached = _GALAXY_CACHE.get(current_user.id)
+    needs_refresh = True
+    if cached and (time.time() - cached[0] < 3600):
+        initial_data = cached[1]
+        stars = initial_data.get("stars", []) if initial_data else []
+        tv_missing = any(s.get("tv_show") in [1, "1", True] and not (s.get("poster") and str(s.get("poster")).startswith("http")) for s in stars)
+        watched_count = sum(1 for s in stars if s.get("is_watched"))
+        is_cache_valid = not tv_missing and len(stars) > 0
+        if is_cache_valid:
+            if watched_count == 0:
+                from database import get_movies
+                user_db_movies = get_movies(current_user.id) or []
+                if len(user_db_movies) > 0:
+                    is_cache_valid = False
+                    print(f"[COSMOS BACKEND] Stale 0-watched cache detected for user_id={current_user.id} who has {len(user_db_movies)} movies in DB. Refreshing...", flush=True)
+                elif cached[0] > time.time() - 300:
+                    is_cache_valid = True
+                else:
+                    is_cache_valid = False
 
-    if request.method == "POST":
-        user_request = request.form.get("user_request", "").strip()
-        recommendation_mode = request.form.get("recommendation_mode", "similar").strip().lower()
-        if recommendation_mode not in DISCOVER_MODE_PROMPTS:
-            recommendation_mode = "similar"
+        if is_cache_valid:
+            needs_refresh = False
+            print(f"[COSMOS BACKEND] Found valid cached galaxy in memory for user_id={current_user.id} ({watched_count} watched)", flush=True)
 
-        history_profile = request.form.get("history_profile", "balanced").strip().lower()
-        if history_profile not in DISCOVER_HISTORY_PROFILE_LABELS:
-            history_profile = "balanced"
+    if needs_refresh:
+        try:
+            print(f"[COSMOS BACKEND] Computing fresh galaxy on initial load for user_id={current_user.id}...", flush=True)
+            initial_data = build_taste_cosmos_data(current_user.id, force_refresh=True)
+        except Exception as e:
+            print(f"[COSMOS BACKEND] Error pre-building galaxy on initial load: {e}", flush=True)
+            initial_data = None
 
-        selected_genres = []
-        for genre in request.form.getlist("preferred_genres"):
-            cleaned = genre.strip()
-            if cleaned in DISCOVER_AVAILABLE_GENRES and cleaned not in selected_genres:
-                selected_genres.append(cleaned)
-
-        if user_request:
-            user_history = get_user_watch_history_summary(
-                current_user.id,
-                history_profile=history_profile,
-                history_profile_labels=DISCOVER_HISTORY_PROFILE_LABELS,
-            )
-            watched_lookup = get_watched_title_year_lookup(current_user.id)
-            ai_response = get_ai_movie_recommendation(
-                user_request, user_history,
-                recommendation_mode=recommendation_mode,
-                preferred_genres=selected_genres,
-                watched_lookup=watched_lookup,
-                history_profile=history_profile,
-            )
-        else:
-            flash("Please enter a request for movie recommendations", "error")
+    if initial_data:
+        stats = initial_data.get("stats", {})
+        sectors = initial_data.get("sectors", [])
+    else:
+        stats = {"watched_stars": 0, "uncharted_beacons": 0, "watchlist_stars": 0, "total_celestial_bodies": 0, "active_sectors": 0}
+        sectors = []
 
     return render_template(
         "discover.html",
-        ai_response=ai_response,
-        user_request=user_request,
-        recommendation_mode=recommendation_mode,
-        history_profile=history_profile,
-        selected_genres=selected_genres,
-        discover_mode_labels=DISCOVER_MODE_LABELS,
-        discover_history_profile_labels=DISCOVER_HISTORY_PROFILE_LABELS,
-        discover_available_genres=DISCOVER_AVAILABLE_GENRES,
+        stats=stats,
+        sectors=sectors,
+        initial_data=initial_data,
         session=session,
     )
+
+
+@social_bp.route("/api/cosmos/galaxy", methods=["GET"])
+@login_required
+def cosmos_galaxy():
+    """
+    Returns full mathematical star-map payload: stars, constellation links,
+    galactic sectors, and telemetry stats for the 2D Cosmos Canvas.
+    """
+    from services.cosmos_service import build_taste_cosmos_data
+    force_refresh = request.args.get("refresh", "0") in ["1", "true", "True"]
+    print(f"[COSMOS BACKEND] >>> GET /api/cosmos/galaxy requested by user_id={current_user.id} (force_refresh={force_refresh})", flush=True)
+    try:
+        t0 = time.time()
+        payload = build_taste_cosmos_data(current_user.id, force_refresh=force_refresh)
+        elapsed = round(time.time() - t0, 4)
+        print(f"[COSMOS BACKEND] <<< Galaxy payload built in {elapsed}s: {len(payload.get('stars', []))} stars, {len(payload.get('sectors', []))} sectors", flush=True)
+        return jsonify(payload)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"[COSMOS BACKEND] ERROR building galaxy: {e}", flush=True)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@social_bp.route("/api/cosmos/probe", methods=["POST"])
+@login_required
+def cosmos_probe():
+    """
+    Retrieves the closest unwatched recommendation beacons to a probe point (x, y).
+    """
+    from services.cosmos_service import get_probe_recommendations
+    data = request.get_json() or {}
+    try:
+        x = float(data.get("x", 0))
+        y = float(data.get("y", 0))
+        limit = int(data.get("limit", 6))
+        probe_res = get_probe_recommendations(x, y, current_user.id, limit=limit)
+        return jsonify(probe_res)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @social_bp.route("/api/recommend_stream", methods=["POST"])

@@ -13,7 +13,7 @@ def test_discover_route_redirects_when_anonymous(client):
     assert response.status_code == 302
 
 
-def test_discover_post_renders_recommendations_for_logged_in_user(app_module, monkeypatch):
+def test_discover_renders_cosmos_for_logged_in_user(app_module, monkeypatch):
     from flask_login import login_user
 
     class MockUser:
@@ -24,60 +24,30 @@ def test_discover_post_renders_recommendations_for_logged_in_user(app_module, mo
         def is_anonymous(self): return False
         def get_id(self): return "42"
 
-    captured = {}
-
     monkeypatch.setattr(
-        "routes.social.get_user_watch_history_summary",
-        lambda *_args, **_kwargs: "History",
+        "services.cosmos_service.get_movies",
+        lambda uid: [{"id": 1, "movie": "Blade Runner", "p_year": 1982, "director": "Ridley Scott", "genre": "Sci-Fi", "rating": 5, "poster": "", "tv_show": 0}],
+    )
+    monkeypatch.setattr(
+        "services.cosmos_service.get_friends",
+        lambda uid: [],
+    )
+    monkeypatch.setattr(
+        "services.cosmos_service.get_or_create_personal_watchlist",
+        lambda uid: None,
+    )
+    monkeypatch.setattr(
+        "services.cosmos_service.get_watchlist_items",
+        lambda wid: [],
     )
 
-    monkeypatch.setattr(
-        "routes.social.get_watched_title_year_lookup",
-        lambda *_args, **_kwargs: {("test movie", 2024)},
-    )
-
-    def fake_get_ai_movie_recommendation(
-        user_request,
-        user_history,
-        recommendation_mode="similar",
-        preferred_genres=None,
-        watched_lookup=None,
-        history_profile="balanced",
-    ):
-        captured["user_request"] = user_request
-        captured["user_history"] = user_history
-        captured["recommendation_mode"] = recommendation_mode
-        captured["preferred_genres"] = preferred_genres
-        captured["watched_lookup"] = watched_lookup
-        captured["history_profile"] = history_profile
-        return "<ol><li><strong>Test Movie (2024) - Director</strong></li></ol>"
-
-    monkeypatch.setattr(
-        "routes.social.get_ai_movie_recommendation",
-        fake_get_ai_movie_recommendation,
-    )
-
-    with app_module.app.test_request_context(
-        "/discover",
-        method="POST",
-        data={
-            "user_request": "Find me sci-fi",
-            "recommendation_mode": "comfort",
-            "history_profile": "recent",
-            "preferred_genres": ["Sci-Fi", "Thriller"],
-        },
-    ):
+    with app_module.app.test_request_context("/discover", method="GET"):
         login_user(MockUser())
         from routes.social import discover
         response_html = discover()
 
-    assert "Test Movie (2024) - Director" in response_html
-    assert captured["user_request"] == "Find me sci-fi"
-    assert captured["user_history"] == "History"
-    assert captured["recommendation_mode"] == "comfort"
-    assert captured["preferred_genres"] == ["Sci-Fi", "Thriller"]
-    assert captured["watched_lookup"] == {("test movie", 2024)}
-    assert captured["history_profile"] == "recent"
+    assert "cosmos-viewport" in response_html
+    assert "cosmos-canvas" in response_html
 
 
 class DummyOpenRouterResponse:

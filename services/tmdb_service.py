@@ -1,6 +1,9 @@
 import os
 import re
 import time
+import json
+import sqlite3
+from typing import Dict, List, Any, Optional
 from functools import wraps
 import requests
 from tmdbv3api import TMDb, Movie, TV, Season, Search
@@ -15,6 +18,68 @@ season_api = Season()
 search_api = Search()
 
 _CACHE_TTL = 3600  # 1 hour
+_INSTANCE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance")
+os.makedirs(_INSTANCE_DIR, exist_ok=True)
+_REC_CACHE_DB_PATH = os.path.join(_INSTANCE_DIR, "tmdb_recommendations.db")
+
+def _normalize_rec_seed_key(title: str, year: Any = "", is_tv: bool = False) -> str:
+    clean_title = re.sub(r"[^a-z0-9]", "", str(title).lower())
+    clean_year = str(year)[:4] if year else ""
+    type_suffix = "tv" if is_tv else "movie"
+    return f"{clean_title}_{clean_year}_{type_suffix}"
+
+def _init_rec_db():
+    try:
+        with sqlite3.connect(_REC_CACHE_DB_PATH) as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS tmdb_recommendations (
+                    seed_key TEXT PRIMARY KEY,
+                    title TEXT,
+                    year TEXT,
+                    is_tv INTEGER,
+                    recommendations_json TEXT,
+                    created_at REAL
+                )
+            """)
+            conn.commit()
+    except Exception as e:
+        print(f"Error initializing tmdb_recommendations DB: {e}")
+
+def get_cached_recommendations(title: str, year: Any = None, is_tv: bool = False) -> Optional[List[Dict[str, Any]]]:
+    """Instant lookup of cached TMDB recommendations from local SQLite database."""
+    if not title:
+        return None
+    try:
+        _init_rec_db()
+        key = _normalize_rec_seed_key(title, year, is_tv)
+        with sqlite3.connect(_REC_CACHE_DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT recommendations_json, created_at FROM tmdb_recommendations WHERE seed_key = ?", (key,))
+            row = cursor.fetchone()
+            if row:
+                rec_json, created_at = row
+                if time.time() - created_at < 60 * 86400:  # 60-day TTL
+                    return json.loads(rec_json)
+    except Exception as e:
+        print(f"Error reading from tmdb_recommendations cache: {e}")
+    return None
+
+def save_cached_recommendations(title: str, year: Any = None, is_tv: bool = False, candidates: List[Dict[str, Any]] = None):
+    """Saves fetched TMDB recommendations to local SQLite database."""
+    if not title:
+        return
+    try:
+        _init_rec_db()
+        key = _normalize_rec_seed_key(title, year, is_tv)
+        rec_json = json.dumps(candidates or [])
+        with sqlite3.connect(_REC_CACHE_DB_PATH) as conn:
+            conn.execute("""
+                INSERT OR REPLACE INTO tmdb_recommendations (seed_key, title, year, is_tv, recommendations_json, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (key, str(title), str(year or ""), 1 if is_tv else 0, rec_json, time.time()))
+            conn.commit()
+    except Exception as e:
+        print(f"Error writing to tmdb_recommendations cache: {e}")
 
 def _cached(ttl=_CACHE_TTL, maxsize=1000):
     """In-memory TTL cache decorator for TMDB lookups."""
@@ -93,12 +158,15 @@ def get_movie_details(title, year=None, manual_director=None, tmdb_id=None):
                     
                     matched_title = getattr(m_details, 'title', None) or clean_title
                     vote_avg = getattr(m_details, 'vote_average', None)
+                    vote_cnt = getattr(m_details, 'vote_count', None)
                     return {
                         "poster": poster,
                         "genre": genre,
                         "director": director if director != "Unknown" else (manual_director or "Unknown"),
                         "title": matched_title,
                         "rating": round(float(vote_avg), 1) if vote_avg is not None else None,
+                        "vote_average": round(float(vote_avg), 1) if vote_avg is not None else None,
+                        "vote_count": int(vote_cnt) if vote_cnt is not None else None,
                     }
             except Exception as ex:
                 print(f"Error fetching movie by tmdb_id {tmdb_id}: {ex}")
@@ -155,11 +223,17 @@ def get_movie_details(title, year=None, manual_director=None, tmdb_id=None):
         poster_path = best_match.get('poster_path')
         poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else f"https://placehold.co/500x750/0f172a/7eb5c4?text={requests.utils.quote(clean_title[:20])}"
         rating = best_match.get('vote_average')
+        vote_count = best_match.get('vote_count')
         if rating is not None:
             try:
                 rating = round(float(rating), 1)
             except (TypeError, ValueError):
                 rating = None
+        if vote_count is not None:
+            try:
+                vote_count = int(vote_count)
+            except (TypeError, ValueError):
+                vote_count = None
         
         genre_ids = best_match.get('genre_ids', [])
         genre_map = tv_genres if is_tv_result else movie_genres
@@ -193,6 +267,8 @@ def get_movie_details(title, year=None, manual_director=None, tmdb_id=None):
             "director": director if director != "Unknown" else (manual_director or "Unknown"),
             "title": matched_name or title,
             "rating": rating,
+            "vote_average": rating,
+            "vote_count": vote_count,
         }
     except Exception as e:
         print(f"Error in tmdb_service.get_movie_details: {e}")
@@ -495,6 +571,7 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
         tagline = data.get("tagline") or ""
         overview = data.get("overview") or "No plot summary available."
         vote_avg = round(float(data.get("vote_average", 0)), 1) if data.get("vote_average") else None
+        vote_count = int(data.get("vote_count", 0)) if data.get("vote_count") is not None else None
         
         # Runtime formatting
         runtime_mins = None
@@ -618,6 +695,7 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
             "runtime": runtime_mins,
             "formatted_runtime": formatted_runtime,
             "vote_average": vote_avg,
+            "vote_count": vote_count,
             "poster": poster,
             "backdrop": backdrop,
             "genres": genres,
@@ -631,4 +709,173 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
     except Exception as e:
         print(f"Error fetching full media details: {e}")
         return {"success": False, "error": str(e)}
+
+
+@_cached(ttl=7200)
+def get_recommendations_for_title(title: str, year: str = None, is_tv: bool = False, limit: int = 8, use_cache: bool = True):
+    """
+    Fetches high-quality TMDB movie or TV series recommendations based on a seed title.
+    Checks SQLite persistent cache first, writes to cache upon live fetch.
+    """
+    if not title:
+        return []
+
+    # 1. Check persistent SQLite cache first
+    if use_cache:
+        cached_recs = get_cached_recommendations(title, year, is_tv)
+        if cached_recs is not None:
+            return cached_recs[:limit]
+
+    api_key = os.environ.get('TMDB_API_KEY') or tmdb.api_key
+    if not api_key:
+        return []
+
+    try:
+        # Clean season suffix if TV show
+        clean_title = re.sub(r',?\s*season\s*\d+.*$', '', title, flags=re.IGNORECASE).strip() if is_tv else title
+        if not clean_title:
+            clean_title = title
+
+        # 1. Resolve ID via search_titles
+        search_res = search_titles(clean_title, is_tv=is_tv, limit=4)
+        if not search_res:
+            save_cached_recommendations(title, year, is_tv, [])
+            return []
+
+        target = None
+        if year:
+            for s in search_res:
+                if str(s.get("year", "")) == str(year):
+                    target = s
+                    break
+        if not target:
+            target = search_res[0]
+
+        target_id = target.get("id")
+        if not target_id:
+            save_cached_recommendations(title, year, is_tv, [])
+            return []
+
+        media_type = "tv" if is_tv else "movie"
+        genres_map = tv_genres if is_tv else movie_genres
+
+        # 2. Query TMDB Recommendations Endpoint with strict timeout
+        url = f"https://api.themoviedb.org/3/{media_type}/{target_id}/recommendations?api_key={api_key}&language=en-US&page=1"
+        resp = requests.get(url, timeout=2.5)
+        if resp.status_code != 200:
+            # Fallback to similar
+            url = f"https://api.themoviedb.org/3/{media_type}/{target_id}/similar?api_key={api_key}&language=en-US&page=1"
+            resp = requests.get(url, timeout=2.5)
+
+        if resp.status_code != 200:
+            save_cached_recommendations(title, year, is_tv, [])
+            return []
+
+        results = resp.json().get("results", [])
+        candidates = []
+        for item in results[:limit * 2]:
+            p_path = item.get("poster_path")
+            if not p_path:
+                continue
+
+            rel_date = item.get("first_air_date" if is_tv else "release_date") or ""
+            c_year = rel_date[:4] if rel_date else ""
+            c_title = item.get("name" if is_tv else "title") or item.get("original_name" if is_tv else "original_title") or ""
+            
+            g_ids = item.get("genre_ids", [])
+            genre_list = [genres_map.get(gid, "") for gid in g_ids if genres_map.get(gid)]
+            genre_str = ", ".join(genre_list) if genre_list else ("TV Series" if is_tv else "Cinema")
+
+            vote_avg = item.get("vote_average", 0)
+            vote_cnt = item.get("vote_count", 0)
+            if vote_avg and float(vote_avg) < 6.0:
+                continue  # Quality filter
+
+            candidates.append({
+                "title": c_title,
+                "year": c_year,
+                "director": "Unknown",
+                "genre": genre_str,
+                "poster": f"https://image.tmdb.org/t/p/w500{p_path}",
+                "tv_show": 1 if is_tv else 0,
+                "overview": item.get("overview") or "",
+                "source": "tmdb_recommendation",
+                "vote_average": round(float(vote_avg), 1) if vote_avg else None,
+                "vote_count": int(vote_cnt) if vote_cnt is not None else 0
+            })
+            if len(candidates) >= limit:
+                break
+
+        # Save to SQLite cache
+        save_cached_recommendations(title, year, is_tv, candidates)
+        return candidates
+    except Exception as e:
+        print(f"Error in get_recommendations_for_title for '{title}': {e}")
+        return []
+
+
+@_cached(ttl=86400)
+def get_director_filmography(director_name: str, limit: int = 6):
+    """
+    Fetches acclaimed titles directed by a specific auteur from TMDB.
+    """
+    api_key = os.environ.get('TMDB_API_KEY') or tmdb.api_key
+    if not api_key or not director_name or director_name.lower() in ["unknown", "n/a", ""]:
+        return []
+
+    try:
+        # 1. Search Person
+        search_url = f"https://api.themoviedb.org/3/search/person?api_key={api_key}&query={requests.utils.quote(director_name)}"
+        resp = requests.get(search_url, timeout=4)
+        if resp.status_code != 200:
+            return []
+
+        persons = resp.json().get("results", [])
+        if not persons:
+            return []
+
+        person_id = persons[0].get("id")
+        if not person_id:
+            return []
+
+        # 2. Fetch Movie Credits as Director
+        credits_url = f"https://api.themoviedb.org/3/person/{person_id}/movie_credits?api_key={api_key}&language=en-US"
+        c_resp = requests.get(credits_url, timeout=4)
+        if c_resp.status_code != 200:
+            return []
+
+        crew_items = c_resp.json().get("crew", [])
+        directed_movies = [m for m in crew_items if m.get("job") == "Director" and m.get("poster_path")]
+        
+        # Sort by popularity or vote average
+        directed_movies.sort(key=lambda x: (x.get("vote_count", 0) > 50, x.get("popularity", 0)), reverse=True)
+
+        candidates = []
+        for m in directed_movies[:limit]:
+            p_path = m.get("poster_path")
+            rel_date = m.get("release_date") or ""
+            c_year = rel_date[:4] if rel_date else ""
+            c_title = m.get("title") or m.get("original_title") or ""
+            
+            g_ids = m.get("genre_ids", [])
+            genre_list = [movie_genres.get(gid, "") for gid in g_ids if movie_genres.get(gid)]
+            genre_str = ", ".join(genre_list) if genre_list else "Cinema"
+
+            candidates.append({
+                "title": c_title,
+                "year": c_year,
+                "director": director_name,
+                "genre": genre_str,
+                "poster": f"https://image.tmdb.org/t/p/w500{p_path}",
+                "tv_show": 0,
+                "overview": m.get("overview") or "",
+                "source": "auteur_canon",
+                "vote_average": round(float(m.get("vote_average", 0)), 1) if m.get("vote_average") else None,
+                "vote_count": int(m.get("vote_count", 0)) if m.get("vote_count") is not None else 0
+            })
+
+        return candidates
+    except Exception as e:
+        print(f"Error in get_director_filmography for '{director_name}': {e}")
+        return []
 

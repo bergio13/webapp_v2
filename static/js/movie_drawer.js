@@ -448,6 +448,11 @@
     }
   };
 
+  window.MovieDrawer = {
+    open: window.openMovieDrawer,
+    close: window.closeMovieDrawer
+  };
+
   // ───────── Global Event Interceptor ─────────
 
   function setupDrawerEvents() {

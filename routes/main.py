@@ -106,7 +106,7 @@ def hello():
                 resp = http_requests.get(url, timeout=3.5)
                 if resp.status_code == 200:
                     data = resp.json()
-                    for m in (data.get("results") or [])[:8]:
+                    for m in (data.get("results") or []):
                         p = m.get("poster_path")
                         b = m.get("backdrop_path")
                         if p:
@@ -339,7 +339,7 @@ def api_now_playing():
         resp = http_requests.get(url, timeout=5)
         data = resp.json()
         movies = []
-        for m in (data.get("results") or [])[:8]:
+        for m in (data.get("results") or []):
             poster = m.get("poster_path")
             if poster:
                 movies.append({
