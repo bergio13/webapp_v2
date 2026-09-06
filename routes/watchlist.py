@@ -10,6 +10,7 @@ from database import (
     get_watchlist_items,
     remove_from_watchlist,
 )
+from extensions import cache
 from services import tmdb_service
 from utils import clean_and_capitalize_name, clean_and_format
 
@@ -91,6 +92,7 @@ def add_item():
 
         if wl:
             add_to_watchlist(wl['id'], current_user.id, title, director, year, poster)
+            cache.delete(f"home_data_{current_user.id}")
             flash("Added to watchlist!", "success")
         else:
             flash("Error accessing watchlist", "error")
@@ -111,6 +113,7 @@ def remove_item():
     
     if item_id:
         remove_from_watchlist(item_id)
+        cache.delete(f"home_data_{current_user.id}")
         flash("Removed from watchlist", "success")
         
     if friend_id:

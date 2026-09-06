@@ -432,6 +432,7 @@ def watchlist_add_ajax():
         wl = get_or_create_personal_watchlist(current_user.id)
         if wl:
             add_to_watchlist(wl['id'], current_user.id, title, director, year, poster)
+            cache.delete(f"home_data_{current_user.id}")
             return jsonify({"success": True, "title": title})
         return jsonify({"error": "Failed to access watchlist"}), 500
     except Exception as e:

@@ -58,7 +58,10 @@ def _async_catalog_enrichment(title: str, year: Any = None, tmdb_id: Any = None,
                 try:
                     s_num = int(season_num) if season_num and str(season_num).isdigit() else 1
                     season_enriched = fetch_and_enrich_tv_season(int(resolved_id), s_num, show_title=title)
-                    upsert_tv_season_catalog_item(season_enriched, compute_embedding=True)
+                    if season_enriched:
+                        if (not season_enriched.get("director") or season_enriched["director"] == "Unknown") and director and director != "Unknown":
+                            season_enriched["director"] = director
+                        upsert_tv_season_catalog_item(season_enriched, compute_embedding=True)
                 except Exception as s_err:
                     logger.debug(f"TV season async enrichment notice: {s_err}")
     except Exception as err:
@@ -116,12 +119,21 @@ def add_movie():
                     genre = catalog_item.get("genres")
                     resolved_tmdb_id = resolved_tmdb_id or catalog_item.get("tmdb_id")
 
-                # If this is a TV show and a season is chosen, check if local season catalog has the season poster
+                # If this is a TV show and a season is chosen, check if local season catalog has the season poster, director, and year
                 if is_tv and season_num and (safe_int_tmdb or resolved_tmdb_id):
                     tid = safe_int_tmdb or resolved_tmdb_id
                     s_cat = get_tv_season_catalog_item(int(tid), int(season_num))
-                    if s_cat and s_cat.get("poster") and "placeholder" not in str(s_cat["poster"]).lower():
-                        poster = s_cat["poster"]
+                    if s_cat:
+                        if s_cat.get("poster") and "placeholder" not in str(s_cat["poster"]).lower():
+                            poster = s_cat["poster"]
+                        if not manual_director and s_cat.get("director"):
+                            s_dir = s_cat["director"].strip()
+                            if s_dir.lower() not in {"unknown", "various directors", "various", "showrunner"}:
+                                director = s_dir
+                        if not manual_director and is_tv and s_cat.get("creator") and (not director or director == "Unknown"):
+                            director = s_cat["creator"].strip()
+                        if s_cat.get("year"):
+                            year = str(s_cat["year"])
             except Exception as cat_read_err:
                 logger.debug(f"Fast local catalog read notice: {cat_read_err}")
 
@@ -138,7 +150,12 @@ def add_movie():
                     if form_poster and ("placeholder" in str(poster).lower() or "placehold.co" in str(poster).lower()):
                         poster = form_poster
                     genre = genre or details.get("genre")
-                    director = director or details.get("director")
+                    if not manual_director and details.get("director"):
+                        d_cand = details["director"].strip()
+                        if d_cand.lower() not in {"unknown", "various directors", "various", "showrunner"}:
+                            director = d_cand
+                    if not manual_director and is_tv and details.get("creator") and (not director or director == "Unknown"):
+                        director = details["creator"].strip()
                     matched_title = details.get("title") or title
                     if is_tv:
                         matched_title = re.sub(r',?\s*season\s*\d+.*$', '', matched_title, flags=re.IGNORECASE).strip()
@@ -258,12 +275,28 @@ def edit_movie():
     tv_show = request.form["tv"]
     season_num = None
 
+    resolved_tmdb_id = None
     if tv_show == "1":
         from services.catalog_service import resolve_tv_season_number
         season_num = resolve_tv_season_number(title)
         title = re.sub(r',?\s*(?:season|series|volume|vol|part|bk|book|the final season|final season)\s*\d*.*$', '', title, flags=re.IGNORECASE).strip()
         details = tmdb_service.get_tv_details(title, p_year, season_num or 1)
         if details and details.get("tmdb_id"):
+            resolved_tmdb_id = details["tmdb_id"]
+            # Immediately synchronize user's manual director update into tv_season_catalog
+            try:
+                from services.catalog_service import get_tv_season_catalog_item, upsert_tv_season_catalog_item
+                s_item = get_tv_season_catalog_item(int(resolved_tmdb_id), season_num or 1) or {}
+                if director and director != "Unknown":
+                    s_item["director"] = director
+                if s_item:
+                    s_item["tmdb_id"] = int(resolved_tmdb_id)
+                    s_item["season_number"] = season_num or 1
+                    s_item["show_title"] = title
+                    upsert_tv_season_catalog_item(s_item, compute_embedding=False)
+            except Exception as se:
+                logger.debug(f"Notice syncing edit to tv_season_catalog: {se}")
+
             threading.Thread(
                 target=_async_catalog_enrichment,
                 args=(title, p_year, details["tmdb_id"], True, season_num or 1, director, details.get("genre", "")),
@@ -271,10 +304,12 @@ def edit_movie():
             ).start()
     else:
         details = tmdb_service.get_movie_details(title, p_year)
+        if details and details.get("tmdb_id"):
+            resolved_tmdb_id = details["tmdb_id"]
 
     poster = details["poster"] if details else _NO_POSTER
 
-    update_movie(movie_id, title, director, p_year, rating, poster, season=season_num)
+    update_movie(movie_id, title, director, p_year, rating, poster, season=season_num, tmdb_id=resolved_tmdb_id)
     _clear_user_cache()
     flash("Movie updated", category="success")
     return redirect("/home")

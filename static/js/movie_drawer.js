@@ -25,7 +25,7 @@
 
   // DOM Elements cache
   let backdropEl, panelEl, skeletonEl, bodyEl, closeBtnEl, countrySelectEl;
-  let titleEl, origTitleRowEl, origTitleEl, directorEl, yearBadgeEl, runtimeBadgeEl, ratingBadgeEl, typeBadgeEl, genresListEl;
+  let titleEl, origTitleRowEl, origTitleEl, directorEl, directorLabelEl, directorRowEl, creatorRowEl, creatorLabelEl, creatorEl, yearBadgeEl, runtimeBadgeEl, ratingBadgeEl, typeBadgeEl, genresListEl;
   let backdropImgEl, posterImgEl, taglineEl, overviewEl;
   let trailerSectionEl, trailerFrameWrapperEl;
   let providersSectionEl, flatrateBlockEl, flatrateListEl, rentBlockEl, rentListEl, buyBlockEl, buyListEl, freeBlockEl, freeListEl, noProvidersEl, justwatchLinkEl;
@@ -43,6 +43,11 @@
     titleEl = document.getElementById("drawer-title");
     origTitleRowEl = document.getElementById("drawer-orig-title-row");
     origTitleEl = document.getElementById("drawer-orig-title");
+    creatorRowEl = document.getElementById("drawer-creator-row");
+    creatorLabelEl = document.getElementById("drawer-creator-label");
+    creatorEl = document.getElementById("drawer-creator");
+    directorRowEl = document.getElementById("drawer-director-row");
+    directorLabelEl = document.getElementById("drawer-director-label");
     directorEl = document.getElementById("drawer-director");
     yearBadgeEl = document.getElementById("drawer-year-badge");
     runtimeBadgeEl = document.getElementById("drawer-runtime-badge");
@@ -192,9 +197,62 @@
       origTitleRowEl.style.display = "none";
     }
 
-    directorEl.textContent = data.director || "Unknown";
+    const isTv = data.media_type === "tv";
+    typeBadgeEl.textContent = isTv ? "TV SHOW" : "MOVIE";
     yearBadgeEl.textContent = data.year || "—";
-    typeBadgeEl.textContent = data.media_type === "tv" ? "TV SHOW" : "MOVIE";
+
+    const creatorVal = (data.creator || "").trim();
+    const directorVal = (data.director || "").trim();
+    const isUnknownDir = !directorVal || ["unknown", "n/a", "none", "various directors", "showrunner"].includes(directorVal.toLowerCase());
+    const isUnknownCreator = !creatorVal || ["unknown", "n/a", "none"].includes(creatorVal.toLowerCase());
+
+    if (isTv) {
+      if (!isUnknownCreator && !isUnknownDir && creatorVal.toLowerCase() !== directorVal.toLowerCase()) {
+        // Both distinct: show CREATED BY row and DIRECTED BY row
+        if (creatorRowEl) {
+          if (creatorLabelEl) creatorLabelEl.textContent = "CREATED BY:";
+          if (creatorEl) creatorEl.textContent = creatorVal;
+          creatorRowEl.style.display = "flex";
+        }
+        if (directorRowEl) {
+          if (directorLabelEl) directorLabelEl.textContent = "DIRECTED BY:";
+          if (directorEl) directorEl.textContent = directorVal;
+          directorRowEl.style.display = "flex";
+        }
+      } else if (!isUnknownCreator && (!isUnknownDir && creatorVal.toLowerCase() === directorVal.toLowerCase())) {
+        // Creator and director are identical or showrunner attribution (e.g. Debora Cahn / Mike White)
+        if (creatorRowEl) creatorRowEl.style.display = "none";
+        if (directorRowEl) {
+          if (directorLabelEl) directorLabelEl.textContent = "CREATED BY:";
+          if (directorEl) directorEl.textContent = creatorVal;
+          directorRowEl.style.display = "flex";
+        }
+      } else if (!isUnknownCreator) {
+        // Only creator is known
+        if (creatorRowEl) {
+          if (creatorLabelEl) creatorLabelEl.textContent = "CREATED BY:";
+          if (creatorEl) creatorEl.textContent = creatorVal;
+          creatorRowEl.style.display = "flex";
+        }
+        if (directorRowEl) directorRowEl.style.display = "none";
+      } else {
+        // Fallback: only director known or both unknown
+        if (creatorRowEl) creatorRowEl.style.display = "none";
+        if (directorRowEl) {
+          if (directorLabelEl) directorLabelEl.textContent = "DIRECTED BY:";
+          if (directorEl) directorEl.textContent = !isUnknownDir ? directorVal : "Unknown";
+          directorRowEl.style.display = "flex";
+        }
+      }
+    } else {
+      // Film / Movie
+      if (creatorRowEl) creatorRowEl.style.display = "none";
+      if (directorRowEl) {
+        if (directorLabelEl) directorLabelEl.textContent = "DIRECTED BY:";
+        if (directorEl) directorEl.textContent = !isUnknownDir ? directorVal : "Unknown";
+        directorRowEl.style.display = "flex";
+      }
+    }
 
     if (data.formatted_runtime) {
       runtimeBadgeEl.textContent = data.formatted_runtime;

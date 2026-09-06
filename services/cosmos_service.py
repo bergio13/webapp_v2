@@ -1651,6 +1651,27 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
                             scaled_x[idx] = new_x
                             scaled_y[idx] = new_y
 
+    def is_valid_craft_name(val: Any) -> bool:
+        if val is None:
+            return False
+        s = str(val).strip().lower()
+        invalid_names = {
+            "", "none", "null", "undefined", "unknown", "n/a", "na", "-", "--", 
+            "[]", "{}", "nan", "showrunner", "showrunners", "various", "various directors", 
+            "director", "directors", "creator", "creators", "uncredited", "writer", 
+            "writers", "tba", "unknown director", "unknown showrunner"
+        }
+        return s not in invalid_names and len(s) >= 3
+
+    def resolve_star_director(item_dir: Any, craft_dir: Any) -> str:
+        i_str = str(item_dir).strip() if item_dir is not None else ""
+        c_str = str(craft_dir).strip() if craft_dir is not None else ""
+        if is_valid_craft_name(i_str):
+            return i_str
+        if is_valid_craft_name(c_str):
+            return c_str
+        return i_str or c_str or "Unknown"
+
     # 9. Assembling Stars payload
     stars: List[Dict[str, Any]] = []
     for idx, item in enumerate(pool):
@@ -1675,11 +1696,17 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
                     star_poster = land["poster"]
                     break
 
+        resolved_director = resolve_star_director(item.get("director"), craft_data.get("director"))
+        resolved_creator = str(item.get("creator") or craft_data.get("creator") or "").strip()
+        if not is_valid_craft_name(resolved_creator):
+            resolved_creator = ""
+
         star_obj = {
             "id": item["id"],
             "title": item["title"],
             "year": item["year"],
-            "director": craft_data.get("director") or item["director"],
+            "director": resolved_director,
+            "creator": resolved_creator,
             "genre": item["genre"],
             "poster": star_poster,
             "rating": item["rating"],
@@ -1728,7 +1755,8 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
             "micro_color": mc_info.get("color", sec_info["color"]),
             "micro_subtitle": mc_info.get("subtitle", ""),
             "craft": {
-                "director": craft_data.get("director") or item.get("director", ""),
+                "director": resolved_director,
+                "creator": resolved_creator,
                 "cinematographer": craft_data.get("cinematographer", ""),
                 "composer": craft_data.get("composer", ""),
                 "screenwriter": craft_data.get("screenwriter", ""),
@@ -1743,18 +1771,6 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
     # 10. Generate Rich Force-Directed Graph Edges with Franchise, Auteur, and Craft Taxonomy
     links: List[Dict[str, Any]] = []
     seen_link_pairs = set()
-
-    def is_valid_craft_name(val: Any) -> bool:
-        if val is None:
-            return False
-        s = str(val).strip().lower()
-        invalid_names = {
-            "", "none", "null", "undefined", "unknown", "n/a", "na", "-", "--", 
-            "[]", "{}", "nan", "showrunner", "showrunners", "various", "various directors", 
-            "director", "directors", "creator", "creators", "uncredited", "writer", 
-            "writers", "tba", "unknown director", "unknown showrunner"
-        }
-        return s not in invalid_names and len(s) >= 3
 
     def add_link(id1, id2, str_val, l_type, l_reason):
         if id1 == id2:

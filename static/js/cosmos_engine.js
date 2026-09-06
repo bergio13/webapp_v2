@@ -2876,9 +2876,21 @@
           const m = num % 60;
           rtStr = h > 0 && m > 0 ? `${h}h ${m}m` : (h > 0 ? `${h}h` : `${m}m`);
         }
+      let creditStr = "";
+      const sCreator = (star.creator || "").trim();
+      const sDirector = (star.director || "").trim();
+      if (star.tv_show) {
+        if (sCreator && sDirector && sCreator.toLowerCase() !== sDirector.toLowerCase()) {
+          creditStr = `Created by ${sCreator} • Dir. ${sDirector}`;
+        } else if (sCreator) {
+          creditStr = `Created by ${sCreator}`;
+        } else if (sDirector) {
+          creditStr = `Dir. ${sDirector}`;
+        }
+      } else {
+        creditStr = sDirector ? `Dir. ${sDirector}` : "";
       }
-      const dirStr = star.director ? `Dir. ${star.director}` : "";
-      const metaParts = [star.year, rtStr, dirStr].filter(Boolean);
+      const metaParts = [star.year, rtStr, creditStr].filter(Boolean);
       hudMeta.textContent = metaParts.length > 0 ? metaParts.join(" • ") : "—";
     }
 
@@ -3058,6 +3070,7 @@
       title: star.title,
       year: star.year,
       director: star.director,
+      creator: star.creator,
       poster: star.poster,
       is_tv: star.tv_show === 1
     };

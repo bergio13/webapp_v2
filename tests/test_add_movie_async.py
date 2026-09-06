@@ -66,7 +66,7 @@ def test_get_tv_seasons_list_standard_show():
         ]
     }
     
-    with patch("requests.get") as mock_get:
+    with patch("requests.get") as mock_get, patch("services.catalog_service.get_tv_season_catalog_item", return_value=None):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = mock_details

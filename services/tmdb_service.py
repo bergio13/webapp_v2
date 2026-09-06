@@ -322,6 +322,44 @@ def _extract_tv_director_or_creator(tv_details_obj_or_dict: Any, crew_list: Opti
 
     return ""
 
+
+def extract_tv_creator(tv_details_obj_or_dict, crew_list=None):
+    """
+    Extracts the author / ideator / series creator across TV archetypes:
+    1. tv_details.get("created_by") (e.g. Vince Gilligan, David Chase, Craig Mazin)
+    2. Crew with job in ["Original Story", "Original Concept", "Original Series Creator", "Creator", "Comic Book", "Author"]
+       (e.g. Hirohiko Araki for JoJo, Hajime Isayama for Attack on Titan)
+    """
+    if tv_details_obj_or_dict:
+        created_by = None
+        if isinstance(tv_details_obj_or_dict, dict):
+            created_by = tv_details_obj_or_dict.get("created_by")
+        elif hasattr(tv_details_obj_or_dict, "created_by"):
+            created_by = getattr(tv_details_obj_or_dict, "created_by")
+            
+        if created_by and isinstance(created_by, (list, tuple)) and len(created_by) > 0:
+            names = []
+            for c in created_by:
+                name = c.get("name") if isinstance(c, dict) else getattr(c, "name", None)
+                if name and str(name).strip():
+                    names.append(str(name).strip())
+            if names:
+                return ", ".join(names)
+
+    if crew_list and isinstance(crew_list, (list, tuple)):
+        creator_jobs = [
+            "Original Story", "Original Concept", "Original Series Creator", 
+            "Creator", "Comic Book", "Author", "Original Author"
+        ]
+        for member in crew_list:
+            job = (member.get("job") if isinstance(member, dict) else getattr(member, "job", None)) or ""
+            name = (member.get("name") if isinstance(member, dict) else getattr(member, "name", None)) or ""
+            if str(job).strip() in creator_jobs and str(name).strip():
+                return str(name).strip()
+
+    return None
+
+
 @_cached(ttl=3600)
 def get_tv_details(title, year=None, season_num=1, manual_director=None, tmdb_id=None):
     """
@@ -443,22 +481,69 @@ def get_tv_details(title, year=None, season_num=1, manual_director=None, tmdb_id
         if manual_director:
             director = manual_director
         else:
+            # 1. If season is known, first check if tv_season_catalog already has a valid director
+            if season_num and ids:
+                try:
+                    from services.catalog_service import get_tv_season_catalog_item
+                    s_cat = get_tv_season_catalog_item(ids, season_num)
+                    if s_cat and s_cat.get("director"):
+                        cat_dir = s_cat["director"].strip()
+                        if cat_dir.lower() not in {"unknown", "various directors", "various", "showrunner"}:
+                            director = cat_dir
+                except Exception:
+                    pass
+
+            # 2. If director still unknown and season_num is provided, query season-level credits
+            if director == "Unknown" and season_num and ids:
+                try:
+                    from services.catalog_service import extract_tv_season_director
+                    api_key = tmdb.api_key or os.environ.get('TMDB_API_KEY')
+                    s_url = f"https://api.themoviedb.org/3/tv/{ids}/season/{season_num}?api_key={api_key}&append_to_response=credits"
+                    s_res = requests.get(s_url, timeout=5)
+                    if s_res.status_code == 200:
+                        s_data = s_res.json()
+                        tv_details_brief = {}
+                        try:
+                            tv_details_brief = tv_api.details(ids)
+                        except Exception:
+                            pass
+                        extracted = extract_tv_season_director(s_data, tv_details_brief)
+                        if extracted and extracted != "Unknown":
+                            director = extracted
+                except Exception:
+                    pass
+
+            # 3. Fallback to series-level director / creator
+            if director == "Unknown":
+                try:
+                    tv_details = tv_api.details(ids)
+                    api_key = tmdb.api_key or os.environ.get('TMDB_API_KEY')
+                    credits_url = f"https://api.themoviedb.org/3/tv/{ids}/credits?api_key={api_key}"
+                    credits_response = requests.get(credits_url, timeout=5)
+                    crew = credits_response.json().get('crew', []) if credits_response.status_code == 200 else []
+                    extracted = _extract_tv_director_or_creator(tv_details, crew)
+                    if extracted:
+                        director = extracted
+                except Exception:
+                    pass
+                
+        creator = None
+        if ids:
             try:
-                tv_details = tv_api.details(ids)
+                tv_data_obj = tv_api.details(ids)
                 api_key = tmdb.api_key or os.environ.get('TMDB_API_KEY')
                 credits_url = f"https://api.themoviedb.org/3/tv/{ids}/credits?api_key={api_key}"
                 credits_response = requests.get(credits_url, timeout=5)
                 crew = credits_response.json().get('crew', []) if credits_response.status_code == 200 else []
-                extracted = _extract_tv_director_or_creator(tv_details, crew)
-                if extracted:
-                    director = extracted
+                creator = extract_tv_creator(tv_data_obj, crew)
             except Exception:
                 pass
-                
+
         return {
             "poster": poster,
             "genre": genre,
             "director": director if director != "Unknown" else (manual_director or "Unknown"),
+            "creator": creator or "",
             "title": full_title
         }
     except Exception as e:
@@ -467,6 +552,7 @@ def get_tv_details(title, year=None, season_num=1, manual_director=None, tmdb_id
             "poster": "https://via.placeholder.com/200x300?text=Error",
             "genre": "Unknown",
             "director": manual_director or "Unknown",
+            "creator": "",
             "title": format_display_title(title)
         }
 
@@ -573,13 +659,11 @@ def get_tv_seasons_list(tmdb_id, title=None):
 
         regular_seasons = [s for s in raw_seasons if s.get("season_number", 0) > 0]
         
-        # Check if local catalog already has cached season posters
-        def _get_catalog_season_poster(s_num):
+        # Check if local catalog already has cached season data
+        def _get_catalog_season_item(s_num):
             try:
                 from services.catalog_service import get_tv_season_catalog_item
-                item = get_tv_season_catalog_item(int(tmdb_id), s_num)
-                if item and item.get("poster") and "placeholder" not in str(item["poster"]).lower():
-                    return item["poster"]
+                return get_tv_season_catalog_item(int(tmdb_id), s_num)
             except Exception:
                 pass
             return None
@@ -590,7 +674,9 @@ def get_tv_seasons_list(tmdb_id, title=None):
             for s in regular_seasons:
                 s_num = s.get("season_number")
                 p_path = s.get("poster_path")
-                poster = _get_catalog_season_poster(s_num) or (f"https://image.tmdb.org/t/p/w500{p_path}" if p_path else main_poster)
+                c_item = _get_catalog_season_item(s_num)
+                poster = (c_item.get("poster") if c_item and c_item.get("poster") and "placeholder" not in str(c_item["poster"]).lower() else None) or (f"https://image.tmdb.org/t/p/w500{p_path}" if p_path else main_poster)
+                director = (c_item.get("director") if c_item else None) or ""
                 air_date = s.get("air_date") or ""
                 year = int(air_date[:4]) if air_date and air_date[:4].isdigit() else None
                 out.append({
@@ -599,6 +685,7 @@ def get_tv_seasons_list(tmdb_id, title=None):
                     "year": year,
                     "episode_count": s.get("episode_count", 0),
                     "poster": poster,
+                    "director": director,
                     "overview": s.get("overview") or show_overview
                 })
             return out
@@ -629,7 +716,6 @@ def get_tv_seasons_list(tmdb_id, title=None):
                             )
                             posters = gallery_res.json().get("posters") if gallery_res.status_code == 200 else []
                             
-                            # Sort gallery posters by popularity (vote_count, vote_average)
                             sorted_posters = sorted(
                                 posters,
                                 key=lambda x: (x.get("vote_count", 0), x.get("vote_average", 0)),
@@ -658,9 +744,10 @@ def get_tv_seasons_list(tmdb_id, title=None):
                                 air_date = eps[0].get("air_date") if eps else ""
                                 year = int(air_date[:4]) if air_date and air_date[:4].isdigit() else None
                                 
-                                poster = _get_catalog_season_poster(s_num)
+                                c_item = _get_catalog_season_item(s_num)
+                                poster = c_item.get("poster") if c_item else None
+                                director = (c_item.get("director") if c_item else None) or ""
                                 if poster and poster in seen_season_posters:
-                                    # Don't reuse identical poster across different seasons of the same show
                                     poster = None
 
                                 if not poster:
@@ -687,6 +774,7 @@ def get_tv_seasons_list(tmdb_id, title=None):
                                     "year": year,
                                     "episode_count": ep_count,
                                     "poster": poster,
+                                    "director": director,
                                     "overview": show_overview
                                 })
                             return out
@@ -697,7 +785,9 @@ def get_tv_seasons_list(tmdb_id, title=None):
         if regular_seasons:
             s = regular_seasons[0]
             p_path = s.get("poster_path")
-            poster = _get_catalog_season_poster(1) or (f"https://image.tmdb.org/t/p/w500{p_path}" if p_path else main_poster)
+            c_item = _get_catalog_season_item(1)
+            poster = (c_item.get("poster") if c_item and c_item.get("poster") and "placeholder" not in str(c_item["poster"]).lower() else None) or (f"https://image.tmdb.org/t/p/w500{p_path}" if p_path else main_poster)
+            director = (c_item.get("director") if c_item else None) or ""
             air_date = s.get("air_date") or ""
             return [{
                 "season_number": 1,
@@ -705,6 +795,7 @@ def get_tv_seasons_list(tmdb_id, title=None):
                 "year": int(air_date[:4]) if air_date and air_date[:4].isdigit() else None,
                 "episode_count": s.get("episode_count", 0),
                 "poster": poster,
+                "director": director,
                 "overview": s.get("overview") or show_overview
             }]
 
@@ -808,12 +899,16 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
 
         # Director / Creator
         director = "Unknown"
+        creator = None
         credits_data = data.get("credits", {})
         if is_tv_show:
             crew = credits_data.get("crew", [])
+            creator = extract_tv_creator(data, crew)
             extracted = _extract_tv_director_or_creator(data, crew)
             if extracted:
                 director = extracted
+            elif creator:
+                director = creator
         else:
             if credits_data.get("crew"):
                 for cm in credits_data["crew"]:
@@ -872,19 +967,26 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
             for p in prov_list or []:
                 logo_path = p.get("logo_path")
                 formatted.append({
+                    "id": p.get("provider_id"),
                     "name": p.get("provider_name"),
                     "logo": f"https://image.tmdb.org/t/p/w92{logo_path}" if logo_path else None
                 })
             return formatted
 
+        flatrate = format_provider_list(wp_country_data.get("flatrate", []))
+        rent = format_provider_list(wp_country_data.get("rent", []))
+        buy = format_provider_list(wp_country_data.get("buy", []))
+        free = format_provider_list(wp_country_data.get("free", []) or wp_country_data.get("ads", []))
+        jw_link = wp_country_data.get("link") or f"https://www.themoviedb.org/{media_type}/{target_id}/watch"
+
         watch_providers = {
             "country": target_country,
-            "link": wp_country_data.get("link") or f"https://www.themoviedb.org/{media_type}/{target_id}/watch",
-            "flatrate": format_provider_list(wp_country_data.get("flatrate")),
-            "rent": format_provider_list(wp_country_data.get("rent")),
-            "buy": format_provider_list(wp_country_data.get("buy")),
-            "free": format_provider_list(wp_country_data.get("free") or wp_country_data.get("ads")),
-            "available_countries": available_countries
+            "available_countries": available_countries,
+            "flatrate": flatrate,
+            "rent": rent,
+            "buy": buy,
+            "free": free,
+            "link": jw_link
         }
 
         return {
@@ -905,6 +1007,7 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
             "backdrop": backdrop,
             "genres": genres,
             "director": director,
+            "creator": creator,
             "cast": cast_list,
             "trailer": trailer_obj,
             "watch_providers": watch_providers,

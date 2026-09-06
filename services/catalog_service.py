@@ -135,11 +135,17 @@ def init_local_cache():
                     cinematographer TEXT DEFAULT '',
                     composer TEXT DEFAULT '',
                     screenwriter TEXT DEFAULT '',
+                    creator TEXT DEFAULT '',
                     embedding_blob BLOB,
                     created_at REAL DEFAULT (strftime('%s', 'now')),
                     updated_at REAL DEFAULT (strftime('%s', 'now'))
                 )
             """)
+            try:
+                conn.execute("ALTER TABLE tv_season_catalog ADD COLUMN creator TEXT DEFAULT ''")
+                conn.commit()
+            except Exception:
+                pass
             conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_tv_season_tmdb_season ON tv_season_catalog(tmdb_id, season_number)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_tv_season_show_title ON tv_season_catalog(show_title)")
             conn.commit()
@@ -867,8 +873,8 @@ def _cache_season_locally(item_data: Dict[str, Any]):
                     season_key, tmdb_id, season_number, show_title,
                     season_name, air_date, year, overview, poster,
                     vote_average, episode_count, director, lead_actors,
-                    cinematographer, composer, screenwriter, embedding_blob
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    cinematographer, composer, screenwriter, creator, embedding_blob
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 str(item_data.get("season_key")),
                 int(item_data.get("tmdb_id")),
@@ -886,6 +892,7 @@ def _cache_season_locally(item_data: Dict[str, Any]):
                 str(item_data.get("cinematographer") or ""),
                 str(item_data.get("composer") or ""),
                 str(item_data.get("screenwriter") or ""),
+                str(item_data.get("creator") or ""),
                 item_data.get("embedding_blob")
             ))
             conn.commit()
@@ -946,10 +953,12 @@ def _fetch_tv_season_from_episode_groups(
             credits = tv_d.get("credits", {})
             cast = [c.get("name") for c in credits.get("cast", [])[:6] if c.get("name")]
             item_data["lead_actors"] = ", ".join(cast)
-            directors = [c.get("name") for c in tv_d.get("created_by", []) if c.get("name")]
+            directors = []
             for cr in credits.get("crew", []):
-                if cr.get("job") in ["Director", "Series Director"] and cr.get("name"):
+                if cr.get("job") in ["Series Director", "Director", "Chief Director"] and cr.get("name"):
                     directors.append(cr["name"])
+            if not directors:
+                directors = [c.get("name") for c in tv_d.get("created_by", []) if c.get("name")]
             item_data["director"] = ", ".join(list(dict.fromkeys(directors))[:2])
 
         # For anime/episode groups: select distinct official poster from TMDB images gallery
@@ -995,6 +1004,104 @@ def _fetch_tv_season_from_episode_groups(
         return None
 
 
+def extract_tv_season_director(season_data: Dict[str, Any], series_data: Optional[Dict[str, Any]] = None) -> str:
+    """
+    Extracts the authoritative season director / showrunner across all TV archetypes:
+    1. Season crew with job in ["Series Director", "Chief Director", "General Director"] (Anime & overarching TV directors).
+    2. True single auteur director who helmed >= 80% of all episodes (e.g. Cary Joji Fukunaga on True Detective S1, Johan Renck on Chernobyl).
+    3. Series Creator / Showrunner (created_by / Author) from series_data (e.g. Debora Cahn for The Diplomat, Vince Gilligan for Breaking Bad, Jesse Armstrong for Succession).
+    4. Season Showrunner in crew ["Showrunner", "Executive Producer / Showrunner"].
+    5. Dominant episodic director (>= 50% of episodes) only when no creator/showrunner is identified.
+    Filters out invalid generic placeholder strings.
+    """
+    invalid_names = {
+        "", "none", "null", "undefined", "unknown", "n/a", "na", "-", "--", 
+        "[]", "{}", "nan", "showrunner", "showrunners", "various", "various directors", 
+        "director", "directors", "creator", "creators", "uncredited", "writer", 
+        "writers", "tba", "unknown director", "unknown showrunner"
+    }
+
+    credits = season_data.get("credits", {})
+    crew = credits.get("crew", [])
+    episodes = season_data.get("episodes", [])
+    
+    # Extract series creators (via created_by or fallback to creator field)
+    series_creators = []
+    if series_data:
+        series_creators = [c.get("name") for c in series_data.get("created_by", []) if c.get("name")]
+        if not series_creators and series_data.get("creator"):
+            series_creators = [s.strip() for s in series_data["creator"].split(",") if s.strip()]
+        if not series_creators:
+            try:
+                from services.tmdb_service import extract_tv_creator
+                c_cand = extract_tv_creator(series_data, series_data.get("credits", {}).get("crew", []))
+                if c_cand:
+                    series_creators = [s.strip() for s in c_cand.split(",") if s.strip()]
+            except Exception:
+                pass
+    
+    directors = []
+    
+    # Priority 1: Season-level directing leads (Anime Series Director / Chief Director / General Director)
+    for c in crew:
+        job = (c.get("job") or "").strip()
+        name = (c.get("name") or "").strip()
+        if not name or name.lower() in invalid_names:
+            continue
+        if job in ["Series Director", "Chief Director", "General Director"]:
+            directors.append(name)
+            
+    # Priority 2: True single auteur director who helmed >= 80% of all episodes (e.g. True Detective S1, Chernobyl)
+    if not directors and episodes:
+        from collections import Counter
+        ep_directors = []
+        for ep in episodes:
+            for cr in ep.get("crew", []):
+                job = (cr.get("job") or "").strip()
+                name = (cr.get("name") or "").strip()
+                if job == "Director" and name and name.lower() not in invalid_names:
+                    ep_directors.append(name)
+        if ep_directors:
+            counts = Counter(ep_directors)
+            thresh = max(1, math.ceil(len(episodes) * 0.8))
+            dominant = [name for name, cnt in counts.most_common(1) if cnt >= thresh]
+            if dominant:
+                directors.extend(dominant)
+
+    # Priority 3: Series Creator / Showrunner (Western episodic ensemble dramas where director varies every episode)
+    if not directors and series_creators:
+        for name in series_creators:
+            if name and name.lower() not in invalid_names:
+                directors.append(name)
+                
+    # Priority 4: Season-level Showrunner in crew
+    if not directors:
+        for c in crew:
+            job = (c.get("job") or "").strip()
+            name = (c.get("name") or "").strip()
+            if job in ["Showrunner", "Executive Producer / Showrunner"] and name and name.lower() not in invalid_names:
+                directors.append(name)
+                
+    # Priority 5: Dominant episodic director (>= 50% of episodes) when no creator is listed
+    if not directors and episodes:
+        from collections import Counter
+        ep_directors = []
+        for ep in episodes:
+            for cr in ep.get("crew", []):
+                job = (cr.get("job") or "").strip()
+                name = (cr.get("name") or "").strip()
+                if job == "Director" and name and name.lower() not in invalid_names:
+                    ep_directors.append(name)
+        if ep_directors:
+            counts = Counter(ep_directors)
+            dominant = [name for name, cnt in counts.most_common(2) if cnt >= max(1, len(episodes) // 2)]
+            if dominant:
+                directors.extend(dominant)
+                
+    clean_dirs = list(dict.fromkeys(directors))[:2]
+    return ", ".join(clean_dirs) if clean_dirs else "Unknown"
+
+
 def fetch_and_enrich_tv_season(
     tmdb_id: int, 
     season_number: int = 1, 
@@ -1012,8 +1119,11 @@ def fetch_and_enrich_tv_season(
     """
     s_key = normalize_season_key(tmdb_id, season_number)
     existing = get_tv_season_catalog_item(tmdb_id, season_number)
+    invalid_dirs = {"", "none", "null", "undefined", "unknown", "various", "various directors", "showrunner"}
     if existing and not force_refresh and existing.get("overview") and existing.get("lead_actors") and existing.get("year"):
-        return existing
+        ex_dir = (existing.get("director") or "").strip().lower()
+        if ex_dir and ex_dir not in invalid_dirs:
+            return existing
 
     api_key = _get_api_key()
     item_data = {
@@ -1029,6 +1139,7 @@ def fetch_and_enrich_tv_season(
         "vote_average": 0.0,
         "episode_count": 0,
         "director": "",
+        "creator": existing.get("creator", "") if existing else "",
         "lead_actors": "",
         "cinematographer": "",
         "composer": "",
@@ -1039,6 +1150,30 @@ def fetch_and_enrich_tv_season(
         return item_data
 
     try:
+        # Fetch series details for overarching title, overview, and created_by
+        series_data = {}
+        try:
+            tv_details = requests.get(f"{TMDB_BASE_URL}/tv/{int(tmdb_id)}", params={"api_key": api_key}, timeout=5)
+            if tv_details.status_code == 200:
+                series_data = tv_details.json()
+                if not item_data["show_title"]:
+                    item_data["show_title"] = series_data.get("name") or ""
+                if not item_data.get("overview"):
+                    item_data["overview"] = series_data.get("overview") or ""
+                created_by = [c.get("name") for c in series_data.get("created_by", []) if c.get("name")]
+                if created_by:
+                    item_data["creator"] = ", ".join(created_by)
+                if not item_data.get("creator"):
+                    try:
+                        from services.tmdb_service import extract_tv_creator
+                        c_cand = extract_tv_creator(series_data, series_data.get("credits", {}).get("crew", []))
+                        if c_cand:
+                            item_data["creator"] = c_cand
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
         url = f"{TMDB_BASE_URL}/tv/{int(tmdb_id)}/season/{int(season_number)}"
         res = requests.get(url, params={"api_key": api_key, "append_to_response": "credits,keywords"}, timeout=6)
         if res.status_code != 200:
@@ -1049,7 +1184,7 @@ def fetch_and_enrich_tv_season(
 
         d = res.json()
         item_data["season_name"] = d.get("name") or f"Season {season_number}"
-        item_data["overview"] = d.get("overview") or ""
+        item_data["overview"] = d.get("overview") or item_data.get("overview") or ""
         air_date = d.get("air_date") or ""
         item_data["air_date"] = air_date
         if air_date and air_date[:4].isdigit():
@@ -1066,6 +1201,8 @@ def fetch_and_enrich_tv_season(
         poster_path = d.get("poster_path")
         if poster_path:
             item_data["poster"] = f"https://image.tmdb.org/t/p/w500{poster_path}"
+        elif series_data.get("poster_path"):
+            item_data["poster"] = f"https://image.tmdb.org/t/p/w500{series_data['poster_path']}"
         
         item_data["vote_average"] = float(d.get("vote_average") or 0.0)
 
@@ -1076,7 +1213,15 @@ def fetch_and_enrich_tv_season(
         lead_actors = [c.get("name") for c in cast[:6] if c.get("name")]
         item_data["lead_actors"] = ", ".join(lead_actors)
 
-        directors = []
+        # Extract authoritative season director
+        extracted_dir = extract_tv_season_director(d, series_data)
+        # Fallback to existing valid director only if extraction was Unknown
+        if extracted_dir == "Unknown" and existing and existing.get("director"):
+            ex_d = existing["director"].strip()
+            if ex_d.lower() not in invalid_dirs:
+                extracted_dir = ex_d
+        item_data["director"] = extracted_dir
+
         dops = []
         composers = []
         writers = []
@@ -1086,35 +1231,13 @@ def fetch_and_enrich_tv_season(
             name = (member.get("name") or "").strip()
             if not name:
                 continue
-            if job in ["Director", "Series Director"]:
-                directors.append(name)
-            elif job in ["Director of Photography", "Cinematographer"]:
+            if job in ["Director of Photography", "Cinematographer"]:
                 dops.append(name)
             elif job in ["Original Music Composer", "Music", "Music Director", "Original Score"]:
                 composers.append(name)
             elif job in ["Writer", "Screenplay", "Story", "Series Writer"]:
                 writers.append(name)
 
-        if not directors and episodes:
-            for ep in episodes:
-                for cr in ep.get("crew", []):
-                    if cr.get("job") == "Director" and cr.get("name"):
-                        directors.append(cr["name"])
-                    elif cr.get("job") in ["Writer", "Screenplay"] and cr.get("name"):
-                        writers.append(cr["name"])
-
-        if not item_data["show_title"] or not item_data.get("overview"):
-            tv_details = requests.get(f"{TMDB_BASE_URL}/tv/{int(tmdb_id)}", params={"api_key": api_key}, timeout=5)
-            if tv_details.status_code == 200:
-                tv_d = tv_details.json()
-                if not item_data["show_title"]:
-                    item_data["show_title"] = tv_d.get("name") or ""
-                if not item_data.get("overview"):
-                    item_data["overview"] = tv_d.get("overview") or ""
-                if not directors:
-                    directors.extend([c.get("name") for c in tv_d.get("created_by", []) if c.get("name")])
-
-        item_data["director"] = ", ".join(list(dict.fromkeys(directors))[:2])
         item_data["cinematographer"] = ", ".join(list(dict.fromkeys(dops))[:2])
         item_data["composer"] = ", ".join(list(dict.fromkeys(composers))[:2])
         item_data["screenwriter"] = ", ".join(list(dict.fromkeys(writers))[:2])

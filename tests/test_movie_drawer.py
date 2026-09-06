@@ -139,3 +139,91 @@ def test_api_media_details_route_with_tv_season(monkeypatch):
         assert len(data["cast"]) == 2
         assert data["cast"][0]["name"] == "Keri Russell"
 
+
+def test_api_media_details_route_with_creator_and_director(monkeypatch):
+    """Test /api/media_details endpoint returns both creator and director for dual display."""
+    import services.catalog_service as catalog_service
+    fake_details = {
+        "success": True,
+        "tmdb_id": 45790,
+        "media_type": "tv",
+        "title": "JoJo's Bizarre Adventure",
+        "year": "2012",
+        "creator": "Hirohiko Araki",
+        "director": "Various Directors",
+        "poster": "https://image.tmdb.org/t/p/w500/jojo.jpg"
+    }
+    fake_season = {
+        "season_key": "45790_s2",
+        "tmdb_id": 45790,
+        "season_number": 2,
+        "show_title": "JoJo's Bizarre Adventure",
+        "season_name": "Stardust Crusaders",
+        "year": 2014,
+        "director": "Naokatsu Tsuda, Kenichi Suzuki",
+        "creator": "Hirohiko Araki",
+        "episode_count": 48
+    }
+
+    monkeypatch.setattr(tmdb_service, "get_full_media_details", lambda **kwargs: fake_details)
+    monkeypatch.setattr(catalog_service, "get_tv_season_catalog_item", lambda tmdb_id, season_num: fake_season)
+
+    with app.test_client() as client:
+        res = client.get('/api/media_details?tmdb_id=45790&season=2&tv=1')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data["success"] is True
+        assert data["creator"] == "Hirohiko Araki"
+        assert data["director"] == "Naokatsu Tsuda, Kenichi Suzuki"
+        assert data["season_name"] == "Stardust Crusaders"
+
+
+def test_extract_tv_season_director_prioritizes_creator_over_episodic_directors():
+    """Verify extract_tv_season_director chooses Series Creator over multi-director episodic tallies."""
+    from services.catalog_service import extract_tv_season_director
+    
+    # 8 episodes split between Alex Graves (4), Tucker Gates (2), Liza Johnson (2)
+    season_data = {
+        "credits": {"crew": []},
+        "episodes": [
+            {"episode_number": 1, "crew": [{"job": "Director", "name": "Alex Graves"}]},
+            {"episode_number": 2, "crew": [{"job": "Director", "name": "Alex Graves"}]},
+            {"episode_number": 3, "crew": [{"job": "Director", "name": "Tucker Gates"}]},
+            {"episode_number": 4, "crew": [{"job": "Director", "name": "Tucker Gates"}]},
+            {"episode_number": 5, "crew": [{"job": "Director", "name": "Liza Johnson"}]},
+            {"episode_number": 6, "crew": [{"job": "Director", "name": "Liza Johnson"}]},
+            {"episode_number": 7, "crew": [{"job": "Director", "name": "Alex Graves"}]},
+            {"episode_number": 8, "crew": [{"job": "Director", "name": "Alex Graves"}]},
+        ]
+    }
+    series_data = {
+        "created_by": [{"id": 1, "name": "Debora Cahn"}]
+    }
+    
+    extracted = extract_tv_season_director(season_data, series_data)
+    assert extracted == "Debora Cahn"
+
+
+def test_extract_tv_season_director_preserves_anime_series_director():
+    """Verify anime Series Director / Chief Director in season crew is preserved."""
+    from services.catalog_service import extract_tv_season_director
+    
+    season_data = {
+        "credits": {
+            "crew": [
+                {"job": "Chief Director", "name": "Naokatsu Tsuda"},
+                {"job": "Series Director", "name": "Kenichi Suzuki"}
+            ]
+        },
+        "episodes": []
+    }
+    series_data = {
+        "created_by": [{"id": 1, "name": "Hirohiko Araki"}]
+    }
+    
+    extracted = extract_tv_season_director(season_data, series_data)
+    assert "Naokatsu Tsuda" in extracted
+    assert "Kenichi Suzuki" in extracted
+
+
+

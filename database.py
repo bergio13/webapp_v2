@@ -272,6 +272,27 @@ def get_monthly_movies(parent_id, month):
         logger.error(f"Error fetching monthly movies: {e}")
         return []
 
+def get_yearly_movie_and_cinema_counts(parent_id, year=None):
+    """Fetch both total yearly movies watched and cinema visits in a single fast query."""
+    try:
+        if year is None:
+            year = datetime.now().year
+        start_date = f"{year}-01-01"
+        end_date = f"{year + 1}-01-01"
+        response = client.table('lista') \
+            .select('lista_id, cinema') \
+            .eq('parent_id', parent_id) \
+            .gte('v_date', start_date) \
+            .lt('v_date', end_date) \
+            .execute()
+        rows = response.data or []
+        yearly_count = len(rows)
+        yearly_cinema_count = sum(1 for r in rows if _normalize_flag(r.get('cinema')) == 1)
+        return yearly_count, yearly_cinema_count
+    except Exception as e:
+        logger.error(f"Error fetching yearly counts for {parent_id}: {e}")
+        return 0, 0
+
 def get_yearly_movie_count(parent_id, year=None):
     try:
         if year is None:
@@ -830,14 +851,23 @@ def delete_user_tokens(user_id):
 ####### WATCHLISTS ##########################
 #############################################
 
+_PERSONAL_WATCHLIST_CACHE = {}
+
 def get_or_create_personal_watchlist(user_id):
+    if user_id in _PERSONAL_WATCHLIST_CACHE:
+        return _PERSONAL_WATCHLIST_CACHE[user_id]
     try:
         data = client.table('watchlists').select('*').eq('user1_id', user_id).is_('user2_id', 'null').execute()
         if data.data:
-            return data.data[0]
+            wl = data.data[0]
+            _PERSONAL_WATCHLIST_CACHE[user_id] = wl
+            return wl
         else:
             new_list = client.table('watchlists').insert({"user1_id": user_id}).execute()
-            return new_list.data[0]
+            if new_list.data:
+                wl = new_list.data[0]
+                _PERSONAL_WATCHLIST_CACHE[user_id] = wl
+                return wl
     except Exception as e:
         logger.error(f"Error getting/creating personal watchlist: {e}")
         return None
