@@ -475,6 +475,8 @@ def tmdb_redirect():
 
 @main_bp.route("/api/media_details")
 def api_media_details():
+    import re
+    import copy
     title = request.args.get("title")
     year = request.args.get("year")
     tmdb_id = request.args.get("tmdb_id")
@@ -489,7 +491,6 @@ def api_media_details():
     try:
         clean_title = title
         if is_tv and not season and title:
-            import re
             from services.catalog_service import resolve_tv_season_number
             inferred = resolve_tv_season_number(title, tmdb_id=tmdb_id)
             if inferred and inferred > 1:
@@ -506,13 +507,14 @@ def api_media_details():
             country=country
         )
 
+        details = copy.deepcopy(details)
+
         # Augment with TV season-specific canonical data if viewing a season
-        if details.get("success") and is_tv:
+        if details.get("success") and is_tv and details.get("media_type") != "movie":
             target_tmdb_id = details.get("tmdb_id") or details.get("id") or tmdb_id
             if target_tmdb_id:
                 details["tmdb_id"] = int(target_tmdb_id)
             if not season and target_tmdb_id and title:
-                import re
                 from services.catalog_service import resolve_tv_season_number
                 inferred = resolve_tv_season_number(title, tmdb_id=int(target_tmdb_id))
                 if inferred and (inferred > 1 or re.search(r'(?i)\b(?:season|series|volume|vol|part|bk|book|s)\s*1\b', title)):
@@ -536,10 +538,24 @@ def api_media_details():
                         details["season_number"] = s_int
                         s_name = season_item.get("season_name") or f"Season {s_int}"
                         details["season_name"] = s_name
-                        base_title = details.get("title") or clean_title or title
-                        # Provide distinct season title for drawer header
-                        if s_name.lower() not in base_title.lower():
-                            details["title"] = f"{base_title} - {s_name}"
+                        raw_title = details.get("title") or clean_title or title
+                        # Strip any pre-existing season suffixes from raw_title so season strings never accumulate
+                        clean_show_title = re.sub(
+                            r',?\s*-\s*(?:season|series|volume|vol|part|the final season|final season)\s*\d*.*$', 
+                            '', 
+                            raw_title, 
+                            flags=re.IGNORECASE
+                        ).strip()
+                        clean_show_title = re.sub(
+                            r',?\s*(?:season|series|volume|vol|part|the final season|final season)\s*\d*.*$', 
+                            '', 
+                            clean_show_title, 
+                            flags=re.IGNORECASE
+                        ).strip()
+                        if s_name.lower() in clean_show_title.lower():
+                            details["title"] = clean_show_title
+                        else:
+                            details["title"] = f"{clean_show_title} - {s_name}"
                         if season_item.get("overview"):
                             details["overview"] = season_item["overview"]
                         if season_item.get("poster") and "placeholder" not in season_item["poster"]:

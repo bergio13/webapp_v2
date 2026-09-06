@@ -5,6 +5,7 @@ import json
 import sqlite3
 from typing import Dict, List, Any, Optional
 from functools import wraps
+import copy
 import requests
 from dotenv import load_dotenv
 from tmdbv3api import TMDb, Movie, TV, Season, Search
@@ -95,15 +96,15 @@ def _cached(ttl=_CACHE_TTL, maxsize=1000):
             if key in cache_store:
                 val, timestamp = cache_store[key]
                 if now - timestamp < ttl:
-                    return val
+                    return copy.deepcopy(val)
             result = func(*args, **kwargs)
             if result is not None:
                 if len(cache_store) >= maxsize:
                     sorted_keys = sorted(cache_store.keys(), key=lambda k: cache_store[k][1])
                     for k in sorted_keys[:maxsize // 5]:
                         cache_store.pop(k, None)
-                cache_store[key] = (result, now)
-            return result
+                cache_store[key] = (copy.deepcopy(result), now)
+            return copy.deepcopy(result) if result is not None else None
         return wrapper
     return decorator
 
@@ -827,21 +828,48 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
     # 1. Resolve target ID if not provided
     if not target_id and title:
         import re
-        clean_title = re.sub(r',?\s*season\s*\d+.*$', '', title, flags=re.IGNORECASE).strip()
+        clean_title = re.sub(r',?\s*(?:season|series|volume|vol|part|bk|book|the final season|final season)\s*\d*.*$', '', title, flags=re.IGNORECASE).strip()
         search_results = search_titles(clean_title or title, is_tv=is_tv, limit=8)
         
         if search_results:
             best_match = None
-            if year:
-                for r in search_results:
-                    if str(r.get("year", "")) == str(year):
-                        best_match = r
-                        break
+            if is_tv:
+                # Prioritize TV matches
+                tv_results = [r for r in search_results if r.get("type") == "tv"]
+                if tv_results:
+                    if year:
+                        for r in tv_results:
+                            if str(r.get("year", "")) == str(year):
+                                best_match = r
+                                break
+                    if not best_match:
+                        # TV season air year often differs from series premiere year (e.g. 2020 vs 2013).
+                        # Falling back to the primary TV series match is far superior to matching a recap/spinoff movie.
+                        best_match = tv_results[0]
+                    media_type = "tv"
+            else:
+                movie_results = [r for r in search_results if r.get("type") == "movie"]
+                if movie_results:
+                    if year:
+                        for r in movie_results:
+                            if str(r.get("year", "")) == str(year):
+                                best_match = r
+                                break
+                    if not best_match:
+                        best_match = movie_results[0]
+                    media_type = "movie"
+
             if not best_match:
-                best_match = search_results[0]
+                if year:
+                    for r in search_results:
+                        if str(r.get("year", "")) == str(year):
+                            best_match = r
+                            break
+                if not best_match:
+                    best_match = search_results[0]
+                media_type = best_match.get("type", media_type)
                 
             target_id = best_match.get("id")
-            media_type = best_match.get("type", media_type)
 
     if not target_id:
         return {"success": False, "error": "Media not found on TMDB"}
@@ -992,6 +1020,7 @@ def get_full_media_details(tmdb_id=None, title=None, year=None, is_tv=False, cou
         return {
             "success": True,
             "id": target_id,
+            "tmdb_id": target_id,
             "media_type": media_type,
             "title": media_title or title,
             "original_title": orig_title,

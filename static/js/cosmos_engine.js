@@ -3072,7 +3072,9 @@
       director: star.director,
       creator: star.creator,
       poster: star.poster,
-      is_tv: star.tv_show === 1
+      is_tv: star.tv_show === 1,
+      season: star.season,
+      tmdb_id: star.tmdb_id
     };
     if (typeof window.openMovieDrawer === "function") {
       window.openMovieDrawer(media);

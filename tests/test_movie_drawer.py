@@ -226,4 +226,84 @@ def test_extract_tv_season_director_preserves_anime_series_director():
     assert "Kenichi Suzuki" in extracted
 
 
+def test_tmdb_fallback_search_prioritizes_tv_over_compilation_movie(monkeypatch):
+    """Verify that searching for a TV show with a season air year that matches a compilation movie still chooses the TV show."""
+    mock_search_results = [
+        {"id": 1429, "title": "Attack on Titan", "year": "2013", "type": "tv"},
+        {"id": 295830, "title": "Attack on Titan", "year": "2015", "type": "movie"},
+        {"id": 714194, "title": "Attack on Titan: Chronicle", "year": "2020", "type": "movie"},
+    ]
+    monkeypatch.setattr(tmdb_service, "search_titles", lambda query, is_tv=False, limit=8: mock_search_results)
+    
+    class MockResponse:
+        status_code = 200
+        def json(self):
+            return {
+                "id": 1429,
+                "name": "Attack on Titan",
+                "first_air_date": "2013-04-07",
+                "overview": "Several hundred years ago, humans were nearly exterminated by titans...",
+                "poster_path": "/aot.jpg",
+                "backdrop_path": None,
+                "genres": [{"name": "Animation"}],
+                "vote_average": 8.7,
+                "created_by": [{"name": "Hajime Isayama"}],
+                "credits": {"crew": [], "cast": []},
+                "videos": {"results": []},
+                "watch/providers": {"results": {}}
+            }
+
+    import requests
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResponse())
+    monkeypatch.setattr(tmdb_service.tmdb, "api_key", "fake_key")
+
+    details = tmdb_service.get_full_media_details(title="Attack on Titan", year="2020", is_tv=True)
+    assert details["success"] is True
+    assert details["tmdb_id"] == 1429
+    assert details["media_type"] == "tv"
+    assert details["title"] == "Attack on Titan"
+
+
+def test_api_media_details_does_not_accumulate_season_titles(monkeypatch):
+    """Verify that opening multiple seasons of the same TV show sequentially does not accumulate '- Season X - Season Y' in the title."""
+    import services.catalog_service as catalog_service
+    fake_details = {
+        "success": True,
+        "tmdb_id": 62649,
+        "media_type": "tv",
+        "title": "Superstore",
+        "year": "2015",
+        "poster": "https://image.tmdb.org/t/p/w500/superstore.jpg"
+    }
+
+    def fake_get_season(tmdb_id, s_num):
+        return {
+            "season_key": f"{tmdb_id}_s{s_num}",
+            "tmdb_id": tmdb_id,
+            "season_number": s_num,
+            "show_title": "Superstore",
+            "season_name": f"Season {s_num}",
+            "year": 2015 + s_num,
+            "poster": f"https://image.tmdb.org/t/p/w500/superstore_s{s_num}.jpg"
+        }
+
+    monkeypatch.setattr(tmdb_service, "get_full_media_details", lambda **kwargs: fake_details)
+    monkeypatch.setattr(catalog_service, "get_tv_season_catalog_item", fake_get_season)
+
+    with app.test_client() as client:
+        res6 = client.get('/api/media_details?tmdb_id=62649&season=6&tv=1')
+        assert res6.get_json()["title"] == "Superstore - Season 6"
+
+        res5 = client.get('/api/media_details?tmdb_id=62649&season=5&tv=1')
+        assert res5.get_json()["title"] == "Superstore - Season 5"
+
+        res4 = client.get('/api/media_details?tmdb_id=62649&season=4&tv=1')
+        assert res4.get_json()["title"] == "Superstore - Season 4"
+
+        res3 = client.get('/api/media_details?tmdb_id=62649&season=3&tv=1')
+        assert res3.get_json()["title"] == "Superstore - Season 3"
+
+
+
+
 
