@@ -577,6 +577,106 @@ def test_bayesian_quality_prior_in_galaxy(monkeypatch):
         assert "quality_diagnostics" in s
 
 
+def test_eight_sector_macro_archetypes():
+    from services.cosmos_service import MACRO_ARCHETYPES, _get_macro_archetype_embeddings
+    assert len(MACRO_ARCHETYPES) == 8
+
+    expected_codes = [
+        "CLUST-FABLE", "CLUST-SCIFI", "CLUST-EPIC", "CLUST-ACTION",
+        "CLUST-CRIME", "CLUST-HORROR", "CLUST-DRAMA", "CLUST-COMEDY"
+    ]
+    actual_codes = [a["code_prefix"] for a in MACRO_ARCHETYPES]
+    assert actual_codes == expected_codes
+
+    for arch in MACRO_ARCHETYPES:
+        assert "name" in arch
+        assert "color" in arch and arch["color"].startswith("#")
+        assert "description" in arch and len(arch["description"]) > 20
+
+    embs = _get_macro_archetype_embeddings()
+    assert embs.shape == (8, 384)
 
 
+def test_macro_realm_semantic_classification():
+    from services.cosmos_service import MACRO_ARCHETYPES, _generate_sector_label
+    
+    # Test that _generate_sector_label with is_macro=True correctly identifies the archetype
+    # 1. Wonder & Fable
+    label_fable = _generate_sector_label([
+        {"title": "Spirited Away", "genre": "Animation, Family, Fantasy", "year": 2001, "director": "Hayao Miyazaki", "tags": "fable, magical, spirits"}
+    ], 0, is_macro=True)
+    assert label_fable["code"] == "CLUST-FABLE"
+
+    # 2. Sci-Fi & Cosmos
+    label_scifi = _generate_sector_label([
+        {"title": "Blade Runner 2049", "genre": "Sci-Fi, Mystery", "year": 2017, "director": "Denis Villeneuve", "tags": "cyberpunk, futuristic, space"}
+    ], 1, is_macro=True)
+    assert label_scifi["code"] == "CLUST-SCIFI"
+
+    # 3. Psychological & Horror
+    label_horror = _generate_sector_label([
+        {"title": "The Shining", "genre": "Horror, Thriller", "year": 1980, "director": "Stanley Kubrick", "tags": "dread, madness, paranoia"}
+    ], 5, is_macro=True)
+    assert label_horror["code"] == "CLUST-HORROR"
+
+    # 4. Human Drama
+    label_drama = _generate_sector_label([
+        {"title": "Roma", "genre": "Drama", "year": 2018, "director": "Alfonso Cuarón", "tags": "humanist, grief, family"}
+    ], 6, is_macro=True)
+    assert label_drama["code"] == "CLUST-DRAMA"
+
+    # 5. Crime & Thriller
+    label_crime = _generate_sector_label([
+        {"title": "The Godfather", "genre": "Crime, Drama", "year": 1972, "director": "Francis Ford Coppola", "tags": "mafia, organized crime"}
+    ], 4, is_macro=True)
+    assert label_crime["code"] == "CLUST-CRIME"
+
+    # 6. Comedy & Satire
+    label_comedy = _generate_sector_label([
+        {"title": "Superbad", "genre": "Comedy", "year": 2007, "director": "Greg Mottola", "tags": "slapstick, broad comedy, funny"}
+    ], 7, is_macro=True)
+    assert label_comedy["code"] == "CLUST-COMEDY"
+
+    # 7. Action & Survival
+    label_action = _generate_sector_label([
+        {"title": "Mad Max: Fury Road", "genre": "Action, Adventure", "year": 2015, "director": "George Miller", "tags": "adrenaline, car chase, survival"}
+    ], 3, is_macro=True)
+    assert label_action["code"] == "CLUST-ACTION"
+
+    # 8. Epics & History
+    label_epic = _generate_sector_label([
+        {"title": "Gladiator", "genre": "Action, Drama, History", "year": 2000, "director": "Ridley Scott", "tags": "epic, historical, roman empire, war"}
+    ], 2, is_macro=True)
+    assert label_epic["code"] == "CLUST-EPIC"
+
+
+def test_anime_tmdb_genre_disambiguation(monkeypatch):
+    # Test that TMDB TV anime with "Sci-Fi & Fantasy" are accurately routed
+    sample_movies = [
+        {"id": 101, "movie": "Frieren", "p_year": 2023, "director": "Keiichirō Saitō", "genre": "Animation, Action & Adventure, Sci-Fi & Fantasy, Drama", "overview": "An elf mage journeys through the world she helped save, learning human warmth and grief.", "rating": 5, "poster": "", "tv_show": 1},
+        {"id": 102, "movie": "Ghost in the Shell", "p_year": 1995, "director": "Mamoru Oshii", "genre": "Action, Animation, Science Fiction", "overview": "A cyborg policewoman hunts a shadowy hacker in a cyberpunk megalopolis.", "rating": 5, "poster": "", "tv_show": 0},
+        {"id": 103, "movie": "Vinland Saga", "p_year": 2019, "director": "Shūhei Yabuta", "genre": "Animation, Action & Adventure, Drama", "overview": "A young Viking warrior seeks vengeance across epic historical English warfare.", "rating": 5, "poster": "", "tv_show": 1}
+    ]
+    monkeypatch.setattr("services.cosmos_service.get_movies", lambda uid: sample_movies)
+    monkeypatch.setattr("services.cosmos_service.get_friends", lambda uid: [])
+    monkeypatch.setattr("services.cosmos_service.get_or_create_personal_watchlist", lambda uid: None)
+    monkeypatch.setattr("services.cosmos_service.get_watchlist_items", lambda wid: [])
+    monkeypatch.setattr("services.tmdb_service.get_recommendations_for_title", lambda *a, **k: [])
+    monkeypatch.setattr("services.tmdb_service.get_director_filmography", lambda *a, **k: [])
+    monkeypatch.setattr("services.cosmos_service.batch_get_movie_crafts", lambda movies: {})
+
+    galaxy = build_taste_cosmos_data(user_id=777, force_refresh=True)
+    assert galaxy["success"] is True
+
+    stars = {s["title"]: s for s in galaxy["stars"]}
+    assert "Frieren" in stars
+    assert "Ghost in the Shell" in stars
+    assert "Vinland Saga" in stars
+
+    # Frieren must route to Wonder & Fable, NOT Sci-Fi
+    assert stars["Frieren"]["sector_code"] == "CLUST-FABLE"
+    # Ghost in the Shell must route to Sci-Fi & Cosmos
+    assert stars["Ghost in the Shell"]["sector_code"] == "CLUST-SCIFI"
+    # Vinland Saga must route to Action & Survival or Epics & History
+    assert stars["Vinland Saga"]["sector_code"] in ["CLUST-ACTION", "CLUST-EPIC"]
 

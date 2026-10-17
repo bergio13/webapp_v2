@@ -1,14 +1,21 @@
 """Authentication blueprint — login, register, logout."""
 from flask import Blueprint, flash, redirect, render_template, request, session
-from flask_login import current_user, login_user, logout_user
+from flask_login import UserMixin, current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from auth.models import User
 from database import (
     insert_user,
     load_users_from_email,
     load_users_from_username,
 )
+
+
+class User(UserMixin):
+    def __init__(self, id, username, email):
+        self.id = id
+        self.username = username
+        self.email = email
+
 
 auth = Blueprint("auth", __name__)
 

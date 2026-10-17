@@ -26,8 +26,6 @@ from database import (
     get_or_create_personal_watchlist,
     get_user_id,
     get_watchlist_items,
-    get_yearly_cinema_count,
-    get_yearly_movie_count,
     get_yearly_movie_and_cinema_counts,
 )
 from extensions import cache, limiter

@@ -96,12 +96,14 @@
 
   // Short Core Cluster Titles for instant legibility on Canvas
   const CORE_CLUSTER_TITLES = {
-    "CLUST-ANIM": "ANIMATION & MYTH",
-    "CLUST-NOIR": "NOIR & CRIME",
-    "CLUST-HUMAN": "ARTHOUSE & DRAMA",
-    "CLUST-COSMOS": "SPECULATIVE SCI-FI",
-    "CLUST-INDIE": "SATIRE & INDIE",
-    "CLUST-KINETIC": "ACTION & SURVIVAL"
+    "CLUST-FABLE": "WONDER & FABLE",
+    "CLUST-SCIFI": "SCI-FI & COSMOS",
+    "CLUST-EPIC": "EPICS & HISTORY",
+    "CLUST-ACTION": "ACTION & SURVIVAL",
+    "CLUST-CRIME": "CRIME & THRILLER",
+    "CLUST-HORROR": "PSYCHOLOGICAL & HORROR",
+    "CLUST-DRAMA": "HUMAN DRAMA",
+    "CLUST-COMEDY": "COMEDY & SATIRE"
   };
 
   function getShortClusterLabel(sec) {
@@ -501,6 +503,7 @@
         if (initialData && initialData.stars && initialData.stars.length > 0) {
           console.log("[COSMOS JS] Instant bootstrap hydration:", initialData.stars.length, "stars,", initialData.sectors ? initialData.sectors.length : 0, "sectors");
           galaxyData = initialData;
+          try { sessionStorage.setItem("kineto_last_galaxy", JSON.stringify(initialData)); } catch (e) {}
           updateStats(initialData.stats);
           renderSectorWayfinders(initialData.sectors);
           updateClusterDropdownMenu(initialData.sectors);
@@ -519,6 +522,26 @@
       } catch (err) {
         console.warn("[COSMOS JS] Error parsing bootstrap data:", err);
       }
+    }
+
+    // 1b. Fallback to SessionStorage cache if bootstrap was empty
+    if (!hasBootstrapData) {
+      try {
+        const cachedRaw = sessionStorage.getItem("kineto_last_galaxy");
+        if (cachedRaw) {
+          const cachedGalaxy = JSON.parse(cachedRaw);
+          if (cachedGalaxy && cachedGalaxy.stars && cachedGalaxy.stars.length > 0) {
+            console.log("[COSMOS JS] SessionStorage warm hydration:", cachedGalaxy.stars.length, "stars");
+            galaxyData = cachedGalaxy;
+            updateStats(cachedGalaxy.stats);
+            renderSectorWayfinders(cachedGalaxy.sectors);
+            updateClusterDropdownMenu(cachedGalaxy.sectors);
+            applyFilters();
+            showLoader(false);
+            hasBootstrapData = true;
+          }
+        }
+      } catch (e) {}
     }
 
     // 2. Fetch Latest/Fresh Data from API in background
@@ -632,7 +655,7 @@
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
 
     fetch(url, { signal: controller.signal })
       .then((res) => {
@@ -650,6 +673,8 @@
         console.log("[COSMOS JS] Successfully parsed galaxy payload:", data.stars ? data.stars.length : 0, "stars,", data.sectors ? data.sectors.length : 0, "sectors");
 
         galaxyData = data;
+        try { sessionStorage.setItem("kineto_last_galaxy", JSON.stringify(data)); } catch (e) {}
+
         if (galaxyData.stars) {
           for (let i = 0; i < galaxyData.stars.length; i++) {
             galaxyData.stars[i].targetX = galaxyData.stars[i].x;
@@ -671,6 +696,20 @@
         clearTimeout(timeoutId);
         showLoader(false);
         console.warn("[COSMOS JS] Galaxy load error/fallback:", err);
+
+        // Prevent indefinite spinner hang if no data has been rendered
+        if (tasteFeedScrollEl && (!galaxyData.stars || galaxyData.stars.length === 0)) {
+          tasteFeedScrollEl.innerHTML = `
+            <div class="feed-empty-state" style="padding: 40px 20px; text-align: center;">
+              <i class="fa-solid fa-satellite-dish" style="font-size: 2.4rem; color: var(--atlas-cyan, #38bdf8); margin-bottom: 14px; opacity: 0.85;"></i>
+              <h4 style="color: #f8fafc; margin-bottom: 6px; font-size: 1rem; font-weight: 600;">Cosmos Synchronization Delayed</h4>
+              <p style="color: #94a3b8; font-size: 0.84rem; max-width: 280px; margin: 0 auto 16px;">The continuous manifold is synthesizing high-dimensional vectors.</p>
+              <button type="button" class="card-btn btn-focus-map" style="margin: 0 auto; display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.45); color: #38bdf8; padding: 7px 18px; border-radius: 9999px; font-size: 0.82rem; font-weight: 600; cursor: pointer;" onclick="window.CosmosEngine && window.CosmosEngine.refresh(true)">
+                <i class="fa-solid fa-rotate"></i> <span>Retry Sync</span>
+              </button>
+            </div>
+          `;
+        }
       });
   }
 
@@ -2876,6 +2915,7 @@
           const m = num % 60;
           rtStr = h > 0 && m > 0 ? `${h}h ${m}m` : (h > 0 ? `${h}h` : `${m}m`);
         }
+      }
       let creditStr = "";
       const sCreator = (star.creator || "").trim();
       const sDirector = (star.director || "").trim();

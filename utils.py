@@ -3,6 +3,7 @@
 Keeping these separate avoids circular imports: blueprints import from here,
 not from each other.
 """
+import calendar
 import datetime
 import logging
 import math
@@ -12,27 +13,15 @@ from flask import request
 from flask_login import current_user
 
 from database import get_movies
-from recommendation_service import (
-    build_user_watch_history_summary,
-    build_watched_title_year_lookup,
-)
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Month constants
+# Month constants (derived from stdlib calendar)
 # ---------------------------------------------------------------------------
 
-months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-]
-
-dict_months = {
-    1: "January", 2: "February", 3: "March", 4: "April",
-    5: "May", 6: "June", 7: "July", 8: "August",
-    9: "September", 10: "October", 11: "November", 12: "December",
-}
+months = list(calendar.month_name)[1:]
+dict_months = {i: calendar.month_name[i] for i in range(1, 13)}
 
 # ---------------------------------------------------------------------------
 # String helpers
@@ -378,11 +367,12 @@ def get_watched_title_year_lookup(user_id) -> set:
     """Return a ``{(normalized_title, year)}`` set for movies already watched."""
     try:
         from database import get_movies
+        from recommendation_service import build_watched_title_year_lookup
         movies = get_movies(user_id)
+        return build_watched_title_year_lookup(movies)
     except Exception:
         logger.exception("Failed to build watched lookup for user %s", user_id)
         return set()
-    return build_watched_title_year_lookup(movies)
 
 
 def get_user_watch_history_summary(
@@ -404,6 +394,7 @@ def get_user_watch_history_summary(
         }
     try:
         from database import get_movies
+        from recommendation_service import build_user_watch_history_summary
         movies = get_movies(user_id)
         return build_user_watch_history_summary(
             movies,

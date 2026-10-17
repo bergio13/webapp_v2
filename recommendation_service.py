@@ -1,3 +1,4 @@
+import logging
 import os
 import random
 import re
@@ -9,6 +10,13 @@ from typing import Optional, Sequence
 import requests
 
 from services.tmdb_service import get_movie_details as tmdb_get_movie_details
+from utils import (
+    extract_title_year_from_heading,
+    normalize_title_for_match,
+    parse_year,
+)
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -56,46 +64,16 @@ class OpenRouterRateLimitError(RuntimeError):
         super().__init__(message)
 
 
-def _log_info(logger, message, *args):
-    if logger is not None and hasattr(logger, "info"):
-        logger.info(message, *args)
+def _log_info(log_obj, message, *args):
+    (log_obj or logger).info(message, *args)
 
 
-def _log_warning(logger, message, *args):
-    if logger is not None and hasattr(logger, "warning"):
-        logger.warning(message, *args)
+def _log_warning(log_obj, message, *args):
+    (log_obj or logger).warning(message, *args)
 
 
-def _log_exception(logger, message, *args):
-    if logger is not None and hasattr(logger, "exception"):
-        logger.exception(message, *args)
-
-
-def normalize_title_for_match(title):
-    """Normalize titles for deterministic strict matching."""
-    if not title:
-        return ""
-    return re.sub(r"\s+", " ", str(title)).strip().lower()
-
-
-def parse_year(year_value):
-    """Parse a year value to int when possible."""
-    try:
-        return int(str(year_value).strip())
-    except (TypeError, ValueError):
-        return None
-
-
-def extract_title_year_from_heading(heading):
-    """Extract title and year from recommendation heading text."""
-    if not heading:
-        return None, None
-
-    match = re.match(r"^(.*?)\s*\((\d{4})\)", heading.strip())
-    if not match:
-        return None, None
-
-    return match.group(1).strip(), int(match.group(2))
+def _log_exception(log_obj, message, *args):
+    (log_obj or logger).exception(message, *args)
 
 
 def extract_movie_details_from_heading(heading):

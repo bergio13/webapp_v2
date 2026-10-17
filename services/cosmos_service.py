@@ -11,6 +11,7 @@ import os
 import re
 import math
 import time
+import json
 import logging
 import random
 import threading
@@ -36,9 +37,9 @@ from services.quality_service import batch_apply_quality_prior
 
 logger = logging.getLogger(__name__)
 
-# In-memory TTL Cache for Cosmos Galaxy State per user
+# In-memory and persistent disk TTL Cache for Cosmos Galaxy State per user
 _GALAXY_CACHE: Dict[int, Tuple[float, Dict[str, Any]]] = {}
-_CACHE_TTL_SECONDS = 1800  # 30 minutes
+_CACHE_TTL_SECONDS = 86400  # 24 hours (auto-invalidated on movie ratings/watchlist additions)
 
 # Canonical Genres & Mood Tags for Vector Encoding
 GENRE_FEATURES = [
@@ -364,8 +365,8 @@ def _fetch_autonomous_candidates(user_id: int, user_movies: List[Dict[str, Any]]
             "poster": c.get("poster", ""),
             "tv_show": c.get("tv_show", 0),
             "source": "cinephile_corpus",
-            "tags": c.get("movement_tags", "") or c.get("canon_tier", ""),
-            "canon_tier": c.get("canon_tier", "landmark"),
+            "overview": c.get("overview", ""),
+            "lead_actors": c.get("lead_actors", ""),
             "vote_average": c.get("rating_score", 8.5),
             "vote_count": c.get("vote_count", 2000),
             "craft": {
@@ -387,7 +388,7 @@ def _fetch_autonomous_candidates(user_id: int, user_movies: List[Dict[str, Any]]
             item_obj["frontier_desc"] = f"Core {pos_modes[0] if pos_modes else 'Cinema'} Resonator"
             frontier_score = max_mode_score
         else:
-            prestige_weight = 2.0 if c.get("canon_tier") in ["sight_and_sound", "palme_dor_festival"] else 1.0
+            prestige_weight = 1.0
             item_obj["frontier_type"] = "quantum_frontier"
             item_obj["frontier_desc"] = f"Uncharted Frontier: {c_genres[0] if c_genres else 'Cinema'}"
             frontier_score = prestige_weight
@@ -482,42 +483,143 @@ def _fetch_autonomous_candidates(user_id: int, user_movies: List[Dict[str, Any]]
 # Tier 1: Broad Macro-Sectors (The Celestial Realms)
 MACRO_ARCHETYPES = [
     {
-        "name": "THE ANIMATION & MYTHOLOGICAL CLUSTER",
-        "code_prefix": "CLUST-ANIM",
-        "color": "#7aa898",
-        "description": "Studio Ghibli, Japanese anime masterworks, CGI family animation, Pixar, fantasy worlds, mythical beasts, Miyazaki, Takahata, Hosoda, Shinkai, Kon, Vinland Saga, Spirited Away, Puss in Boots, animated features"
+        "name": "Wonder & Fable",
+        "code_prefix": "CLUST-FABLE",
+        "color": "#70D6FF",
+        "tagline": "Magical realism, poetic coming-of-age journeys, and imaginative mythologies filled with warmth and discovery.",
+        "thematic_core": [
+            "mythic journeys",
+            "coming-of-age",
+            "childlike wonder",
+            "magical realism",
+            "folklore",
+            "emotional catharsis"
+        ],
+        "key_auteurs": ["Hayao Miyazaki", "Guillermo del Toro", "Jean-Pierre Jeunet", "Andrew Stanton", "Paul King"],
+        "anchor_titles": ["Spirited Away", "Pan's Labyrinth", "Amélie", "WALL-E", "Paddington 2", "My Neighbor Totoro"]
     },
     {
-        "name": "THE NOIR, CRIME & PSYCHOLOGICAL LABYRINTH",
-        "code_prefix": "CLUST-NOIR",
-        "color": "#e63946",
-        "description": "East Asian revenge thrillers, American mafia epics, gritty crime investigations, serial killers, corruption, noir, Park Chan-wook, Bong Joon-ho, Scorsese, Coppola, Fincher, Memories of Murder, The Godfather, Seven, Oldboy, Zodiac"
+        "name": "Sci-Fi & Cosmos",
+        "code_prefix": "CLUST-SCIFI",
+        "color": "#48CAE4",
+        "tagline": "Philosophical inquiries, speculative futures, and cosmic frontiers questioning technology, time, and humanity.",
+        "thematic_core": [
+            "deep space",
+            "artificial intelligence",
+            "existential futurism",
+            "time dilation",
+            "techno-dystopia",
+            "high-concept philosophy"
+        ],
+        "key_auteurs": ["Denis Villeneuve", "Stanley Kubrick", "Christopher Nolan", "Andrei Tarkovsky", "Lana & Lilly Wachowski"],
+        "anchor_titles": ["2001: A Space Odyssey", "Blade Runner 2049", "Interstellar", "Arrival", "Solaris", "The Matrix"]
     },
     {
-        "name": "THE ARTHOUSE, HUMANIST & EXISTENTIAL CORE",
-        "code_prefix": "CLUST-HUMAN",
-        "color": "#e0a96d",
-        "description": "Post-war humanism, Italian neorealism, French New Wave, European festival winners, intimate relationship dramas, Fellini, Sorrentino, Truffaut, Ozu, De Sica, Hamaguchi, Triet, The Great Beauty, 400 Blows, Tokyo Story, Anatomy of a Fall"
+        "name": "Epics & History",
+        "code_prefix": "CLUST-EPIC",
+        "color": "#E0A96D",
+        "tagline": "Grand historical sagas, battlefield conflicts, and sweeping mythologies driven by monumental ambition and fate.",
+        "thematic_core": [
+            "historical epoch",
+            "sweeping scale",
+            "war and sacrifice",
+            "imperial politics",
+            "destiny and hubris",
+            "monumental heroism"
+        ],
+        "key_auteurs": ["Ridley Scott", "Peter Jackson", "David Lean", "Akira Kurosawa", "Christopher Nolan"],
+        "anchor_titles": ["The Lord of the Rings", "Gladiator", "Lawrence of Arabia", "1917", "Oppenheimer", "Ran"]
     },
     {
-        "name": "THE SPECULATIVE SCI-FI & SURREALIST COSMOS",
-        "code_prefix": "CLUST-COSMOS",
-        "color": "#7eb5c4",
-        "description": "Metaphysical sci-fi, philosophical space odysseys, surreal dreamscapes, existential horror, AI, time dilation, Denis Villeneuve, Stanley Kubrick, Andrei Tarkovsky, David Lynch, Charlie Kaufman, 2001, Blade Runner 2049, Arrival, Stalker, Mulholland Drive"
+        "name": "Action & Survival",
+        "code_prefix": "CLUST-ACTION",
+        "color": "#FFBE0B",
+        "tagline": "Pure kinetic velocity, intricate physical choreography, and desperate battles against catastrophic peril.",
+        "thematic_core": [
+            "kinetic momentum",
+            "physical choreography",
+            "tactical survival",
+            "high-speed pursuit",
+            "visceral spectacle",
+            "perilous stakes"
+        ],
+        "key_auteurs": ["George Miller", "Chad Stahelski", "Joseph Kosinski", "Gareth Evans", "James Cameron"],
+        "anchor_titles": ["Mad Max: Fury Road", "John Wick", "Top Gun: Maverick", "The Raid", "Terminator 2: Judgment Day", "Speed"]
     },
     {
-        "name": "THE SATIRICAL WIT & POP INDIE COMMONS",
-        "code_prefix": "CLUST-INDIE",
-        "color": "#06d6a0",
-        "description": "Dark comedy, social class satire, high-concept indie dramedies, quirky witty ensembles, Coen Brothers, Wes Anderson, Noah Baumbach, Ruben Östlund, Parasite, The Grand Budapest Hotel, Fargo, Licorice Pizza, Triangle of Sadness"
+        "name": "Crime & Thriller",
+        "code_prefix": "CLUST-CRIME",
+        "color": "#E76F51",
+        "tagline": "Moral decay, procedural investigations, underworld syndicates, and high-stakes games of cat and mouse.",
+        "thematic_core": [
+            "underworld syndicates",
+            "procedural deduction",
+            "moral ambiguity",
+            "systemic corruption",
+            "fatalism",
+            "cat-and-mouse tension"
+        ],
+        "key_auteurs": ["Martin Scorsese", "David Fincher", "Michael Mann", "Bong Joon-ho", "Denis Villeneuve"],
+        "anchor_titles": ["The Godfather", "Zodiac", "Heat", "Memories of Murder", "No Country for Old Men", "Sicario"]
     },
     {
-        "name": "THE HIGH-OCTANE ACTION & SURVIVAL FRONTIER",
-        "code_prefix": "CLUST-KINETIC",
-        "color": "#ff9f1c",
-        "description": "Adrenaline-fueled action, intense visceral survival, dystopian car chases, kinetic blockbusters, George Miller, John Carpenter, James Cameron, James Gunn, Mad Max, The Thing, Terminator, Guardians of the Galaxy, The Nice Guys"
+        "name": "Psychological & Horror",
+        "code_prefix": "CLUST-HORROR",
+        "color": "#B5179E",
+        "tagline": "Visceral dread, psychological unraveling, and nightmarish confrontations with the uncanny and supernatural.",
+        "thematic_core": [
+            "existential dread",
+            "paranoia and delusion",
+            "supernatural terror",
+            "unreliable reality",
+            "visceral claustrophobia",
+            "uncanny atmosphere"
+        ],
+        "key_auteurs": ["Ari Aster", "Darren Aronofsky", "David Lynch", "Robert Eggers", "John Carpenter"],
+        "anchor_titles": ["The Shining", "Hereditary", "Black Swan", "Mulholland Drive", "The Thing", "The Witch"]
+    },
+    {
+        "name": "Human Drama",
+        "code_prefix": "CLUST-DRAMA",
+        "color": "#F4A261",
+        "tagline": "Intimate, character-driven examinations of domestic life, grief, love, memory, and personal identity.",
+        "thematic_core": [
+            "intimate realism",
+            "emotional vulnerability",
+            "familial fracture",
+            "melancholy and longing",
+            "quiet domesticity",
+            "the passage of time"
+        ],
+        "key_auteurs": ["Yasujiro Ozu", "Kenneth Lonergan", "Celine Song", "Ryusuke Hamaguchi", "Richard Linklater"],
+        "anchor_titles": ["Tokyo Story", "Manchester by the Sea", "Past Lives", "Drive My Car", "Boyhood", "Roma"]
+    },
+    {
+        "name": "Comedy & Satire",
+        "code_prefix": "CLUST-COMEDY",
+        "color": "#06D6A0",
+        "tagline": "Sharp social critiques, idiosyncratic character studies, romantic wit, and absurd comedic escapades.",
+        "thematic_core": [
+            "social critique",
+            "deadpan irony",
+            "romantic banter",
+            "absurdist farce",
+            "subversive wit",
+            "screwball comedy"
+        ],
+        "key_auteurs": ["Joel & Ethan Coen", "Wes Anderson", "Judd Apatow", "Taika Waititi", "Bong Joon-ho"],
+        "anchor_titles": ["The Big Lebowski", "Parasite", "The Grand Budapest Hotel", "Groundhog Day", "Superbad", "When Harry Met Sally"]
     }
 ]
+
+# Ensure each archetype has a unified text description for embeddings and backward-compatibility
+for _arch in MACRO_ARCHETYPES:
+    if "description" not in _arch:
+        _t = _arch.get("tagline", "")
+        _th = ", ".join(_arch.get("thematic_core", []))
+        _au = ", ".join(_arch.get("key_auteurs", []))
+        _an = ", ".join(_arch.get("anchor_titles", []))
+        _arch["description"] = f"{_t} Themes: {_th}. Key Auteurs: {_au}. Landmark Titles: {_an}."
 
 # Tier 2: Fine-Grained Micro-Constellations (The Thematic Pockets)
 MICRO_ARCHETYPES = [
@@ -662,17 +764,25 @@ _MICRO_EMBEDDINGS: Optional[np.ndarray] = None
 
 def _get_macro_archetype_embeddings() -> np.ndarray:
     global _MACRO_EMBEDDINGS
-    if _MACRO_EMBEDDINGS is None:
+    if _MACRO_EMBEDDINGS is None or len(_MACRO_EMBEDDINGS) != len(MACRO_ARCHETYPES):
         npy_p = os.path.join(_DB_DIR, "macro_archetype_embs.npy")
         if os.path.exists(npy_p):
             try:
-                _MACRO_EMBEDDINGS = np.load(npy_p)
+                loaded = np.load(npy_p)
+                if len(loaded) == len(MACRO_ARCHETYPES):
+                    _MACRO_EMBEDDINGS = loaded
+                else:
+                    _MACRO_EMBEDDINGS = None
             except Exception:
-                pass
+                _MACRO_EMBEDDINGS = None
         if _MACRO_EMBEDDINGS is None:
             from services.embedding_service import compute_text_embeddings
             texts = [a["description"] for a in MACRO_ARCHETYPES]
             _MACRO_EMBEDDINGS = compute_text_embeddings(texts)
+            try:
+                np.save(npy_p, _MACRO_EMBEDDINGS)
+            except Exception:
+                pass
     return _MACRO_EMBEDDINGS
 
 
@@ -768,6 +878,10 @@ def _generate_sector_label(
         "subtitle": subtitle,
         "color": chosen["color"],
         "code_prefix": chosen["code_prefix"],
+        "tagline": chosen.get("tagline", ""),
+        "thematic_core": chosen.get("thematic_core", []),
+        "key_auteurs": chosen.get("key_auteurs", []),
+        "anchor_titles": chosen.get("anchor_titles", []),
         "similarity": float(sims[chosen_idx])
     }
 
@@ -851,13 +965,32 @@ def _extract_density_contours(pts, levels=None, grid_size=56, pad=45.0):
     return contours
 
 
+def _get_disk_cache_path(user_id: int) -> str:
+    return os.path.join(_DB_DIR, f"galaxy_cache_{user_id}.json")
+
+
 def invalidate_galaxy_cache(user_id: Optional[int] = None):
-    """Clears the in-memory galaxy cache for a specific user or entirely."""
+    """Clears the in-memory and disk galaxy cache for a specific user or entirely."""
     global _GALAXY_CACHE
     if user_id is not None:
         _GALAXY_CACHE.pop(user_id, None)
+        try:
+            p = _get_disk_cache_path(user_id)
+            if os.path.exists(p):
+                os.remove(p)
+        except Exception:
+            pass
     else:
         _GALAXY_CACHE.clear()
+        try:
+            for fname in os.listdir(_DB_DIR):
+                if fname.startswith("galaxy_cache_") and fname.endswith(".json"):
+                    try:
+                        os.remove(os.path.join(_DB_DIR, fname))
+                    except Exception:
+                        pass
+        except Exception:
+            pass
 
 
 def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[str, Any]:
@@ -867,6 +1000,21 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
     runs 2D manifold projection with repulsor physics, and clusters sectors.
     """
     now = time.time()
+    
+    # 0. Check in-memory or persistent disk cache
+    if not force_refresh and user_id not in _GALAXY_CACHE:
+        disk_p = _get_disk_cache_path(user_id)
+        if os.path.exists(disk_p) and os.path.getsize(disk_p) > 100:
+            try:
+                mtime = os.path.getmtime(disk_p)
+                if now - mtime < _CACHE_TTL_SECONDS:
+                    with open(disk_p, "r", encoding="utf-8") as f:
+                        disk_payload = json.load(f)
+                    if disk_payload and disk_payload.get("stars"):
+                        _GALAXY_CACHE[user_id] = (mtime, disk_payload)
+            except Exception as e:
+                logger.debug(f"Could not read disk cache for user {user_id}: {e}")
+
     if not force_refresh and user_id in _GALAXY_CACHE:
         cached_time, cached_payload = _GALAXY_CACHE[user_id]
         if now - cached_time < _CACHE_TTL_SECONDS:
@@ -983,9 +1131,6 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
                 "rating": rating,
                 "vote_average": m.get("vote_average") or m.get("rating_score"),
                 "vote_count": m.get("vote_count"),
-                "status": m.get("status", ""),
-                "is_abandoned": bool(m.get("is_abandoned") or "abandon" in str(m.get("status", "")).lower() or "dnf" in str(m.get("status", "")).lower()),
-                "completed": m.get("completed"),
                 "category": cat,
                 "tv_show": m.get("tv_show", 0),
                 "cinema": m.get("cinema", 0),
@@ -1238,22 +1383,98 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
     macro_embs = _get_macro_archetype_embeddings()
     macro_sims = cosine_similarity(semantic_norm, macro_embs)  # N x 6
 
-    # Categorical domain priors
+    # Categorical domain priors for the 8 Macro Realms (Generic thematic vocabulary, zero hardcoded franchise names)
+    COMBAT_VOCABULARY = [
+        "combat", "fight", "fighter", "fighting", "battle", "brawl", "box", "boxer", "boxing",
+        "martial arts", "ninja", "shinobi", "superpower", "super hero", "superhero", "hero", "warrior",
+        "tournament", "duel", "survival", "swordsman", "sword", "assassin",
+        "gunfight", "shootout", "heist", "stunt", "stunts", "punch", "kickboxing", "wrestling"
+    ]
+
+    SCIFI_VOCABULARY = [
+        "outer space", "space travel", "interstellar", "galaxy", "cyberpunk", 
+        "futuristic", "future tech", "robot", "alien", "cyborg", "android", "virtual reality", 
+        "artificial intelligence", "dystopian tech", "dystop", "quantum", "physics",
+        "body problem", "fallout", "apocalypse", "nuclear", "extraterrestrial",
+        "spaceship", "spaceships", "cosmos", "time travel", "multiverse", "scavenger"
+    ]
+
     for i, it in enumerate(pool):
         g_str = str(it.get("genre", "")).lower()
-        t_str = str(it.get("tags", "")).lower() + " " + str(it.get("title", "")).lower()
-        if "animation" in g_str or "anime" in t_str:
-            macro_sims[i, 0] += 0.45  # Realm 0: Animation
-        if "crime" in g_str or "noir" in t_str or "thriller" in g_str or "mystery" in g_str:
-            macro_sims[i, 1] += 0.22  # Realm 1: Noir, Crime & Psychological
-        if "drama" in g_str and "animation" not in g_str and "sci-fi" not in g_str and "comedy" not in g_str and "action" not in g_str:
-            macro_sims[i, 2] += 0.22  # Realm 2: Arthouse & Humanist Core
-        if "sci-fi" in g_str or "science fiction" in g_str or "space" in t_str:
-            macro_sims[i, 3] += 0.26  # Realm 3: Sci-Fi Cosmos
-        if "comedy" in g_str and "animation" not in g_str:
-            macro_sims[i, 4] += 0.20  # Realm 4: Satirical Wit & Pop Indie
-        if "action" in g_str and "animation" not in g_str and "sci-fi" not in g_str:
-            macro_sims[i, 5] += 0.20  # Realm 5: Action Frontier
+        raw_title = str(it.get("title", "")).lower()
+        t_str = str(it.get("tags", "")).lower() + " " + raw_title + " " + str(it.get("overview", "")).lower()
+
+        # 1. Generic combat detection across title, tags, and overview
+        has_combat = any(re.search(r'\b' + re.escape(w) + r'\b', t_str) for w in COMBAT_VOCABULARY)
+        
+        # 2. Action genre & Family indicators
+        has_action_genre = "action" in g_str
+        is_family = "family" in g_str or "children" in g_str
+
+        # 3. Clean Generic Sci-Fi detection (avoid substring "ai" matching inside words like kaisen or daima)
+        has_hard_scifi = any(k in t_str for k in SCIFI_VOCABULARY) or bool(re.search(r'\b(ai|a\.i\.|mecha|synth)\b', t_str))
+        
+        # Disambiguate TMDB TV composite bundle "sci-fi & fantasy" (ID 10765)
+        is_sff_bundle = "sci-fi & fantasy" in g_str
+        if is_sff_bundle:
+            effective_scifi = has_hard_scifi
+            effective_fantasy = not has_hard_scifi or "fantasy" in g_str
+        else:
+            effective_scifi = ("sci-fi" in g_str or "science fiction" in g_str)
+            effective_fantasy = "fantasy" in g_str
+
+        # Martial arts / combat titles belong in Action & Survival, not Sci-Fi & Cosmos
+        if has_combat and effective_scifi:
+            if not any(space_k in t_str for space_k in ["outer space", "interstellar", "cyberpunk", "space travel", "galaxy"]):
+                effective_scifi = False
+
+        # Realm 0: Wonder & Fable (CLUST-FABLE)
+        # Reserved for gentle wonder, mythic folklore, Ghibli/Pixar, and coming-of-age fantasy.
+        has_gentle_fable = any(k in t_str for k in ["slice of life", "whimsical", "folklore", "coming-of-age", "fairytale", "fable", "poetic journey"])
+        is_action_dominant = has_action_genre and not is_family and not has_gentle_fable and (has_combat or "drama" not in g_str)
+        is_fable_candidate = (
+            (effective_fantasy or is_family or has_gentle_fable or any(k in t_str for k in ["whimsical", "fable", "fairytale", "magical", "spirits", "folklore"]))
+            and (not has_combat or has_gentle_fable)
+            and not is_action_dominant
+        )
+        if is_fable_candidate and "horror" not in g_str and not effective_scifi and "war" not in g_str:
+            macro_sims[i, 0] += 0.24
+        elif effective_fantasy and (not has_combat or has_gentle_fable) and not is_action_dominant and not effective_scifi:
+            macro_sims[i, 0] += 0.12
+
+        # Realm 1: Sci-Fi & Cosmos (CLUST-SCIFI)
+        if effective_scifi or any(k in t_str for k in ["outer space", "cyberpunk", "futuristic tech"]):
+            macro_sims[i, 1] += 0.26
+
+        # Realm 2: Epics & History (CLUST-EPIC)
+        is_epic_hist = "history" in g_str or "war" in g_str or any(k in t_str for k in ["epic", "historical", "dynasty", "empire", "viking", "medieval", "warfare"])
+        if is_epic_hist and "documentary" not in g_str and not has_combat:
+            macro_sims[i, 2] += 0.26
+
+        # Realm 3: Action & Survival (CLUST-ACTION)
+        if has_action_genre or has_combat or any(k in t_str for k in ["survival", "adrenaline", "chase"]):
+            if not is_epic_hist and not effective_scifi:
+                macro_sims[i, 3] += 0.28 if not has_combat else 0.32
+            elif has_combat:
+                macro_sims[i, 3] += 0.32
+
+        # Realm 4: Crime & Thriller (CLUST-CRIME)
+        if "crime" in g_str or "noir" in t_str or ("thriller" in g_str and "horror" not in g_str and "psychological" not in t_str and not has_combat):
+            macro_sims[i, 4] += 0.22
+
+        # Realm 5: Psychological & Horror (CLUST-HORROR)
+        if "horror" in g_str or any(k in t_str for k in ["dread", "macabre", "paranoia", "terror"]) or ("psychological" in t_str and "thriller" in g_str):
+            macro_sims[i, 5] += 0.26
+
+        # Realm 6: Human Drama (CLUST-DRAMA)
+        if "drama" in g_str and not any(k in g_str for k in ["action", "sci-fi", "crime", "horror", "comedy", "fantasy", "war"]) and not has_combat:
+            macro_sims[i, 6] += 0.22
+        elif "romance" in g_str and "comedy" not in g_str and not has_combat:
+            macro_sims[i, 6] += 0.18
+
+        # Realm 7: Comedy & Satire (CLUST-COMEDY)
+        if ("comedy" in g_str or "satire" in t_str) and not has_combat:
+            macro_sims[i, 7] += 0.22
 
     raw_macro_labels = np.argmax(macro_sims, axis=1)
 
@@ -1616,6 +1837,10 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
             "name": macro_info["name"],
             "subtitle": macro_subtitle,
             "color": macro_info["color"],
+            "tagline": macro_info.get("tagline", ""),
+            "thematic_core": macro_info.get("thematic_core", []),
+            "key_auteurs": macro_info.get("key_auteurs", []),
+            "anchor_titles": macro_info.get("anchor_titles", []),
             "cx": round(dyn_macro_cx, 1),
             "cy": round(dyn_macro_cy, 1),
             "radius": round(dyn_macro_r, 1),
@@ -1727,7 +1952,6 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
             "source": item["source"],
             "frontier_type": item.get("frontier_type", "resonator"),
             "frontier_desc": item.get("frontier_desc", ""),
-            "canon_tier": item.get("canon_tier", ""),
             "x": round(float(scaled_x[idx]), 1),
             "y": round(float(scaled_y[idx]), 1),
             "target_x": round(float(target_x[idx]), 1),
@@ -2041,6 +2265,15 @@ def build_taste_cosmos_data(user_id: int, force_refresh: bool = False) -> Dict[s
     watched_in_payload = sum(1 for s in stars if s.get("is_watched"))
     if watched_in_payload > 0 or not user_raw_movies:
         _GALAXY_CACHE[user_id] = (now, payload)
+        try:
+            target_p = _get_disk_cache_path(user_id)
+            tmp_p = f"{target_p}.tmp"
+            with open(tmp_p, "w", encoding="utf-8") as f:
+                json.dump(payload, f)
+            os.replace(tmp_p, target_p)
+        except Exception as e:
+            print(f"[DISK CACHE ERROR] Failed to persist galaxy cache to disk for user {user_id}: {e}", flush=True)
+            logger.error(f"Failed to persist galaxy cache to disk for user {user_id}: {e}")
     return payload
 
 

@@ -173,38 +173,13 @@ def discover():
     Autonomous, vector-embedded galaxy of watched and recommended films.
     """
     print(f"[COSMOS BACKEND] >>> GET /discover requested by user_id={current_user.id}", flush=True)
-    from services.cosmos_service import build_taste_cosmos_data, _GALAXY_CACHE
-    cached = _GALAXY_CACHE.get(current_user.id)
-    needs_refresh = True
-    if cached and (time.time() - cached[0] < 3600):
-        initial_data = cached[1]
-        stars = initial_data.get("stars", []) if initial_data else []
-        tv_missing = any(s.get("tv_show") in [1, "1", True] and not (s.get("poster") and str(s.get("poster")).startswith("http")) for s in stars)
-        watched_count = sum(1 for s in stars if s.get("is_watched"))
-        is_cache_valid = not tv_missing and len(stars) > 0
-        if is_cache_valid:
-            if watched_count == 0:
-                from database import get_movies
-                user_db_movies = get_movies(current_user.id) or []
-                if len(user_db_movies) > 0:
-                    is_cache_valid = False
-                    print(f"[COSMOS BACKEND] Stale 0-watched cache detected for user_id={current_user.id} who has {len(user_db_movies)} movies in DB. Refreshing...", flush=True)
-                elif cached[0] > time.time() - 300:
-                    is_cache_valid = True
-                else:
-                    is_cache_valid = False
-
-        if is_cache_valid:
-            needs_refresh = False
-            print(f"[COSMOS BACKEND] Found valid cached galaxy in memory for user_id={current_user.id} ({watched_count} watched)", flush=True)
-
-    if needs_refresh:
-        try:
-            print(f"[COSMOS BACKEND] Computing fresh galaxy on initial load for user_id={current_user.id}...", flush=True)
-            initial_data = build_taste_cosmos_data(current_user.id, force_refresh=True)
-        except Exception as e:
-            print(f"[COSMOS BACKEND] Error pre-building galaxy on initial load: {e}", flush=True)
-            initial_data = None
+    from services.cosmos_service import build_taste_cosmos_data
+    force_refresh = request.args.get("refresh", "0") in ["1", "true", "True"]
+    try:
+        initial_data = build_taste_cosmos_data(current_user.id, force_refresh=force_refresh)
+    except Exception as e:
+        print(f"[COSMOS BACKEND] Error pre-building galaxy on initial load: {e}", flush=True)
+        initial_data = None
 
     if initial_data:
         stats = initial_data.get("stats", {})

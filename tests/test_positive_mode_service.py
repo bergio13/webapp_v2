@@ -48,7 +48,7 @@ def test_classify_positive_item_strength_and_rewatch():
         "genre": "Sci-Fi, Cyberpunk",
         "rating": 5,
         "rewatch": 1,
-        "v_date": "2026-08-15"
+        "v_date": date.today().isoformat()
     }
     prof_5 = classify_positive_item(item_5_rewatch, pool_index=0)
     assert prof_5.user_rating == 5.0

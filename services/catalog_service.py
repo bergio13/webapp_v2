@@ -944,7 +944,7 @@ def _fetch_tv_season_from_episode_groups(
                 item_data["year"] = int(ep_date[:4])
 
         # Fetch show details for title, overarching series overview, and general craft/cast
-        tv_details = requests.get(f"{TMDB_BASE_URL}/tv/{int(tmdb_id)}", params={"api_key": api_key, "append_to_response": "credits"}, timeout=5)
+        tv_details = requests.get(f"{TMDB_BASE_URL}/tv/{int(tmdb_id)}", params={"api_key": api_key, "language": "en-US", "append_to_response": "credits"}, timeout=5)
         if tv_details.status_code == 200:
             tv_d = tv_details.json()
             if not item_data.get("show_title"):
@@ -1120,7 +1120,7 @@ def fetch_and_enrich_tv_season(
     s_key = normalize_season_key(tmdb_id, season_number)
     existing = get_tv_season_catalog_item(tmdb_id, season_number)
     invalid_dirs = {"", "none", "null", "undefined", "unknown", "various", "various directors", "showrunner"}
-    if existing and not force_refresh and existing.get("overview") and existing.get("lead_actors") and existing.get("year"):
+    if existing and not force_refresh and (existing.get("overview") or "").strip() and existing.get("lead_actors") and existing.get("year"):
         ex_dir = (existing.get("director") or "").strip().lower()
         if ex_dir and ex_dir not in invalid_dirs:
             return existing
@@ -1150,16 +1150,16 @@ def fetch_and_enrich_tv_season(
         return item_data
 
     try:
-        # Fetch series details for overarching title, overview, and created_by
+        # Fetch series details for overarching title, overview, and created_by in English
         series_data = {}
         try:
-            tv_details = requests.get(f"{TMDB_BASE_URL}/tv/{int(tmdb_id)}", params={"api_key": api_key}, timeout=5)
+            tv_details = requests.get(f"{TMDB_BASE_URL}/tv/{int(tmdb_id)}", params={"api_key": api_key, "language": "en-US"}, timeout=6)
             if tv_details.status_code == 200:
                 series_data = tv_details.json()
                 if not item_data["show_title"]:
                     item_data["show_title"] = series_data.get("name") or ""
                 if not item_data.get("overview"):
-                    item_data["overview"] = series_data.get("overview") or ""
+                    item_data["overview"] = (series_data.get("overview") or "").strip()
                 created_by = [c.get("name") for c in series_data.get("created_by", []) if c.get("name")]
                 if created_by:
                     item_data["creator"] = ", ".join(created_by)
@@ -1175,16 +1175,75 @@ def fetch_and_enrich_tv_season(
             pass
 
         url = f"{TMDB_BASE_URL}/tv/{int(tmdb_id)}/season/{int(season_number)}"
-        res = requests.get(url, params={"api_key": api_key, "append_to_response": "credits,keywords"}, timeout=6)
+        res = requests.get(url, params={"api_key": api_key, "language": "en-US", "append_to_response": "credits,keywords"}, timeout=6)
         if res.status_code != 200:
             eg_data = _fetch_tv_season_from_episode_groups(tmdb_id, season_number, api_key, item_data.copy())
             if eg_data and eg_data.get("year"):
                 return eg_data
+
+            # Check if this item is a TV special or movie on TMDB (e.g. A Very Murray Christmas)
+            try:
+                m_res = requests.get(f"{TMDB_BASE_URL}/movie/{int(tmdb_id)}", params={"api_key": api_key, "language": "en-US", "append_to_response": "credits"}, timeout=5)
+                if m_res.status_code == 200:
+                    m = m_res.json()
+                    item_data["season_name"] = m.get("title") or item_data["season_name"]
+                    item_data["overview"] = (m.get("overview") or "").strip()
+                    rel_date = m.get("release_date") or ""
+                    item_data["air_date"] = rel_date
+                    if rel_date and rel_date[:4].isdigit():
+                        item_data["year"] = int(rel_date[:4])
+                    if m.get("poster_path"):
+                        item_data["poster"] = f"https://image.tmdb.org/t/p/w500{m['poster_path']}"
+                    item_data["vote_average"] = float(m.get("vote_average") or 0.0)
+                    m_crew = m.get("credits", {}).get("crew", [])
+                    m_cast = m.get("credits", {}).get("cast", [])
+                    dirs = [c.get("name") for c in m_crew if c.get("job") == "Director" and c.get("name")]
+                    if dirs:
+                        item_data["director"] = ", ".join(dirs[:2])
+                    item_data["lead_actors"] = ", ".join([c.get("name") for c in m_cast[:6] if c.get("name")])
+                    return item_data
+            except Exception:
+                pass
+
             return item_data
 
         d = res.json()
         item_data["season_name"] = d.get("name") or f"Season {season_number}"
-        item_data["overview"] = d.get("overview") or item_data.get("overview") or ""
+        
+        # English overview: Season overview (English) -> Series overview (English)
+        season_ov = (d.get("overview") or "").strip()
+        series_ov = (series_data.get("overview") or "").strip()
+        item_data["overview"] = season_ov or series_ov or (item_data.get("overview") or "").strip()
+
+        # Fallback 1: If still empty and show_title is present, search TMDB TV in English to resolve empty stubs (e.g. Megalo Box 301022 -> 77939)
+        if not item_data["overview"] and item_data.get("show_title"):
+            try:
+                s_res = requests.get(f"{TMDB_BASE_URL}/search/tv", params={"api_key": api_key, "query": item_data["show_title"], "language": "en-US"}, timeout=5)
+                if s_res.status_code == 200:
+                    for cand in (s_res.json().get("results") or []):
+                        cand_ov = (cand.get("overview") or "").strip()
+                        if cand_ov:
+                            item_data["overview"] = cand_ov
+                            break
+            except Exception:
+                pass
+
+        # Fallback 2: If still empty, check TMDB movie endpoint in English (e.g. holiday specials/movies like A Very Murray Christmas)
+        # Verify title match to prevent unrelated movie ID collisions
+        if not item_data["overview"]:
+            try:
+                m_res = requests.get(f"{TMDB_BASE_URL}/movie/{int(tmdb_id)}", params={"api_key": api_key, "language": "en-US"}, timeout=5)
+                if m_res.status_code == 200:
+                    m_data = m_res.json()
+                    m_title = (m_data.get("title") or "").lower()
+                    s_title = (item_data.get("show_title") or "").lower()
+                    # Only accept movie overview if title matches or overlaps
+                    words = [w for w in s_title.split() if len(w) > 3]
+                    if not words or any(w in m_title for w in words):
+                        item_data["overview"] = (m_data.get("overview") or "").strip()
+            except Exception:
+                pass
+
         air_date = d.get("air_date") or ""
         item_data["air_date"] = air_date
         if air_date and air_date[:4].isdigit():
@@ -1248,10 +1307,10 @@ def fetch_and_enrich_tv_season(
     return item_data
 
 
-def upsert_tv_season_catalog_item(item_data: Dict[str, Any], compute_embedding: bool = True) -> Dict[str, Any]:
+def upsert_tv_season_catalog_item(item_data: Dict[str, Any], compute_embedding: bool = True, force_recompute_embedding: bool = False) -> Dict[str, Any]:
     """
     Inserts or updates a TV season record in Supabase `public.tv_season_catalog` AND local SQLite cache.
-    Automatically computes and caches the 384D semantic vector via FastEmbed if missing.
+    Automatically computes and caches the 384D semantic vector via FastEmbed if missing or force_recompute_embedding=True.
     """
     tmdb_id = _safe_int(item_data.get("tmdb_id"))
     season_num = _safe_int(item_data.get("season_number")) or 1
@@ -1260,10 +1319,10 @@ def upsert_tv_season_catalog_item(item_data: Dict[str, Any], compute_embedding: 
     item_data["tmdb_id"] = tmdb_id
     item_data["season_number"] = season_num
 
-    # Compute embedding if missing
+    # Compute embedding if missing or requested
     emb = item_data.get("embedding")
     emb_blob = item_data.get("embedding_blob")
-    if emb is None and not emb_blob and compute_embedding:
+    if ((emb is None and not emb_blob) or force_recompute_embedding) and compute_embedding:
         try:
             from services.embedding_service import construct_semantic_text, _get_embedding_model
             sem_data = dict(item_data)

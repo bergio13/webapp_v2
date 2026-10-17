@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 
 # Load local .env
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 load_dotenv()
 
 from config import Config

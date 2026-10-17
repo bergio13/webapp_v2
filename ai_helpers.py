@@ -1,12 +1,8 @@
-"""AI / OpenRouter helpers.
-
-All OpenRouter constants, setting-parsers, and the recommendation wrapper live
-here so blueprints can import from a single, focused module.
-"""
-import json
+"""AI / OpenRouter helpers and configuration."""
 import logging
 import os
 
+from extensions import cache
 from recommendation_service import (
     DiscoverConfig,
     OpenRouterSettings,
@@ -14,87 +10,46 @@ from recommendation_service import (
     get_ai_movie_recommendation as _get_ai_movie_recommendation,
 )
 
-from extensions import cache
-
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Settings file loader
+# Setting value resolvers (from os.environ)
 # ---------------------------------------------------------------------------
-
-OPENROUTER_SETTINGS_FILE = os.environ.get("OPENROUTER_SETTINGS_FILE", "openrouter_settings.json")
-
-
-def _load_openrouter_settings(path: str) -> dict:
-    try:
-        with open(path, "r", encoding="utf-8") as fh:
-            data = json.load(fh)
-            if isinstance(data, dict):
-                return data
-            logger.warning("OpenRouter settings file %s is not a JSON object; ignoring", path)
-            return {}
-    except FileNotFoundError:
-        return {}
-    except Exception:
-        logger.exception("Failed to read OpenRouter settings file %s", path)
-        return {}
-
-
-_FILE_SETTINGS: dict = _load_openrouter_settings(OPENROUTER_SETTINGS_FILE)
-
-
-# ---------------------------------------------------------------------------
-# Setting value resolvers
-# ---------------------------------------------------------------------------
-
-def _setting_value(name: str, default=None):
-    raw = os.environ.get(name)
-    if raw is not None and raw.strip():
-        return raw.strip()
-    val = _FILE_SETTINGS.get(name, default)
-    return default if val is None else val
-
 
 def _env_bool(name: str, default: bool = False) -> bool:
-    raw = _setting_value(name, default)
-    if isinstance(raw, bool):
-        return raw
-    if isinstance(raw, (int, float)):
-        return raw != 0
+    raw = os.environ.get(name)
     if raw is None:
         return default
-    return str(raw).strip().lower() in ("1", "true", "yes", "on")
+    return raw.strip().lower() in ("1", "true", "yes", "on")
 
 
 def _env_optional_float(name: str):
-    raw = _setting_value(name, None)
-    if raw is None or (isinstance(raw, str) and not raw.strip()):
+    raw = os.environ.get(name)
+    if not raw or not raw.strip():
         return None
     try:
-        return float(raw)
+        return float(raw.strip())
     except (TypeError, ValueError):
         return None
 
 
-def _env_list(name: str) -> list:
-    raw = _setting_value(name, [])
-    if isinstance(raw, list):
-        return [str(i).strip() for i in raw if str(i).strip()]
-    if isinstance(raw, str):
-        return [i.strip() for i in raw.split(",") if i.strip()]
-    return []
+def _env_list(name: str, default: list | None = None) -> list:
+    raw = os.environ.get(name)
+    if not raw or not raw.strip():
+        return default or []
+    return [i.strip() for i in raw.split(",") if i.strip()]
 
 
 def _env_int(name: str, default: int) -> int:
     try:
-        return int(_setting_value(name, default))
+        return int(os.environ.get(name, default))
     except (TypeError, ValueError):
         return default
 
 
 def _env_float(name: str, default: float) -> float:
     try:
-        return float(_setting_value(name, default))
+        return float(os.environ.get(name, default))
     except (TypeError, ValueError):
         return default
 
@@ -104,28 +59,34 @@ def _env_float(name: str, default: float) -> float:
 # ---------------------------------------------------------------------------
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_MODEL_ID = str(_setting_value("OPENROUTER_MODEL_ID", "google/gemini-3.6-flash")).strip()
-OPENROUTER_MODEL_FALLBACKS = _env_list("OPENROUTER_MODEL_FALLBACKS")
+OPENROUTER_MODEL_ID = os.environ.get("OPENROUTER_MODEL_ID", "google/gemini-3.6-flash").strip()
+OPENROUTER_MODEL_FALLBACKS = _env_list(
+    "OPENROUTER_MODEL_FALLBACKS",
+    [
+        "google/gemini-3.5-flash-lite",
+        "deepseek/deepseek-v4-flash-0731",
+        "qwen/qwen3.7-flash",
+        "liquid/lfm-2.5-2.6b:free",
+        "nvidia/nemotron-3.5-lightning:free",
+    ],
+)
 OPENROUTER_REQUEST_TIMEOUT = _env_float("OPENROUTER_REQUEST_TIMEOUT", 30)
 OPENROUTER_TOTAL_TIMEOUT = _env_float("OPENROUTER_TOTAL_TIMEOUT", 20)
 OPENROUTER_MODEL_DEADLINE = _env_float("OPENROUTER_MODEL_DEADLINE", 8)
-OPENROUTER_MAX_COMPLETION_TOKENS = _env_int(
-    "OPENROUTER_MAX_COMPLETION_TOKENS",
-    _env_int("OPENROUTER_MAX_TOKENS", 550),
-)
+OPENROUTER_MAX_COMPLETION_TOKENS = _env_int("OPENROUTER_MAX_COMPLETION_TOKENS", 1000)
 OPENROUTER_MAX_ATTEMPTS = _env_int("OPENROUTER_MAX_ATTEMPTS", 3)
 OPENROUTER_RETRY_BASE_DELAY = _env_float("OPENROUTER_RETRY_BASE_DELAY", 0.35)
 OPENROUTER_RETRY_MAX_DELAY = _env_float("OPENROUTER_RETRY_MAX_DELAY", 1.5)
 OPENROUTER_RETRY_429_MAX_DELAY = _env_float("OPENROUTER_RETRY_429_MAX_DELAY", 6)
 OPENROUTER_RETRY_JITTER = _env_float("OPENROUTER_RETRY_JITTER", 0.15)
-OPENROUTER_PROVIDER_SORT = str(_setting_value("OPENROUTER_PROVIDER_SORT", "latency")).strip()
+OPENROUTER_PROVIDER_SORT = os.environ.get("OPENROUTER_PROVIDER_SORT", "latency").strip()
 OPENROUTER_PROVIDER_ALLOW_FALLBACKS = _env_bool("OPENROUTER_PROVIDER_ALLOW_FALLBACKS", True)
 OPENROUTER_PROVIDER_REQUIRE_PARAMETERS = _env_bool("OPENROUTER_PROVIDER_REQUIRE_PARAMETERS", False)
 OPENROUTER_PROVIDER_ONLY = _env_list("OPENROUTER_PROVIDER_ONLY")
 OPENROUTER_PROVIDER_IGNORE = _env_list("OPENROUTER_PROVIDER_IGNORE")
 OPENROUTER_PREFERRED_MAX_LATENCY = _env_optional_float("OPENROUTER_PREFERRED_MAX_LATENCY")
 OPENROUTER_PREFERRED_MIN_THROUGHPUT = _env_optional_float("OPENROUTER_PREFERRED_MIN_THROUGHPUT")
-OPENROUTER_SERVICE_TIER = str(_setting_value("OPENROUTER_SERVICE_TIER", "")).strip()
+OPENROUTER_SERVICE_TIER = os.environ.get("OPENROUTER_SERVICE_TIER", "").strip()
 
 # ---------------------------------------------------------------------------
 # Discover-mode constants
@@ -169,32 +130,32 @@ def build_openrouter_settings() -> OpenRouterSettings:
     """Create an ``OpenRouterSettings`` payload for the recommendation service."""
     import sys
     webapp = sys.modules.get("app")
-    def _get(name, default):
-        if webapp and hasattr(webapp, name):
-            return getattr(webapp, name)
-        return globals().get(name, default)
+    def _val(attr, fallback):
+        if webapp and hasattr(webapp, attr):
+            return getattr(webapp, attr)
+        return fallback
 
     return OpenRouterSettings(
-        api_url=_get("OPENROUTER_API_URL", OPENROUTER_API_URL),
-        model_id=_get("OPENROUTER_MODEL_ID", OPENROUTER_MODEL_ID),
-        model_fallbacks=_get("OPENROUTER_MODEL_FALLBACKS", OPENROUTER_MODEL_FALLBACKS),
-        request_timeout=_get("OPENROUTER_REQUEST_TIMEOUT", OPENROUTER_REQUEST_TIMEOUT),
-        total_timeout=_get("OPENROUTER_TOTAL_TIMEOUT", OPENROUTER_TOTAL_TIMEOUT),
-        model_deadline=_get("OPENROUTER_MODEL_DEADLINE", OPENROUTER_MODEL_DEADLINE),
-        max_completion_tokens=_get("OPENROUTER_MAX_COMPLETION_TOKENS", OPENROUTER_MAX_COMPLETION_TOKENS),
-        max_attempts=_get("OPENROUTER_MAX_ATTEMPTS", OPENROUTER_MAX_ATTEMPTS),
-        retry_base_delay=_get("OPENROUTER_RETRY_BASE_DELAY", OPENROUTER_RETRY_BASE_DELAY),
-        retry_max_delay=_get("OPENROUTER_RETRY_MAX_DELAY", OPENROUTER_RETRY_MAX_DELAY),
-        retry_429_max_delay=_get("OPENROUTER_RETRY_429_MAX_DELAY", OPENROUTER_RETRY_429_MAX_DELAY),
-        retry_jitter=_get("OPENROUTER_RETRY_JITTER", OPENROUTER_RETRY_JITTER),
-        provider_sort=_get("OPENROUTER_PROVIDER_SORT", OPENROUTER_PROVIDER_SORT),
-        provider_allow_fallbacks=_get("OPENROUTER_PROVIDER_ALLOW_FALLBACKS", OPENROUTER_PROVIDER_ALLOW_FALLBACKS),
-        provider_require_parameters=_get("OPENROUTER_PROVIDER_REQUIRE_PARAMETERS", OPENROUTER_PROVIDER_REQUIRE_PARAMETERS),
-        provider_only=_get("OPENROUTER_PROVIDER_ONLY", OPENROUTER_PROVIDER_ONLY),
-        provider_ignore=_get("OPENROUTER_PROVIDER_IGNORE", OPENROUTER_PROVIDER_IGNORE),
-        preferred_max_latency=_get("OPENROUTER_PREFERRED_MAX_LATENCY", OPENROUTER_PREFERRED_MAX_LATENCY),
-        preferred_min_throughput=_get("OPENROUTER_PREFERRED_MIN_THROUGHPUT", OPENROUTER_PREFERRED_MIN_THROUGHPUT),
-        service_tier=_get("OPENROUTER_SERVICE_TIER", OPENROUTER_SERVICE_TIER),
+        api_url=_val("OPENROUTER_API_URL", OPENROUTER_API_URL),
+        model_id=_val("OPENROUTER_MODEL_ID", OPENROUTER_MODEL_ID),
+        model_fallbacks=_val("OPENROUTER_MODEL_FALLBACKS", OPENROUTER_MODEL_FALLBACKS),
+        request_timeout=_val("OPENROUTER_REQUEST_TIMEOUT", OPENROUTER_REQUEST_TIMEOUT),
+        total_timeout=_val("OPENROUTER_TOTAL_TIMEOUT", OPENROUTER_TOTAL_TIMEOUT),
+        model_deadline=_val("OPENROUTER_MODEL_DEADLINE", OPENROUTER_MODEL_DEADLINE),
+        max_completion_tokens=_val("OPENROUTER_MAX_COMPLETION_TOKENS", OPENROUTER_MAX_COMPLETION_TOKENS),
+        max_attempts=_val("OPENROUTER_MAX_ATTEMPTS", OPENROUTER_MAX_ATTEMPTS),
+        retry_base_delay=_val("OPENROUTER_RETRY_BASE_DELAY", OPENROUTER_RETRY_BASE_DELAY),
+        retry_max_delay=_val("OPENROUTER_RETRY_MAX_DELAY", OPENROUTER_RETRY_MAX_DELAY),
+        retry_429_max_delay=_val("OPENROUTER_RETRY_429_MAX_DELAY", OPENROUTER_RETRY_429_MAX_DELAY),
+        retry_jitter=_val("OPENROUTER_RETRY_JITTER", OPENROUTER_RETRY_JITTER),
+        provider_sort=_val("OPENROUTER_PROVIDER_SORT", OPENROUTER_PROVIDER_SORT),
+        provider_allow_fallbacks=_val("OPENROUTER_PROVIDER_ALLOW_FALLBACKS", OPENROUTER_PROVIDER_ALLOW_FALLBACKS),
+        provider_require_parameters=_val("OPENROUTER_PROVIDER_REQUIRE_PARAMETERS", OPENROUTER_PROVIDER_REQUIRE_PARAMETERS),
+        provider_only=_val("OPENROUTER_PROVIDER_ONLY", OPENROUTER_PROVIDER_ONLY),
+        provider_ignore=_val("OPENROUTER_PROVIDER_IGNORE", OPENROUTER_PROVIDER_IGNORE),
+        preferred_max_latency=_val("OPENROUTER_PREFERRED_MAX_LATENCY", OPENROUTER_PREFERRED_MAX_LATENCY),
+        preferred_min_throughput=_val("OPENROUTER_PREFERRED_MIN_THROUGHPUT", OPENROUTER_PREFERRED_MIN_THROUGHPUT),
+        service_tier=_val("OPENROUTER_SERVICE_TIER", OPENROUTER_SERVICE_TIER),
     )
 
 

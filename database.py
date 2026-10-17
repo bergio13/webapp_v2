@@ -45,9 +45,6 @@ def _fetch_users_by(column: str = None, value=None):
         logger.error(f"Error fetching users by {column}: {e}")
         return []
 
-def load_users_from_db():
-    return _fetch_users_by()
-
 def load_users_from_username(name):
     return _fetch_users_by("username", name)
 
@@ -293,41 +290,6 @@ def get_yearly_movie_and_cinema_counts(parent_id, year=None):
         logger.error(f"Error fetching yearly counts for {parent_id}: {e}")
         return 0, 0
 
-def get_yearly_movie_count(parent_id, year=None):
-    try:
-        if year is None:
-            year = datetime.now().year
-        start_date = f"{year}-01-01"
-        end_date = f"{year + 1}-01-01"
-        response = client.table('lista') \
-            .select('lista_id', count='exact') \
-            .eq('parent_id', parent_id) \
-            .gte('v_date', start_date) \
-            .lt('v_date', end_date) \
-            .execute()
-        return getattr(response, 'count', len(response.data or []))
-    except Exception as e:
-        logger.error(f"Error fetching yearly movie count for {parent_id}: {e}")
-        return 0
-
-def get_yearly_cinema_count(parent_id, year=None):
-    try:
-        if year is None:
-            year = datetime.now().year
-        start_date = f"{year}-01-01"
-        end_date = f"{year + 1}-01-01"
-        response = client.table('lista') \
-            .select('lista_id', count='exact') \
-            .eq('parent_id', parent_id) \
-            .gte('v_date', start_date) \
-            .lt('v_date', end_date) \
-            .eq('cinema', 1) \
-            .execute()
-        return getattr(response, 'count', len(response.data or []))
-    except Exception as e:
-        logger.error(f"Error fetching yearly cinema count for {parent_id}: {e}")
-        return 0
-
 def remove_movie_by_id(movie_id):
     try:
         client.table('lista').delete().eq('lista_id', movie_id).execute()
@@ -381,22 +343,10 @@ def _get_movies_ordered_by(parent_id, order_column):
         logger.error(f"Error fetching ordered movies by {order_column}: {e}")
         return []
 
-def _get_distinct_attribute(parent_id, column):
-    try:
-        data = client.table('lista').select(column).eq('parent_id', parent_id).order(column).execute()
-        return [{"name": attr} for attr in {row[column] for row in data.data if row.get(column)}]
-    except Exception as e:
-        logger.error(f"Error fetching distinct {column}: {e}")
-        return []
-
 def get_movies_groupby_director(parent_id): return _get_movies_ordered_by(parent_id, 'director')
-def get_directors(parent_id): return _get_distinct_attribute(parent_id, 'director')
 def get_movies_groupby_genre(parent_id): return _get_movies_ordered_by(parent_id, 'genre')
-def get_genres(parent_id): return _get_distinct_attribute(parent_id, 'genre')
 def get_movies_groupby_year(parent_id): return _get_movies_ordered_by(parent_id, 'p_year')
-def get_years(parent_id): return _get_distinct_attribute(parent_id, 'p_year')
 def get_movies_groupby_rating(parent_id): return _get_movies_ordered_by(parent_id, 'rating')
-def get_ratings(parent_id): return _get_distinct_attribute(parent_id, 'rating')
 
 def get_highest_rating():
     try:

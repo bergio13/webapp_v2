@@ -6,6 +6,7 @@ import sqlite3
 import hashlib
 import struct
 import logging
+import re
 from typing import List, Dict, Any, Optional
 import numpy as np
 
@@ -162,25 +163,107 @@ def store_cached_embeddings(items: List[Dict[str, Any]]):
         logger.error(f"Failed to save embeddings to cache: {e}")
 
 
+def clean_media_title(raw_title: str) -> str:
+    """Removes season/episode noise and extraneous localized suffixes."""
+    if not raw_title:
+        return "Untitled"
+    title = str(raw_title).strip()
+    # Strip season indicators: ", Season 1", " - Season 2", ": Season 3", " (Season 4)", ", Stagione 1"
+    title = re.sub(r'[\s,:\-]+(?:season|stagione)\s*\d+.*$', '', title, flags=re.IGNORECASE)
+    title = re.sub(r'\(season\s*\d+.*\)', '', title, flags=re.IGNORECASE)
+    return title.strip() or raw_title.strip()
+
+
 def construct_semantic_text(movie: Dict[str, Any]) -> str:
     """
-    Synthesizes a rich descriptive text for semantic embedding:
-    Includes title, year, director, genres, tags, overview, and cast if available.
+    Synthesizes a rich, normalized descriptive text for semantic embedding:
+    Includes title, format (Film vs Series), year, creator/director, genres, keywords, cast, and overview.
+    Properly handles TV show showrunners/creators, disambiguates genres, and cleans whitespace.
     """
-    title = movie.get("title") or movie.get("movie") or "Untitled"
-    year = str(movie.get("p_year") or movie.get("year") or "")
-    director = movie.get("director") or "Unknown"
-    genre = movie.get("genre") or "Cinema"
-    tags = movie.get("tags") or ""
-    overview = movie.get("overview") or ""
+    raw_title = movie.get("title") or movie.get("movie") or "Untitled"
+    clean_title = clean_media_title(raw_title)
 
-    parts = [f"Title: {title} ({year}).", f"Director: {director}.", f"Genres: {genre}."]
-    if tags:
-        parts.append(f"Keywords: {tags}.")
-    if overview:
-        parts.append(f"Overview: {overview}")
-    
+    is_tv = movie.get("tv_show") in [1, "1", True] or movie.get("media_type") == "tv"
+    year = str(movie.get("p_year") or movie.get("year") or "").strip()
+
+    format_label = "Television Series" if is_tv else "Feature Film"
+
+    director = str(movie.get("director") or "").strip()
+    creator = str(movie.get("creator") or movie.get("created_by") or movie.get("showrunner") or "").strip()
+
+    raw_genres = str(movie.get("genre") or "").strip()
+    raw_tags = str(movie.get("tags") or "").strip()
+    overview = str(movie.get("overview") or "").strip()
+
+    # Normalize genres: Split, filter placeholder "Cinema" or "Unknown"
+    genre_tokens = [g.strip() for g in re.split(r'[,/|•]+', raw_genres) if g.strip() and g.strip().lower() not in ["unknown", "cinema", "n/a"]]
+
+    # Disambiguate TV "Sci-Fi & Fantasy" bundle (TMDB ID 10765)
+    norm_genres = []
+    for g in genre_tokens:
+        if g.lower() in ["sci-fi & fantasy", "scifi & fantasy"]:
+            context_text = f"{clean_title} {raw_tags} {overview}".lower()
+            scifi_terms = ["outer space", "space", "cyberpunk", "futuristic", "robot", "alien", "cyborg", "android", "virtual", "mecha", "synth", "quantum", "physics", "cosmos"]
+            has_scifi = any(k in context_text for k in scifi_terms) or bool(re.search(r'\b(ai|a\.i\.)\b', context_text))
+            if has_scifi:
+                norm_genres.extend(["Science Fiction", "Fantasy"])
+            else:
+                norm_genres.append("Fantasy")
+        else:
+            norm_genres.append(g)
+
+    genres_str = ", ".join(dict.fromkeys(norm_genres)) if norm_genres else "Cinema"
+
+    parts = [f"Title: {clean_title}."]
+    parts.append(f"Format: {format_label}.")
+    if year:
+        parts.append(f"Year: {year}.")
+
+    if is_tv:
+        if creator and creator.lower() not in ["unknown", "n/a", ""]:
+            parts.append(f"Creator: {creator}.")
+        elif director and director.lower() not in ["unknown", "n/a", ""]:
+            parts.append(f"Director: {director}.")
+    else:
+        if director and director.lower() not in ["unknown", "n/a", ""]:
+            parts.append(f"Director: {director}.")
+
+    if genres_str:
+        parts.append(f"Genres: {genres_str}.")
+
+    # Lead actors / craft if available
+    lead_actors = movie.get("lead_actors") or movie.get("cast")
+    if lead_actors:
+        if isinstance(lead_actors, list):
+            lead_actors = ", ".join(str(a) for a in lead_actors[:4])
+        actors_str = str(lead_actors).strip()
+        if actors_str and actors_str.lower() not in ["unknown", "n/a", ""]:
+            parts.append(f"Cast: {actors_str}.")
+
+    craft = movie.get("craft") or {}
+    cinematographer = movie.get("cinematographer") or craft.get("cinematographer")
+    if cinematographer and str(cinematographer).strip().lower() not in ["unknown", "n/a", ""]:
+        parts.append(f"Cinematography: {str(cinematographer).strip()}.")
+
+    composer = movie.get("composer") or craft.get("composer")
+    if composer and str(composer).strip().lower() not in ["unknown", "n/a", ""]:
+        parts.append(f"Score: {str(composer).strip()}.")
+
+    # Keywords / movement tags
+    if raw_tags and raw_tags.lower() not in ["unknown", "n/a", ""]:
+        clean_tags = re.sub(r'[{}\[\]"\'_]', ' ', raw_tags)
+        clean_tags = " ".join(clean_tags.split())
+        parts.append(f"Keywords: {clean_tags}.")
+
+    # Clean overview (strip HTML tags/entities and collapse whitespaces)
+    if overview and overview.lower() not in ["unknown", "n/a", ""]:
+        clean_overview = re.sub(r'<[^>]+>', '', overview)
+        clean_overview = clean_overview.replace('&amp;', '&').replace('&quot;', '"').replace('&#39;', "'")
+        clean_overview = " ".join(clean_overview.split())
+        parts.append(f"Overview: {clean_overview}")
+
     return " ".join(parts)
+
 
 
 def compute_semantic_embeddings(movies: List[Dict[str, Any]]) -> np.ndarray:
